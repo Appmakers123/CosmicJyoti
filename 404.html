@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, follow">
+    <title>Page Not Found – CosmicJyoti</title>
+    <link rel="canonical" href="https://www.cosmicjyoti.com/404.html">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        h1, h2 { font-family: 'Cinzel', serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #ffffff 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        nav a { color: #fbbf24; text-decoration: none; margin-right: 1.5rem; }
+        nav a:hover { color: #fcd34d; }
+        .content { text-align: center; max-width: 500px; }
+        .code { font-size: 5rem; font-weight: 700; color: #f59e0b; line-height: 1; margin-bottom: 1rem; }
+        .links { margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; }
+        .links a {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-height: 44px; padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #020617; font-weight: 700; text-decoration: none;
+            border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .links a:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4); }
+        .links a.secondary {
+            background: transparent; border: 2px solid #fbbf24; color: #fbbf24;
+        }
+        .links a.secondary:hover { background: rgba(251, 191, 36, 0.15); }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="landing.html">Home</a>
+        <a href="tools.html">Tools</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+    </nav>
+
+    <div class="content">
+        <div class="code">404</div>
+        <h1 class="gradient-text" style="font-size: 1.75rem; margin-bottom: 0.75rem;">Page Not Found</h1>
+        <p style="color: #94a3b8; line-height: 1.6;">The page you're looking for doesn't exist or has been moved. Let's get you back on track.</p>
+        <div class="links">
+            <a href="landing.html">🏠 Home</a>
+            <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer">📱 Open App</a>
+            <a href="tools.html" class="secondary">Tools</a>
+            <a href="blog.html" class="secondary">Blog</a>
+            <a href="contact.html" class="secondary">Contact</a>
+        </div>
+    </div>
+</body>
+</html>

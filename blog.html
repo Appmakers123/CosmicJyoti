@@ -151,15 +151,113 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+        .today-horoscope {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.05) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .today-horoscope h2 {
+            font-size: 1.75rem;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+        .today-horoscope .date-display {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+        .zodiac-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .zodiac-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .zodiac-card:hover {
+            border-color: rgba(251, 191, 36, 0.5);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+        }
+        .zodiac-card .sign-symbol {
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        .zodiac-card .sign-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            color: #f59e0b;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .zodiac-card .prediction {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .horoscope-cta {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .horoscope-cta a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #020617;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .horoscope-cta a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+        }
     </style>
 </head>
 <body>
     <nav>
         <a href="landing.html">← Back to Home</a>
+        <a href="#todays-horoscope">Today's Horoscope</a>
     </nav>
     <div class="container">
         <h1 class="gradient-text">CosmicJyoti Blog</h1>
         <p style="font-size: 1.1rem; color: #cbd5e1; margin-bottom: 2rem;">Explore the depths of Vedic Astrology, learn about Kundali, Horoscope, Muhurat, and discover spiritual wisdom through our comprehensive articles.</p>
+
+        <!-- Today's Horoscope & Predictions -->
+        <section class="today-horoscope" id="todays-horoscope">
+            <h2>Today's Horoscope &amp; Predictions</h2>
+            <p class="date-display" id="horoscope-date"></p>
+            <div class="zodiac-grid">
+                <div class="zodiac-card"><div class="sign-symbol">♈</div><div class="sign-name">Aries (Mesha)</div><p class="prediction">Mars energizes your path today. Bold moves in career may bring rewards. Stay mindful in partnerships—patience will smooth tensions.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♉</div><div class="sign-name">Taurus (Vrishabha)</div><p class="prediction">Venus blesses finances and relationships. A stable approach to investments pays off. Love and harmony favor you; express gratitude.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♊</div><div class="sign-name">Gemini (Mithuna)</div><p class="prediction">Mercury sharpens communication. Important conversations or documents may arise. Stay curious—learning opens new doors today.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♋</div><div class="sign-name">Cancer (Karka)</div><p class="prediction">The Moon nurtures emotions and home life. Family matters take center stage. Trust your intuition; it guides you well today.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♌</div><div class="sign-name">Leo (Simha)</div><p class="prediction">The Sun amplifies creativity and confidence. A good day for leadership and self-expression. Generosity brings joy to others and yourself.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♍</div><div class="sign-name">Virgo (Kanya)</div><p class="prediction">Mercury supports detail-oriented work. Health and routine improvements are favored. Service to others brings inner satisfaction.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♎</div><div class="sign-name">Libra (Tula)</div><p class="prediction">Venus enhances balance and diplomacy. Partnerships and collaborations flourish. Seek beauty and harmony in your surroundings.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♏</div><div class="sign-name">Scorpio (Vrishchika)</div><p class="prediction">Pluto deepens transformation. Hidden insights may surface. Use discernment in financial or emotional matters.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♐</div><div class="sign-name">Sagittarius (Dhanu)</div><p class="prediction">Jupiter expands wisdom and travel. Philosophy or higher learning calls. Share your optimism—it inspires others.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♑</div><div class="sign-name">Capricorn (Makara)</div><p class="prediction">Saturn strengthens discipline and long-term goals. Steady progress in career is likely. Honor tradition while embracing change.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♒</div><div class="sign-name">Aquarius (Kumbha)</div><p class="prediction">Uranus sparks innovation and friendship. New ideas or social connections emerge. Embrace uniqueness—yours and others'.</p></div>
+                <div class="zodiac-card"><div class="sign-symbol">♓</div><div class="sign-name">Pisces (Meena)</div><p class="prediction">Neptune deepens spirituality and compassion. Creative or meditative pursuits bring peace. Trust the flow of life today.</p></div>
+            </div>
+            <div class="horoscope-cta">
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer">📱 Get Your Full Daily Horoscope in the CosmicJyoti App</a>
+            </div>
+        </section>
+
+        <script>
+            document.getElementById('horoscope-date').textContent = 'Date: ' + new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        </script>
 
         <!-- Ad Section: Top (above blog list) -->
         <section class="ad-section" aria-label="Advertisement">

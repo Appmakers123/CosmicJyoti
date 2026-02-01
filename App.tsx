@@ -40,7 +40,7 @@ import AdBanner from './components/AdBanner';
 import HamburgerMenu from './components/HamburgerMenu';
 import KarmaStore from './components/KarmaStore';
 import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, ViewMode, AppViewMode, User } from './types';
-import { ZODIAC_SIGNS } from './constants';
+import { ZODIAC_SIGNS, PLAY_STORE_URL } from './constants';
 import { generateHoroscope, generateKundali, generateDailyPanchang } from './services/geminiService';
 import { generatePersonalizedDailyForecast } from './services/perplexityService';
 import { useTranslation } from './utils/translations';
@@ -55,6 +55,7 @@ import { getReportByForm, saveReport, listReports, getReport, deleteReport } fro
 import { getGlobalProfile } from './utils/profileStorageService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import OfflineBanner from './components/OfflineBanner';
+import AppDownloadModal from './components/AppDownloadModal';
 
 // Type-safe conditional import for Capacitor App plugin
 type CapacitorAppType = {
@@ -248,6 +249,23 @@ const App: React.FC = () => {
   const [panchangData, setPanchangData] = useState<DailyPanchangResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
+
+  // Show app download popup on web only, after delay, once per 7 days
+  useEffect(() => {
+    if (isCapacitor()) return;
+    const key = 'cosmicjyoti_app_download_seen';
+    const seen = localStorage.getItem(key);
+    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+    if (seen && Date.now() - parseInt(seen, 10) < sevenDaysMs) return;
+    const t = setTimeout(() => setShowAppDownloadModal(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  const handleCloseAppDownloadModal = useCallback(() => {
+    setShowAppDownloadModal(false);
+    localStorage.setItem('cosmicjyoti_app_download_seen', String(Date.now()));
+  }, []);
 
   const getCachedHoroscope = (signName: string, lang: Language): HoroscopeResponse | null => {
     const today = new Date().toDateString();
@@ -689,6 +707,11 @@ const App: React.FC = () => {
         }}
       />
       
+      <AppDownloadModal
+        isOpen={showAppDownloadModal}
+        onClose={handleCloseAppDownloadModal}
+        language={language}
+      />
       {showKarmaStore && (
         <KarmaStore
           language={language}
@@ -951,7 +974,7 @@ const App: React.FC = () => {
           !selectedSign ? (
             <ZodiacGrid onSelect={handleSelectSign} language={language} />
           ) : horoscopeData && selectedSign ? (
-            <HoroscopeCard data={horoscopeData} sign={selectedSign} language={language} personalizedName={dailyForecastPersonalizedName} onBack={() => {setSelectedSign(null); setHoroscopeData(null); setDailyForecastPersonalizedName(null); setError(null); setMode('hub');}} />
+            <HoroscopeCard data={horoscopeData} sign={selectedSign} language={language} personalizedName={dailyForecastPersonalizedName} onBack={() => {setSelectedSign(null); setHoroscopeData(null); setDailyForecastPersonalizedName(null); setError(null); setMode('hub');}}  />
           ) : (
             <div className="animate-fade-in space-y-6 max-w-md mx-auto px-4 py-12 text-center">
               {loading ? (
@@ -981,7 +1004,7 @@ const App: React.FC = () => {
             </div>
           )
         )}
-        {mode === 'kundali' && (kundaliData ? <KundaliResult data={kundaliData} name={kundaliFormData?.name || 'Seeker'} formInput={kundaliFormData ? { name: kundaliFormData.name, date: kundaliFormData.date, time: kundaliFormData.time, location: kundaliFormData.location } : undefined} language={language} onBack={() => { setKundaliData(null); setKundaliFormData(null); loadSavedKundaliCharts(); }} /> : <KundaliForm onSubmit={handleGenerateKundali} isLoading={loading} language={language} savedCharts={savedKundaliCharts} onLoadChart={handleLoadChart} onDeleteChart={handleDeleteChart} onGetDaily={handleGetDaily} />)}
+        {mode === 'kundali' && (kundaliData ? <KundaliResult data={kundaliData} name={kundaliFormData?.name || 'Seeker'} formInput={kundaliFormData ? { name: kundaliFormData.name, date: kundaliFormData.date, time: kundaliFormData.time, location: kundaliFormData.location } : undefined} language={language} onBack={() => { setKundaliData(null); setKundaliFormData(null); loadSavedKundaliCharts(); }}  /> : <KundaliForm onSubmit={handleGenerateKundali} isLoading={loading} language={language} savedCharts={savedKundaliCharts} onLoadChart={handleLoadChart} onDeleteChart={handleDeleteChart} onGetDaily={handleGetDaily} />)}
         {mode === 'panchang' && panchangData && <DailyPanchang data={panchangData} language={language} onBack={() => { setPanchangData(null); setMode('hub'); }} formInput={{ date: panchangData.date, location: panchangData.location }} />}
         {mode === 'mantra' && <MantraLab language={language} />}
         {mode === 'rudraksh' && <RudrakshLab language={language} />}
@@ -991,7 +1014,7 @@ const App: React.FC = () => {
         {mode === 'gemstones' && <GemstoneLab language={language} />}
         {mode === 'cosmic-health' && <CosmicHealthAI language={language} />}
         {mode === 'palm-reading' && <PalmReading language={language} />}
-        {mode === 'tarot' && <TarotReading language={language} />}
+        {mode === 'tarot' && <TarotReading language={language}  />}
         {mode === 'numerology' && <Numerology language={language} />}
         {mode === 'learning' && <LearningCenter language={language} />}
         {mode === 'planets-houses' && <PlanetsHouses language={language} />}
@@ -1001,7 +1024,7 @@ const App: React.FC = () => {
         {mode === 'palmistry-guide' && <PalmistryGuide language={language} />}
         {mode === 'numerology-guide' && <NumerologyGuide language={language} />}
         {mode === 'star-legends' && <StarLegends language={language} />}
-        {mode === 'compatibility' && <CompatibilityTab language={language} />}
+        {mode === 'compatibility' && <CompatibilityTab language={language}  />}
         {mode === 'games' && <AstroGames language={language} />}
         {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}
         
@@ -1034,6 +1057,18 @@ const App: React.FC = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
                 </a>
+                {!isCapacitor() && (
+                  <a 
+                    {...getExternalLinkProps(PLAY_STORE_URL, language)}
+                    className="group inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-bold text-xs sm:text-sm uppercase tracking-widest border-b-2 border-amber-500/30 pb-1 hover:border-amber-400 transition-all"
+                  >
+                    <span>📱</span>
+                    <span>{language === 'hi' ? 'ऐप डाउनलोड करें' : 'Download App'}</span>
+                    <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </a>
+                )}
               </div>
             </div>
 

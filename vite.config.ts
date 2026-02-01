@@ -35,7 +35,11 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_GOOGLE_API_KEY': JSON.stringify(env.VITE_GOOGLE_API_KEY || ''),
       // Free Astrology API keys (comma-separated) - multiple keys for redundancy
       'import.meta.env.VITE_ASTROLOGY_API_KEYS': JSON.stringify(env.ASTROLOGY_API_KEYS || env.VITE_ASTROLOGY_API_KEYS || ''),
-      'import.meta.env.VITE_PROFILE_SUBMIT_URL': JSON.stringify(env.VITE_PROFILE_SUBMIT_URL || '')
+      'import.meta.env.VITE_PROFILE_SUBMIT_URL': JSON.stringify(env.VITE_PROFILE_SUBMIT_URL || ''),
+      'import.meta.env.VITE_API_BASE_URL': JSON.stringify(env.VITE_API_BASE_URL || ''),
+      'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(env.VITE_FIREBASE_API_KEY || ''),
+      'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(env.VITE_FIREBASE_PROJECT_ID || ''),
+      'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(env.VITE_FIREBASE_AUTH_DOMAIN || '')
     },
     build: {
       outDir: 'dist',

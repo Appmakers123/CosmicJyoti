@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { askRishiWithFallback } from '../services/geminiService';
 import RichText from './RichText';
+import DownloadAppForAICta from './common/DownloadAppForAICta';
+
 interface ModuleAskAIProps {
   contextStr: string;
   language: Language;
@@ -12,6 +14,7 @@ interface ModuleAskAIProps {
 interface QAMessage {
   role: 'user' | 'model';
   text: string;
+  showDownloadCta?: boolean;
 }
 
 const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleName, accentColor = 'amber' }) => {
@@ -28,9 +31,9 @@ const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleN
       setMessages(prev => [...prev, { role: 'model', text: result.text || '' }]);
     } catch (error) {
       const errMsg = language === 'hi'
-        ? 'ब्रह्मांड के संकेत धुंधले हैं। कृपया कुछ समय बाद पुनः प्रयास करें।'
-        : 'The cosmic signals are faint. Please try again in a moment.';
-      setMessages(prev => [...prev, { role: 'model', text: errMsg }]);
+        ? 'यहाँ AI उपलब्ध नहीं है। पूर्ण AI सुविधाओं के लिए ऐप डाउनलोड करें।'
+        : "AI isn't available here. Download the app to use full AI features.";
+      setMessages(prev => [...prev, { role: 'model', text: errMsg, showDownloadCta: true }]);
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +87,9 @@ const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleN
                   msg.role === 'user' ? `bg-gradient-to-br ${cls.split(' ').slice(1, 3).join(' ')} text-white rounded-br-none` : 'bg-slate-900/60 border border-slate-700/50 text-slate-200 rounded-bl-none'
                 }`}>
                   <RichText text={msg.text} />
+                  {msg.showDownloadCta && (
+                    <DownloadAppForAICta language={language} accentColor={accentColor} />
+                  )}
                 </div>
               </div>
             ))}

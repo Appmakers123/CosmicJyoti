@@ -5,6 +5,7 @@ import { Language, KundaliResponse } from '../types';
 import { createChatSession, askRishiWithFallback, type AstrologerPersona } from '../services/geminiService';
 import { GenerateContentResponse, Chat } from '@google/genai';
 import RichText from './RichText';
+import DownloadAppForAICta from './common/DownloadAppForAICta';
 import { canSendMessage, getRemainingMessages, incrementChatUsage, getMessageLimit } from '../utils/chatLimitService';
 
 interface ChatWidgetProps {
@@ -24,6 +25,7 @@ interface Message {
   text: string;
   sources?: { title: string, uri: string }[];
   isFallback?: boolean;
+  showDownloadCta?: boolean;
 }
 
 const QUICK_CHIPS: Record<Language, string[]> = {
@@ -407,8 +409,9 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
             setMessages(prev => [...prev, { 
               role: 'model', 
               text: language === 'hi' 
-                ? "ब्रह्मांड के संकेत धुंधले हैं। कृपया कुछ समय बाद पुनः प्रयास करें।"
-                : "The cosmic channel is currently busy. Please try again soon."
+                ? "यहाँ AI उपलब्ध नहीं है। पूर्ण AI सुविधाओं के लिए ऐप डाउनलोड करें।"
+                : "AI isn't available here. Download the app to use full AI features.",
+              showDownloadCta: true
             }]);
         }
     } finally {
@@ -524,7 +527,12 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
                           Consulting Akasha...
                         </div>
                       ) : (
-                        <RichText text={msg.text} />
+                        <>
+                          <RichText text={msg.text} />
+                          {msg.showDownloadCta && (
+                            <DownloadAppForAICta language={language} accentColor="amber" />
+                          )}
+                        </>
                       )}
                    </div>
                 </div>

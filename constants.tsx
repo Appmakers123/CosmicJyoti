@@ -293,3 +293,6 @@ export const translateSign = (signName: string, lang: Language): string => {
   const s = ZODIAC_SIGNS.find(z => z.name.toLowerCase() === signName.toLowerCase());
   return s ? s.hindiName : signName;
 };
+
+/** Play Store URL for CosmicJyoti app */
+export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cosmicjyoti.app';

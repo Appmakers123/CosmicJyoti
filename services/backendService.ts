@@ -441,6 +441,34 @@ export async function generateAshtakootaFromBackend(
 }
 
 /**
+ * Ask Rishi (AI chat) via backend - avoids CORS when calling from browser
+ */
+export async function askRishiFromBackend(
+  prompt: string,
+  language: string = 'en',
+  context?: string,
+  persona: string = 'general'
+): Promise<{ text: string; sources: { title: string; uri: string }[] }> {
+  if (!API_BASE_URL) {
+    throw new Error('Backend not available, using direct API calls');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/ask-rishi`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt, language, context, persona }),
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Ask Rishi API error: ${response.status} - ${errText}`);
+  }
+
+  const data = await response.json();
+  return { text: data.text || '', sources: data.sources || [] };
+}
+
+/**
  * Generate Tarot reading using backend API
  */
 export async function generateTarotFromBackend(

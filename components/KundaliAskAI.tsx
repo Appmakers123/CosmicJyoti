@@ -3,6 +3,8 @@ import { KundaliResponse, Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import { askRishiWithFallback } from '../services/geminiService';
 import RichText from './RichText';
+import DownloadAppForAICta from './common/DownloadAppForAICta';
+
 interface KundaliAskAIProps {
   data: KundaliResponse;
   name: string;
@@ -12,6 +14,7 @@ interface KundaliAskAIProps {
 interface QAMessage {
   role: 'user' | 'model';
   text: string;
+  showDownloadCta?: boolean;
 }
 
 const KundaliAskAI: React.FC<KundaliAskAIProps> = ({ data, name, language }) => {
@@ -29,9 +32,9 @@ const KundaliAskAI: React.FC<KundaliAskAIProps> = ({ data, name, language }) => 
       setMessages(prev => [...prev, { role: 'model', text: result.text || '' }]);
     } catch (error) {
       const errMsg = language === 'hi'
-        ? 'ब्रह्मांड के संकेत धुंधले हैं। कृपया कुछ समय बाद पुनः प्रयास करें।'
-        : 'The cosmic signals are faint. Please try again in a moment.';
-      setMessages(prev => [...prev, { role: 'model', text: errMsg }]);
+        ? 'यहाँ AI उपलब्ध नहीं है। पूर्ण AI सुविधाओं के लिए ऐप डाउनलोड करें।'
+        : "AI isn't available here. Download the app to use full AI features.";
+      setMessages(prev => [...prev, { role: 'model', text: errMsg, showDownloadCta: true }]);
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +100,9 @@ const KundaliAskAI: React.FC<KundaliAskAIProps> = ({ data, name, language }) => 
                   }`}
                 >
                   <RichText text={msg.text} />
+                  {msg.showDownloadCta && (
+                    <DownloadAppForAICta language={language} accentColor="amber" />
+                  )}
                 </div>
               </div>
             ))}

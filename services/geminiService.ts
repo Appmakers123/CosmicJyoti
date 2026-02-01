@@ -3,6 +3,8 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey } from "./perplexityService";
+import { askRishiFromBackend } from "./backendService";
+import { askRishiFromFirebase, hasFirebaseConfig } from "./firebaseService";
 
 // Gemini API key (single key only - no fallback)
 const GEMINI_API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
@@ -2202,8 +2204,30 @@ export const createChatSession = (language: Language, context?: string, persona:
 };
 
 export const askRishiWithFallback = async (prompt: string, language: Language, context?: string, persona: AstrologerPersona = 'general') => {
+    // 1. Try Firebase callable first (works in production - no CORS)
+    if (hasFirebaseConfig()) {
+        try {
+            return await askRishiFromFirebase(prompt, language, context, persona);
+        } catch (firebaseErr: any) {
+            if (!firebaseErr?.message?.includes('Firebase not configured')) {
+                throw firebaseErr;
+            }
+        }
+    }
+
+    // 2. Try backend proxy (Render, etc.)
     try {
-        return await (async () => {
+        return await askRishiFromBackend(prompt, language, context, persona);
+    } catch (backendErr: any) {
+        if (backendErr?.message?.includes('Backend not available') || backendErr?.message?.includes('Failed to fetch')) {
+            // Fall through to direct call (may fail with CORS in production)
+        } else {
+            throw backendErr;
+        }
+    }
+
+    // 3. Fallback: direct Gemini call (works locally, may fail with CORS in production)
+    try {
         const ai = getAI();
         const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
         const personaPrompt = PERSONA_PROMPTS[persona];
@@ -2222,8 +2246,6 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
                 uri: chunk.web?.uri || "#"
             })) || []
         };
-            }
-        )();
     } catch (e) {
         return { text: "The stars are silent. Even the internet cannot reach them right now.", sources: [] };
     }

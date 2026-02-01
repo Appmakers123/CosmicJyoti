@@ -14,6 +14,8 @@ export { TabButton } from './TabButton';
 export { StatusBadge } from './StatusBadge';
 export { NumberCard } from './NumberCard';
 export { default as SaveShareBar } from './SaveShareBar';
+export { default as ConnectAstrologerCta } from './ConnectAstrologerCta';
+export { default as DownloadAppForAICta } from './DownloadAppForAICta';
 
 // Also export defaults for backward compatibility
 export { default as InfoCardDefault } from './InfoCard';

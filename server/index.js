@@ -316,6 +316,48 @@ app.post('/api/ashtakoota', async (req, res) => {
   }
 });
 
+// Ask Rishi (Kundali/Compatibility/Module AI) - Proxy for CORS
+app.post('/api/ask-rishi', async (req, res) => {
+  try {
+    const { prompt, language = 'en', context, persona = 'general' } = req.body;
+
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: 'Missing required field: prompt' });
+    }
+
+    if (!genAI) {
+      return res.status(503).json({ error: 'AI service not configured. API key missing.' });
+    }
+
+    const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi' };
+    const langName = LANGUAGE_NAMES[language] || 'English';
+    const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
+    const PERSONA_PROMPTS = {
+      general: 'You are Rishi, the CosmicJyoti Sage—a holistic guide for life, spirituality, and cosmic wisdom.',
+      career: 'You are the Career Sage—specializing in career, business, job changes, success, and professional growth.',
+      love: 'You are the Love Guide—specializing in relationships, compatibility, marriage, romance, and emotional connections.',
+      health: 'You are the Health Advisor—specializing in Vedic health, doshas, wellness, and preventive care.',
+    };
+    const personaPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.general;
+    const systemInstruction = `${personaPrompt}
+
+You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like guidance.
+IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
+${contextInfo}`;
+
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const fullPrompt = `${systemInstruction}\n\n---\n\n${context ? 'Context: ' + context + '\n\n' : ''}User: ${prompt}`;
+    const result = await model.generateContent(fullPrompt);
+    const response = result.response;
+    const text = response?.text?.() || 'The cosmic library is currently undergoing maintenance. Please try again soon.';
+
+    res.json({ text, sources: [] });
+  } catch (error) {
+    console.error('Ask Rishi API error:', error);
+    res.status(500).json({ error: error.message || 'Failed to get AI response' });
+  }
+});
+
 // Tarot Card Reading
 app.post('/api/tarot', async (req, res) => {
   try {

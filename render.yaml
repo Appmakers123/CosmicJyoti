@@ -1,0 +1,14 @@
+# Render.com Blueprint - CosmicJyoti Backend API
+# Uses Dockerfile to deploy only server (no Vite/Rollup)
+services:
+  - type: web
+    name: cosmicjyoti-api
+    runtime: docker
+    dockerfilePath: server/Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Language, User, AppViewMode } from '../types';
+import { PLAY_STORE_URL } from '../constants';
+import { getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -121,6 +123,19 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Download App - only show on web (not in native app) */}
+          {!isCapacitor() && (
+            <div className="space-y-2">
+              <a
+                {...getExternalLinkProps(PLAY_STORE_URL, language)}
+                className="flex items-center gap-4 w-full min-h-[56px] px-4 py-3 rounded-xl bg-gradient-to-r from-amber-600/30 to-orange-600/30 hover:from-amber-600/50 hover:to-orange-600/50 border-2 border-amber-500/50 text-amber-200 font-bold transition-all touch-manipulation active:scale-[0.99]"
+              >
+                <span className="text-2xl">📱</span>
+                <span>{language === 'hi' ? 'ऐप डाउनलोड करें' : 'Download App'}</span>
+              </a>
+            </div>
+          )}
 
           {/* Profile */}
           <div className="space-y-2">

@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Language } from '../types';
 import Logo from './Logo';
 import { BackButton } from './common';
-import { openExternalLink } from '../utils/linkHandler';
+import { openExternalLink, getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
+import { PLAY_STORE_URL } from '../constants';
 
 const WHATSAPP_NUMBER = '919326715739';
 const WHATSAPP_URL_MAX_LEN = 2000; // Approx limit for wa.me?text=
@@ -226,6 +227,15 @@ const BookAppointment: React.FC<BookAppointmentProps> = ({ language, onBack }) =
         <p className="text-slate-400 text-sm mt-2">
           {language === 'hi' ? 'Google Meet पर विशेषज्ञ से मिलें। सत्र के दौरान भुगतान।' : 'Meet our expert via Google Meet. Pay during the session.'}
         </p>
+        {!isCapacitor() && (
+          <a
+            {...getExternalLinkProps(PLAY_STORE_URL, language)}
+            className="inline-flex items-center gap-2 mt-3 text-amber-400 hover:text-amber-300 text-sm font-medium transition-colors"
+          >
+            <span>📱</span>
+            {language === 'hi' ? 'ऐप में भी उपलब्ध' : 'Also available in our app'}
+          </a>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

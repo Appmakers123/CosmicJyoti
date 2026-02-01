@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
+import AdBanner from './AdBanner';
 
 interface AdWatchModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ interface AdWatchModalProps {
  * Modal that shows a rewarded ad. On success (user watches full ad), calls onSuccess.
  * Tries rewarded ad first, falls back to interstitial if rewarded fails.
  */
+const WEB_AD_VIEW_SECONDS = 8;
+
 const AdWatchModal: React.FC<AdWatchModalProps> = ({
   isOpen,
   onClose,
@@ -31,6 +34,10 @@ const AdWatchModal: React.FC<AdWatchModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showContinueAnyway, setShowContinueAnyway] = useState(false);
+  const [webCountdown, setWebCountdown] = useState(WEB_AD_VIEW_SECONDS);
+  const [webCanContinue, setWebCanContinue] = useState(false);
+
+  const onWeb = !isCapacitor();
 
   useEffect(() => {
     if (isOpen && isCapacitor()) {
@@ -38,6 +45,24 @@ const AdWatchModal: React.FC<AdWatchModalProps> = ({
       setShowContinueAnyway(false);
     }
   }, [isOpen]);
+
+  // Web: countdown timer for AdSense view
+  useEffect(() => {
+    if (!isOpen || !onWeb) return;
+    setWebCanContinue(false);
+    setWebCountdown(WEB_AD_VIEW_SECONDS);
+    const id = setInterval(() => {
+      setWebCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(id);
+          setWebCanContinue(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isOpen, onWeb]);
 
   const loadRewardedWithRetry = async (maxRetries = 3): Promise<boolean> => {
     for (let i = 0; i < maxRetries; i++) {
@@ -141,6 +166,59 @@ const AdWatchModal: React.FC<AdWatchModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Web: show AdSense ad with countdown, then enable Continue
+  if (onWeb) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in">
+        <div className="bg-slate-800 border border-amber-500/30 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl">
+          <div className="text-center mb-4">
+            <div className="text-5xl mb-4">📺</div>
+            <h2 className="text-2xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500 mb-2">
+              {title || (language === 'hi' ? 'विज्ञापन देखें' : 'Watch Ad')}
+            </h2>
+            <p className="text-slate-400 text-sm">
+              {description || (language === 'hi' 
+                ? 'नीचे विज्ञापन देखें और पुरस्कार प्राप्त करें' 
+                : 'View the ad below to receive your reward')}
+            </p>
+            {rewardDescription && (
+              <p className="text-amber-400 text-sm mt-2 font-medium">{rewardDescription}</p>
+            )}
+          </div>
+
+          <div className="my-4 min-h-[100px] rounded-xl overflow-hidden bg-slate-900/50">
+            <AdBanner variant="display" className="!my-0" />
+          </div>
+
+          <p className="text-slate-500 text-xs text-center mb-4">
+            {webCanContinue
+              ? (language === 'hi' ? 'अब जारी रखें' : 'You can continue now')
+              : (language === 'hi' 
+                ? `कृपया विज्ञापन देखें... ${webCountdown} सेकंड शेष`
+                : `Please view the ad... ${webCountdown} seconds remaining`)}
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { onSuccess(); onClose(); }}
+              disabled={!webCanContinue}
+              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 px-4 rounded-lg hover:from-blue-400 hover:to-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {language === 'hi' ? 'जारी रखें' : 'Continue'}
+            </button>
+            <button
+              onClick={onClose}
+              className="px-6 py-3 border border-slate-600 text-slate-300 rounded-lg hover:border-slate-500 hover:text-white transition-all"
+            >
+              {language === 'hi' ? 'रद्द' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Capacitor: AdMob rewarded/interstitial flow
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-md animate-fade-in">
       <div className="bg-slate-800 border border-amber-500/30 rounded-2xl p-6 md:p-8 max-w-md w-full shadow-2xl">

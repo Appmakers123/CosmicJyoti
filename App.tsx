@@ -56,6 +56,7 @@ import { getGlobalProfile } from './utils/profileStorageService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import OfflineBanner from './components/OfflineBanner';
 import AppDownloadModal from './components/AppDownloadModal';
+import AdWatchModal from './components/AdWatchModal';
 
 // Type-safe conditional import for Capacitor App plugin
 type CapacitorAppType = {
@@ -166,6 +167,9 @@ const App: React.FC = () => {
   const [chatRefreshKey, setChatRefreshKey] = useState(0);
   const [showKarmaStore, setShowKarmaStore] = useState(false);
   const [karmaBalance, setKarmaBalance] = useState(0);
+  const [showAdWatchModal, setShowAdWatchModal] = useState(false);
+  const [adWatchPurpose, setAdWatchPurpose] = useState<'karma' | 'chat' | 'premium' | null>(null);
+  const [adWatchFeature, setAdWatchFeature] = useState<string | null>(null);
   
   // AdMob interstitial ad tracking
   const lastAdShownTime = React.useRef<number>(0);
@@ -620,10 +624,10 @@ const App: React.FC = () => {
 
   const handleFeatureClick = (target: string) => {
     const mode = target as AppViewMode;
-    if (['tarot', 'palm-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode) && isCapacitor()) {
-      unlockFeature(mode);
-      switchMode(mode);
-      showInterstitialDelayed(4000);
+    if (['tarot', 'palm-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode)) {
+      setAdWatchPurpose('premium');
+      setAdWatchFeature(mode);
+      setShowAdWatchModal(true);
       return;
     }
     switchMode(mode);
@@ -688,10 +692,10 @@ const App: React.FC = () => {
         currentMode={mode}
         onNavigate={(m) => {
           setHamburgerOpen(false);
-          if (['tarot', 'palm-reading', 'numerology'].includes(m) && !isFeatureUnlocked(m) && isCapacitor()) {
-            unlockFeature(m);
-            switchMode(m);
-            showInterstitialDelayed(4000);
+          if (['tarot', 'palm-reading', 'numerology'].includes(m) && !isFeatureUnlocked(m)) {
+            setAdWatchPurpose('premium');
+            setAdWatchFeature(m);
+            setShowAdWatchModal(true);
             return;
           }
           switchMode(m);
@@ -720,13 +724,42 @@ const App: React.FC = () => {
           onEarnKarma={(amt) => { addKarma(amt); setKarmaBalance(getKarma()); }}
           onWatchAd={() => {
             setShowKarmaStore(false);
-            addKarma(2);
-            setKarmaBalance(getKarma());
-            if (isCapacitor()) showInterstitialDelayed(1500);
+            setAdWatchPurpose('karma');
+            setShowAdWatchModal(true);
           }}
           onClose={() => setShowKarmaStore(false)}
         />
       )}
+      <AdWatchModal
+        isOpen={showAdWatchModal}
+        onClose={() => { setShowAdWatchModal(false); setAdWatchPurpose(null); setAdWatchFeature(null); }}
+        onSuccess={() => {
+          if (adWatchPurpose === 'karma') {
+            addKarma(2);
+            setKarmaBalance(getKarma());
+            if (isCapacitor()) showInterstitialDelayed(1500);
+          } else if (adWatchPurpose === 'chat') {
+            addBonusMessages(5);
+            setChatRefreshKey(k => k + 1);
+            if (isCapacitor()) showInterstitialDelayed(2000);
+          } else if (adWatchPurpose === 'premium' && adWatchFeature) {
+            unlockFeature(adWatchFeature);
+            switchMode(adWatchFeature as AppViewMode);
+            if (isCapacitor()) showInterstitialDelayed(4000);
+          }
+          setShowAdWatchModal(false);
+          setAdWatchPurpose(null);
+          setAdWatchFeature(null);
+        }}
+        language={language}
+        rewardDescription={adWatchPurpose === 'karma' 
+          ? (language === 'hi' ? '+2 कर्मा अर्जित करें' : 'Earn +2 Karma')
+          : adWatchPurpose === 'chat'
+            ? (language === 'hi' ? '+5 अतिरिक्त संदेश' : '+5 bonus messages')
+            : adWatchPurpose === 'premium'
+              ? (language === 'hi' ? '5 मिनट के लिए प्रीमियम सुविधा अनलॉक' : 'Unlock premium feature for 5 minutes')
+              : undefined}
+      />
       <ChatWidget 
         language={language} 
         context={kundaliData} 
@@ -735,9 +768,8 @@ const App: React.FC = () => {
         onOpenStore={() => setShowKarmaStore(true)} 
         isPremium={false}
         onWatchAdForChat={() => {
-          addBonusMessages(5);
-          setChatRefreshKey(k => k + 1);
-          if (isCapacitor()) showInterstitialDelayed(2000);
+          setAdWatchPurpose('chat');
+          setShowAdWatchModal(true);
         }}
         refreshTrigger={chatRefreshKey}
       />

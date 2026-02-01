@@ -5,6 +5,7 @@ import { Language } from '../types';
 import { generateAstroQuiz, generateAstroRiddles } from '../services/geminiService';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 import { ZODIAC_SIGNS, PLANETS_INFO } from '../constants';
+import AdBanner from './AdBanner';
 
 interface AstroGamesProps {
   language: Language;
@@ -231,6 +232,7 @@ const AstroGames: React.FC<AstroGamesProps> = ({ language }) => {
                         <p className="text-indigo-300 font-serif uppercase tracking-widest text-xs animate-pulse">Summoning the Oracle...</p>
                     </div>
                 )}
+                {!loading && <AdBanner variant="in-feed" className="col-span-full mt-6" />}
             </div>
         )}
 

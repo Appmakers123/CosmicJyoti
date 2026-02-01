@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import { generateMantraAudio } from '../services/geminiService';
+import AdBanner from './AdBanner';
 
 interface Mantra {
   id: string;
@@ -920,6 +921,7 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
             </div>
         </div>
 
+        <AdBanner variant="display" className="mt-12" />
         <div className="mt-20 pt-10 border-t border-white/5 w-full text-center">
             <p className="text-[10px] text-slate-700 uppercase tracking-[1em] leading-relaxed">
                 Celestial Bio-Geometry • Waveform Alchemy

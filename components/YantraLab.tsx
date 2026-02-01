@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface Yantra {
   id: string;
@@ -378,6 +379,7 @@ const YantraLab: React.FC<{ language: Language }> = ({ language }) => {
           </div>
         </div>
 
+        <AdBanner variant="display" className="mt-12" />
         <div className="mt-12 sm:mt-20 pt-6 sm:pt-10 border-t border-white/5 w-full text-center">
           <p className="text-[9px] sm:text-[10px] text-slate-700 uppercase tracking-[0.8em] sm:tracking-[1em] leading-relaxed px-4">
             {language === 'hi' ? 'दिव्य ज्यामिति • ऊर्जा पोर्टल' : 'Sacred Geometry • Energy Portals'}

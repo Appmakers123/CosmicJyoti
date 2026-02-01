@@ -142,12 +142,16 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
     );
   }
 
+  // Shared wrapper styles for UX - generous spacing, subtle label
+  const adWrapperClass = 'flex justify-center my-6 md:my-8 py-2';
+  const adLabelClass = 'absolute top-1.5 right-2 text-[9px] text-slate-600 uppercase tracking-widest';
+
   // Multiplex ad - grid/carousel style
   if (variant === 'multiplex') {
     return (
-      <div className={`flex justify-center my-4 md:my-6 ${className}`} role="complementary" aria-label="Advertisement">
-        <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-lg min-h-[200px] flex items-center justify-center relative overflow-hidden">
-          <span className="absolute top-1 right-2 text-[10px] text-slate-600 uppercase tracking-wider">Advertisement</span>
+      <div className={`${adWrapperClass} ${className}`} role="complementary" aria-label="Advertisement">
+        <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-xl min-h-[200px] flex items-center justify-center relative overflow-hidden border border-slate-700/30">
+          <span className={adLabelClass}>Ad</span>
           <ins
             ref={adRef}
             className="adsbygoogle"
@@ -164,9 +168,9 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
   // In-feed ad
   if (variant === 'in-feed') {
     return (
-      <div className={`flex justify-center my-4 md:my-6 ${className}`} role="complementary" aria-label="Advertisement">
-        <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-lg min-h-[90px] flex items-center justify-center relative overflow-hidden">
-          <span className="absolute top-1 right-2 text-[10px] text-slate-600 uppercase tracking-wider">Advertisement</span>
+      <div className={`${adWrapperClass} ${className}`} role="complementary" aria-label="Advertisement">
+        <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-xl min-h-[90px] flex items-center justify-center relative overflow-hidden border border-slate-700/30">
+          <span className={adLabelClass}>Ad</span>
           <ins
             ref={adRef}
             className="adsbygoogle"
@@ -184,9 +188,9 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
   // In-article ad - for content-heavy pages
   if (variant === 'in-article') {
     return (
-      <div className={`flex justify-center my-6 md:my-8 ${className}`} role="complementary" aria-label="Advertisement">
-        <div className="w-full max-w-[800px] bg-slate-800/20 rounded-lg min-h-[250px] flex items-center justify-center relative overflow-hidden" style={{ textAlign: 'center' }}>
-          <span className="absolute top-1 right-2 text-[10px] text-slate-600 uppercase tracking-wider">Advertisement</span>
+      <div className={`${adWrapperClass} ${className}`} role="complementary" aria-label="Advertisement">
+        <div className="w-full max-w-[800px] bg-slate-800/20 rounded-xl min-h-[250px] flex items-center justify-center relative overflow-hidden border border-slate-700/30" style={{ textAlign: 'center' }}>
+          <span className={adLabelClass}>Ad</span>
           <ins
             ref={adRef}
             className="adsbygoogle"
@@ -203,9 +207,9 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
 
   // Display / leaderboard / box - responsive unit
   return (
-    <div className={`flex justify-center my-4 md:my-6 ${className}`} role="complementary" aria-label="Advertisement">
-      <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-lg min-h-[90px] md:min-h-[100px] flex items-center justify-center text-center relative overflow-hidden">
-        <span className="absolute top-1 right-2 text-[10px] text-slate-600 uppercase tracking-wider">Advertisement</span>
+    <div className={`${adWrapperClass} ${className}`} role="complementary" aria-label="Advertisement">
+      <div className="w-full max-w-[1200px] bg-slate-800/20 rounded-xl min-h-[90px] md:min-h-[100px] flex items-center justify-center text-center relative overflow-hidden border border-slate-700/30">
+        <span className={adLabelClass}>Ad</span>
         <ins
           ref={adRef}
           className="adsbygoogle"

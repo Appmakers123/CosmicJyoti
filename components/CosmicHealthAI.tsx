@@ -4,6 +4,7 @@ import { Language } from '../types';
 import { getGlobalProfile } from '../utils/profileStorageService';
 import { generateChartBasedHealthAnalysis, HealthRemedy, ChartHealthAnalysis } from '../services/healthService';
 import Logo from './Logo';
+import AdBanner from './AdBanner';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 interface CosmicHealthAIProps {
@@ -327,6 +328,8 @@ const CosmicHealthAI: React.FC<CosmicHealthAIProps> = ({ language }) => {
               )}
             </div>
           )}
+
+          <AdBanner variant="in-article" className="my-8" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {!healthAnalysis || healthAnalysis.remedies.length === 0 ? (

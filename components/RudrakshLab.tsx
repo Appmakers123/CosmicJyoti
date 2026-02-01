@@ -5,6 +5,7 @@ import { generateRudrakshAdvice } from '../services/geminiService';
 import { useTranslation } from '../utils/translations';
 import { getExternalLinkProps } from '../utils/linkHandler';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 interface Mukhi {
     num: string;
@@ -504,13 +505,16 @@ const RudrakshLab: React.FC<{ language: Language }> = ({ language }) => {
         </div>
 
         {advice && (
-            <div className="mt-12 bg-slate-900/90 p-8 rounded-[2.5rem] border border-orange-500/20 shadow-inner animate-fade-in-up">
-                <h3 className="text-xl font-serif text-orange-200 mb-6 flex items-center gap-3">
-                    <span className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-900/30 text-lg">✨</span>
-                    {t.remedyAlignment}
-                </h3>
-                <RichText text={advice} className="text-slate-300 leading-relaxed font-light" />
-            </div>
+            <>
+                <div className="mt-12 bg-slate-900/90 p-8 rounded-[2.5rem] border border-orange-500/20 shadow-inner animate-fade-in-up">
+                    <h3 className="text-xl font-serif text-orange-200 mb-6 flex items-center gap-3">
+                        <span className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-900/30 text-lg">✨</span>
+                        {t.remedyAlignment}
+                    </h3>
+                    <RichText text={advice} className="text-slate-300 leading-relaxed font-light" />
+                </div>
+                <AdBanner variant="display" className="mt-8" />
+            </>
         )}
 
         {/* Buy Rudraksh Section */}

@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react';
 import { generateVastuAnalysis } from '../services/geminiService';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 const DIRECTIONS = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"];
 const ROOMS = ["Entrance", "Kitchen", "Bedroom", "Pooja Room", "Living Room", "Toilet", "Study", "Balcony"];
@@ -51,9 +51,12 @@ const VastuLab: React.FC<{ language: Language }> = ({ language }) => {
         </button>
 
         {analysis && (
-          <div className="mt-10 bg-slate-900/60 p-8 rounded-2xl border border-emerald-500/20 animate-fade-in">
-            <RichText text={analysis} />
-          </div>
+          <>
+            <div className="mt-10 bg-slate-900/60 p-8 rounded-2xl border border-emerald-500/20 animate-fade-in">
+              <RichText text={analysis} />
+            </div>
+            <AdBanner variant="display" className="mt-8" />
+          </>
         )}
       </div>
     </div>

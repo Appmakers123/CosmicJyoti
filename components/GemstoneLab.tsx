@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { generateGemstoneAdvice } from '../services/geminiService';
 import { Language } from '../types';
 import { PLANETS_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 const PROBLEMS = ["Financial Growth", "Health & Vitality", "Love & Relationships", "Mental Peace", "Career Success", "Spiritual Growth"];
 
@@ -51,9 +51,12 @@ const GemstoneLab: React.FC<{ language: Language }> = ({ language }) => {
         </button>
 
         {advice && (
-          <div className="mt-10 bg-slate-900/60 p-8 rounded-2xl border border-cyan-500/20 animate-fade-in">
-            <RichText text={advice} />
-          </div>
+          <>
+            <div className="mt-10 bg-slate-900/60 p-8 rounded-2xl border border-cyan-500/20 animate-fade-in">
+              <RichText text={advice} />
+            </div>
+            <AdBanner variant="display" className="mt-8" />
+          </>
         )}
       </div>
     </div>

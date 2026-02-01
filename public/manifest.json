@@ -1,0 +1,30 @@
+
+{
+  "short_name": "CosmicJyoti",
+  "name": "CosmicJyoti: Free Kundali, Horoscope & Vedic AI Astrology",
+  "description": "Free Kundali, daily horoscope, marriage match, Panchang, Muhurat & AI astrology. Vedic birth chart, Numerology, Tarot, Nakshatra, Palmistry in English & Hindi.",
+  "icons": [
+    {
+      "src": "app-logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "app-logo.png",
+      "sizes": "64x64",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#020617",
+  "background_color": "#020617",
+  "scope": "/",
+  "categories": ["lifestyle", "education", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
+  "prefer_related_applications": false
+}

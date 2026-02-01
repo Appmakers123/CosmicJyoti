@@ -1,0 +1,1140 @@
+
+import React, { useState, useCallback, useEffect } from 'react';
+import StarBackground from './components/StarBackground';
+import ZodiacGrid from './components/ZodiacGrid';
+import HoroscopeCard from './components/HoroscopeCard';
+import KundaliForm from './components/KundaliForm';
+import KundaliResult from './components/KundaliResult';
+import DailyPanchang from './components/DailyPanchang';
+import Numerology from './components/Numerology'; 
+import LearningCenter from './components/LearningCenter';
+import PlanetsHouses from './components/PlanetsHouses';
+import ZodiacSignsGuide from './components/ZodiacSignsGuide';
+import NakshatraLibrary from './components/NakshatraLibrary';
+import KundaliBasics from './components/KundaliBasics';
+// Removed lazy loading for better performance - load immediately
+import PalmistryGuide from './components/PalmistryGuide';
+import NumerologyGuide from './components/NumerologyGuide';
+import StarLegends from './components/StarLegends'; 
+import CompatibilityTab from './components/CompatibilityTab'; 
+import TarotReading from './components/TarotReading'; 
+import AstroGames from './components/AstroGames';
+import ChatWidget from './components/ChatWidget'; 
+import PalmReading from './components/PalmReading';
+import VastuLab from './components/VastuLab';
+import GemstoneLab from './components/GemstoneLab';
+import DreamInterpreter from './components/DreamInterpreter';
+import MantraLab from './components/MantraLab';
+import RudrakshLab from './components/RudrakshLab';
+import YantraLab from './components/YantraLab';
+import CosmicHealthAI from './components/CosmicHealthAI';
+import BookAppointment from './components/BookAppointment';
+import NotificationToggle from './components/NotificationToggle';
+import UserProfileModal from './components/UserProfileModal';
+import Logo from './components/Logo';
+import ThoughtOfTheDay from './components/ThoughtOfTheDay';
+import DailyDoDonts from './components/DailyDoDonts';
+import DailyLuckScore from './components/DailyLuckScore';
+import PremiumFeatureCard from './components/PremiumFeatureCard';
+import AdBanner from './components/AdBanner';
+import HamburgerMenu from './components/HamburgerMenu';
+import KarmaStore from './components/KarmaStore';
+import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, ViewMode, AppViewMode, User } from './types';
+import { ZODIAC_SIGNS } from './constants';
+import { generateHoroscope, generateKundali, generateDailyPanchang } from './services/geminiService';
+import { generatePersonalizedDailyForecast } from './services/perplexityService';
+import { useTranslation } from './utils/translations';
+import { setErrorSafely } from './utils/errorHandler';
+import { getExternalLinkProps, openExternalLink } from './utils/linkHandler';
+import { isCapacitor } from './utils/linkHandler';
+import admobService from './services/admobService';
+import { addBonusMessages } from './utils/chatLimitService';
+import { addKarma, getKarma } from './utils/karmaService';
+import { unlockFeature, isFeatureUnlocked } from './utils/adUnlockService';
+import { getReportByForm, saveReport, listReports, getReport, deleteReport } from './utils/reportStorageService';
+import { getGlobalProfile } from './utils/profileStorageService';
+import { useNetworkStatus } from './utils/useNetworkStatus';
+import OfflineBanner from './components/OfflineBanner';
+
+// Type-safe conditional import for Capacitor App plugin
+type CapacitorAppType = {
+  exitApp: () => Promise<void>;
+  addListener: (event: string, handler: () => void) => Promise<{ remove: () => Promise<void> }>;
+};
+
+// Categorized modules for user-friendly hub
+type ModuleDef = { mode: AppViewMode; labelEn: string; labelHi: string; icon: string; descEn: string; descHi: string; isPremium: boolean };
+type CategoryDef = { id: string; labelEn: string; labelHi: string; icon: string; color: string; modules: ModuleDef[] };
+
+const MODULE_CATEGORIES: CategoryDef[] = [
+  {
+    id: 'popular',
+    labelEn: 'Popular',
+    labelHi: 'लोकप्रिय',
+    icon: '⭐',
+    color: 'from-amber-500/20 to-orange-500/10',
+    modules: [
+      { mode: 'kundali', labelEn: 'Birth Chart', labelHi: 'जन्म कुंडली', icon: '🧭', descEn: 'Your cosmic blueprint', descHi: 'आपका आकाशीय नक्शा', isPremium: false },
+      { mode: 'daily', labelEn: 'Horoscope', labelHi: 'राशिफल', icon: '🌞', descEn: 'Today\'s predictions', descHi: 'आज का भविष्य', isPremium: false },
+      { mode: 'panchang', labelEn: 'Panchang', labelHi: 'पंचांग', icon: '📅', descEn: 'Celestial almanac', descHi: 'दैनिक पंचांग', isPremium: false },
+      { mode: 'compatibility', labelEn: 'Compatibility', labelHi: 'कुंडली मिलान', icon: '❤️', descEn: 'Match & harmony', descHi: 'मिलान और सामंजस्य', isPremium: false },
+    ],
+  },
+  {
+    id: 'readings',
+    labelEn: 'Readings & Divination',
+    labelHi: 'पाठ और भविष्यवाणी',
+    icon: '🔮',
+    color: 'from-purple-500/20 to-indigo-500/10',
+    modules: [
+      { mode: 'tarot', labelEn: 'Tarot', labelHi: 'टैरो', icon: '🃏', descEn: 'Card readings', descHi: 'कार्ड पाठ', isPremium: true },
+      { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'Hand reading', descHi: 'हाथ पढ़ना', isPremium: true },
+      { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false },
+      { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true },
+    ],
+  },
+  {
+    id: 'remedies',
+    labelEn: 'Remedies & Healing',
+    labelHi: 'उपाय और उपचार',
+    icon: '🕉️',
+    color: 'from-emerald-500/20 to-teal-500/10',
+    modules: [
+      { mode: 'mantra', labelEn: 'Mantra', labelHi: 'मंत्र', icon: '🕉️', descEn: 'Sacred chants', descHi: 'पवित्र मंत्र', isPremium: false },
+      { mode: 'gemstones', labelEn: 'Gemstones', labelHi: 'रत्न शास्त्र', icon: '💎', descEn: 'Planetary gems', descHi: 'ग्रह रत्न', isPremium: false },
+      { mode: 'vastu', labelEn: 'Vastu', labelHi: 'वास्तु', icon: '🏠', descEn: 'Sacred space', descHi: 'पवित्र स्थान', isPremium: false },
+      { mode: 'rudraksh', labelEn: 'Rudraksh', labelHi: 'रुद्राक्ष', icon: '📿', descEn: 'Sacred beads', descHi: 'पवित्र माला', isPremium: false },
+      { mode: 'yantra', labelEn: 'Yantra', labelHi: 'यंत्र', icon: '🔺', descEn: 'Sacred geometry', descHi: 'पवित्र ज्यामिति', isPremium: false },
+      { mode: 'cosmic-health', labelEn: 'Cosmic Health', labelHi: 'कॉस्मिक हेल्थ', icon: '🏥', descEn: 'Vedic wellness', descHi: 'वैदिक स्वास्थ्य', isPremium: false },
+    ],
+  },
+  {
+    id: 'learn',
+    labelEn: 'Learn Astrology',
+    labelHi: 'ज्योतिष सीखें',
+    icon: '📚',
+    color: 'from-blue-500/20 to-cyan-500/10',
+    modules: [
+      { mode: 'learning', labelEn: 'Learning Center', labelHi: 'गुरुकुल', icon: '📚', descEn: 'Master the basics', descHi: 'मूल बातें सीखें', isPremium: false },
+      { mode: 'kundali-basics', labelEn: 'Kundali Basics', labelHi: 'कुंडली मूल', icon: '📖', descEn: 'Chart fundamentals', descHi: 'चार्ट मूल', isPremium: false },
+      { mode: 'planets-houses', labelEn: 'Planets & Houses', labelHi: 'ग्रह और भाव', icon: '🪐', descEn: 'Planetary wisdom', descHi: 'ग्रह ज्ञान', isPremium: false },
+      { mode: 'zodiac-signs', labelEn: 'Zodiac Signs', labelHi: 'राशि चक्र', icon: '♈', descEn: '12 signs guide', descHi: '12 राशि गाइड', isPremium: false },
+      { mode: 'nakshatra-library', labelEn: 'Nakshatra', labelHi: 'नक्षत्र', icon: '✨', descEn: '27 lunar mansions', descHi: '27 चंद्र निवास', isPremium: false },
+      { mode: 'palmistry-guide', labelEn: 'Palmistry Guide', labelHi: 'हस्तरेखा गाइड', icon: '✋', descEn: 'Hand lines', descHi: 'हाथ की रेखाएं', isPremium: false },
+      { mode: 'numerology-guide', labelEn: 'Numerology Guide', labelHi: 'अंक गाइड', icon: '🔢', descEn: 'Number meanings', descHi: 'अंक अर्थ', isPremium: false },
+      { mode: 'star-legends', labelEn: 'Star Legends', labelHi: 'तारा कथाएं', icon: '🌟', descEn: 'Cosmic stories', descHi: 'आकाशीय कथाएं', isPremium: false },
+    ],
+  },
+  {
+    id: 'explore',
+    labelEn: 'Explore & Fun',
+    labelHi: 'खोजें और मस्ती',
+    icon: '🎲',
+    color: 'from-pink-500/20 to-rose-500/10',
+    modules: [
+      { mode: 'games', labelEn: 'Astro Games', labelHi: 'पहेलियाँ', icon: '🎲', descEn: 'Play & learn', descHi: 'खेलें और सीखें', isPremium: false },
+    ],
+  },
+  {
+    id: 'services',
+    labelEn: 'Services',
+    labelHi: 'सेवाएं',
+    icon: '📅',
+    color: 'from-amber-500/20 to-yellow-500/10',
+    modules: [
+      { mode: 'appointment', labelEn: 'Book Appointment', labelHi: 'अपॉइंटमेंट बुक करें', icon: '📅', descEn: 'Google Meet consultation', descHi: 'Google Meet परामर्श', isPremium: false },
+    ],
+  },
+];
+
+const App: React.FC = () => {
+  const isOnline = useNetworkStatus();
+  const [mode, setMode] = useState<AppViewMode>('hub');
+  const [hamburgerOpen, setHamburgerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFocused, setSearchFocused] = useState(false);
+  const modeHistoryRef = React.useRef<AppViewMode[]>(['hub']);
+  const isPopStateRef = React.useRef(false);
+
+  const [language, setLanguage] = useState<Language>('en');
+  const t = useTranslation(language);
+  const [user, setUser] = useState<User | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  
+  // Monetization: subscription + ads for free tier
+  const [chatRefreshKey, setChatRefreshKey] = useState(0);
+  const [showKarmaStore, setShowKarmaStore] = useState(false);
+  const [karmaBalance, setKarmaBalance] = useState(0);
+  
+  // AdMob interstitial ad tracking
+  const lastAdShownTime = React.useRef<number>(0);
+
+  // Store current mode for external link restoration
+  useEffect(() => {
+    (window as any).__cosmicjyoti_current_mode = mode;
+  }, [mode]);
+
+  
+  // Sync karma balance from storage
+  useEffect(() => {
+    setKarmaBalance(getKarma());
+  }, [showKarmaStore]);
+
+  // Check for existing user session on app start
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      // Check localStorage for stored user
+      const storedUser = localStorage.getItem('cosmicjyoti_user');
+      if (storedUser) {
+        try {
+          const user = JSON.parse(storedUser) as User;
+          setUser(user);
+        } catch (e) {
+          console.warn('[Auth] Failed to parse stored user:', e);
+        }
+      }
+    };
+
+    checkExistingSession();
+  }, []);
+
+  // Initialize and preload AdMob ads on app start (Android only)
+  useEffect(() => {
+    if (!isCapacitor()) return;
+    const loadAdsAfterDelay = () => {
+      setTimeout(() => admobService.preloadAd().catch(() => {}), 3000);
+      setTimeout(() => admobService.loadRewarded().catch(() => {}), 3500);
+      setTimeout(() => {
+        admobService.loadBanner().then(() => admobService.showBanner()).catch(() => {});
+      }, 4000);
+    };
+    loadAdsAfterDelay();
+  }, []);
+
+  // Load Capacitor App plugin for back-button handling (must run before back-button effect)
+  useEffect(() => {
+    if (!isCapacitor() || typeof window === 'undefined') return;
+    try {
+      const parts = ['@capacitor', '/app'];
+      const modulePath = parts.join('');
+      const importFn = new Function('p', 'return import(p)');
+      importFn(modulePath)
+        .then((appModule: any) => {
+          appPluginRef.current = appModule.App as CapacitorAppType;
+          setBackButtonPluginReady(true);
+        })
+        .catch(() => {
+          console.warn('@capacitor/app not available, back button may exit app');
+        });
+    } catch (e) {
+      console.warn('Failed to load @capacitor/app:', e);
+    }
+  }, []);
+
+  
+  // Ref to track mode switch count for AdMob ads
+  const modeSwitchCountRef = React.useRef(0);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const appPluginRef = React.useRef<CapacitorAppType | null>(null);
+  const backButtonListenerRef = React.useRef<{ remove: () => Promise<void> } | null>(null);
+  const [backButtonPluginReady, setBackButtonPluginReady] = useState(false);
+
+  const [selectedSign, setSelectedSign] = useState<ZodiacSignData | null>(null);
+  const [horoscopeData, setHoroscopeData] = useState<HoroscopeResponse | null>(null);
+  const [dailyForecastPersonalizedName, setDailyForecastPersonalizedName] = useState<string | null>(null);
+  const [kundaliData, setKundaliData] = useState<KundaliResponse | null>(null);
+  const [kundaliFormData, setKundaliFormData] = useState<KundaliFormData | null>(null);
+  const [savedKundaliCharts, setSavedKundaliCharts] = useState<KundaliFormData[]>([]);
+  const [panchangData, setPanchangData] = useState<DailyPanchangResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getCachedHoroscope = (signName: string, lang: Language): HoroscopeResponse | null => {
+    const today = new Date().toDateString();
+    const cacheKey = `horoscope_${signName}_${lang}_${today}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try { return JSON.parse(cached); } catch (e) { return null; }
+    }
+    return null;
+  };
+
+  const setCachedHoroscope = (signName: string, lang: Language, data: HoroscopeResponse) => {
+    const today = new Date().toDateString();
+    const cacheKey = `horoscope_${signName}_${lang}_${today}`;
+    localStorage.setItem(cacheKey, JSON.stringify(data));
+  };
+
+  const handleSelectSign = useCallback(async (sign: ZodiacSignData) => {
+    setSelectedSign(sign);
+    setDailyForecastPersonalizedName(null);
+    setMode('daily');
+    const cached = getCachedHoroscope(sign.name, language);
+    if (cached) {
+      setHoroscopeData(cached);
+      return;
+    }
+    setLoading(true);
+    try {
+      const data = await generateHoroscope(sign.name, language);
+      setHoroscopeData(data);
+      setCachedHoroscope(sign.name, language, data);
+    } catch (err) { 
+      setErrorSafely(setError, err, language, 'Horoscope');
+    } finally { setLoading(false); }
+  }, [language, t]);
+
+  const loadSavedKundaliCharts = useCallback(() => {
+    const reports = listReports('kundali');
+    const charts: KundaliFormData[] = reports
+      .filter((m) => m.formInput && typeof m.formInput === 'object')
+      .map((m) => {
+        const f = m.formInput as Record<string, unknown>;
+        return {
+          id: m.id,
+          name: String(f?.name ?? ''),
+          date: String(f?.date ?? ''),
+          time: String(f?.time ?? '12:00'),
+          location: String(f?.location ?? ''),
+        } as KundaliFormData;
+      });
+    setSavedKundaliCharts(charts);
+  }, []);
+
+  useEffect(() => {
+    if (mode === 'kundali' || mode === 'hub') loadSavedKundaliCharts();
+  }, [mode, loadSavedKundaliCharts]);
+
+  const handleLoadChart = useCallback((chart: KundaliFormData) => {
+    const report = chart.id ? getReport<KundaliResponse>(chart.id) : null;
+    if (report?.data) {
+      setKundaliFormData(chart);
+      setKundaliData(report.data);
+      setMode('kundali');
+    }
+  }, []);
+
+  const handleDeleteChart = useCallback((id: string) => {
+    deleteReport(id);
+    loadSavedKundaliCharts();
+    if (kundaliFormData?.id === id) {
+      setKundaliData(null);
+      setKundaliFormData(null);
+    }
+  }, [kundaliFormData?.id, loadSavedKundaliCharts]);
+
+  const handleGetDaily = useCallback(async (chart: KundaliFormData) => {
+    const formInput = { name: chart.name, date: chart.date, time: chart.time, location: chart.location };
+    const report = getReportByForm<KundaliResponse>('kundali', formInput);
+    const data = report?.data;
+    const moonSign = data?.basicDetails?.moonSign;
+    const sign = moonSign ? ZODIAC_SIGNS.find((z) => z.name === moonSign) : null;
+    if (!sign) {
+      setError(language === 'hi' ? 'चंद्र राशि नहीं मिली। पहले कुंडली देखें।' : 'Moon sign not found. View chart first.');
+      return;
+    }
+    const lagna = data?.basicDetails?.ascendant || moonSign;
+    const sunSign = data?.basicDetails?.sunSign || moonSign;
+    const nakshatra = data?.basicDetails?.nakshatra || 'Unknown';
+    setSelectedSign(sign);
+    setDailyForecastPersonalizedName(chart.name);
+    setMode('daily');
+    const cacheKey = `horoscope_personalized_${chart.name}_${lagna}_${moonSign}_${sunSign}_${nakshatra}_${language}_${new Date().toDateString()}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        setHoroscopeData(JSON.parse(cached));
+        return;
+      } catch (e) { /* ignore */ }
+    }
+    setLoading(true);
+    try {
+      const forecast = await generatePersonalizedDailyForecast(
+        {
+          lagna: lagna ?? moonSign ?? '',
+          moonSign: moonSign ?? '',
+          sunSign: sunSign ?? moonSign ?? '',
+          nakshatra: nakshatra ?? 'Unknown',
+          name: chart.name,
+        },
+        language
+      );
+      setHoroscopeData(forecast);
+      localStorage.setItem(cacheKey, JSON.stringify(forecast));
+    } catch (err) {
+      setErrorSafely(setError, err, language, 'Horoscope');
+      setDailyForecastPersonalizedName(null);
+      handleSelectSign(sign);
+    } finally {
+      setLoading(false);
+    }
+  }, [handleSelectSign, language]);
+
+  const handleGenerateKundali = useCallback(async (formData: KundaliFormData, options?: { saveToProfile?: boolean }) => {
+    const saveToProfile = options?.saveToProfile !== false;
+    const formInput = { name: formData.name, date: formData.date, time: formData.time, location: formData.location };
+    if (saveToProfile) {
+      const cached = getReportByForm<KundaliResponse>('kundali', formInput);
+      if (cached?.data) {
+        setKundaliFormData(formData);
+        setKundaliData(cached.data);
+        setMode('kundali');
+        return;
+      }
+    }
+    setKundaliFormData(formData);
+    setLoading(true);
+    try {
+      const data = await generateKundali(formData, language);
+      setKundaliData(data);
+      setMode('kundali');
+      if (saveToProfile) {
+        saveReport('kundali', data, formInput, `Kundali for ${formData.name}`);
+        loadSavedKundaliCharts();
+      }
+      if (isCapacitor()) admobService.showInterstitialDelayed(4500, () => { lastAdShownTime.current = Date.now(); });
+    } catch (err) { 
+      setErrorSafely(setError, err, language, 'Kundali');
+    } finally { setLoading(false); }
+  }, [language, t, loadSavedKundaliCharts]);
+
+  const fetchPanchang = useCallback(async () => {
+      setLoading(true);
+      try {
+          const profile = getGlobalProfile();
+          const location = profile?.self?.location || "New Delhi, India";
+          const today = new Date().toISOString().slice(0, 10);
+          const formInput = { date: today, location };
+          const cached = getReportByForm<DailyPanchangResponse>('panchang', formInput);
+          if (cached?.data) {
+            setPanchangData(cached.data);
+            setMode('panchang');
+            setLoading(false);
+            return;
+          }
+          const data = await generateDailyPanchang(location, language);
+          setPanchangData(data);
+          setMode('panchang');
+          saveReport('panchang', data, formInput, `Panchang ${today}`);
+      } catch (err) { 
+        setErrorSafely(setError, err, language, 'Panchang');
+      } finally { setLoading(false); }
+  }, [language, t]);
+
+  const scrollToTop = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  const switchMode = useCallback((newMode: AppViewMode) => {
+    // Track history for back navigation (push current before navigating)
+    if (newMode !== mode) {
+      modeHistoryRef.current = [...modeHistoryRef.current, mode].slice(-20);
+    }
+    // Reset horoscope state when navigating to daily horoscope from another mode
+    if (newMode === 'daily' && mode !== 'daily') {
+      setSelectedSign(null);
+      setHoroscopeData(null);
+      setDailyForecastPersonalizedName(null);
+    }
+    if (newMode === 'panchang') fetchPanchang();
+    else setMode(newMode);
+    scrollToTop();
+    setError(null);
+    
+    // Track mode switches for AdMob interstitial ads
+    if (newMode !== mode && mode !== 'hub' && isCapacitor()) {
+      modeSwitchCountRef.current += 1;
+      
+      // Show ad after delay so user sees new content first
+      setTimeout(async () => {
+        const now = Date.now();
+        const timeSinceLastAd = now - lastAdShownTime.current;
+        const cooldownPeriod = 4 * 60 * 1000; // 4 minutes cooldown
+        
+        // Show ad every 6+ mode switches, 4 min cooldown
+        if (modeSwitchCountRef.current >= 6 && timeSinceLastAd > 4 * 60 * 1000) {
+          try {
+            const isReady = await admobService.isInterstitialReady();
+            if (!isReady) {
+              // Load ad if not ready
+              await admobService.loadInterstitial();
+              await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for load
+            }
+            await admobService.showInterstitial();
+            lastAdShownTime.current = now;
+            modeSwitchCountRef.current = 0; // Reset counter
+          } catch (error) {
+            console.log('[AdMob] Failed to show interstitial:', error);
+            // Continue anyway - don't block user experience
+          }
+        }
+      }, 500);
+    }
+  }, [mode, fetchPanchang, scrollToTop]);
+
+  // Handle navigation to learning center with specific tab
+  useEffect(() => {
+    const handleNavigateToLearning = (event: CustomEvent) => {
+      const tab = (event as CustomEvent<{ tab: string }>).detail?.tab;
+      setMode('learning');
+      // Store the tab to open in LearningCenter
+      if (tab) {
+        sessionStorage.setItem('learningActiveTab', tab);
+      }
+      scrollToTop();
+    };
+
+    // Handle direct mode switching from components
+    const handleSwitchMode = (event: CustomEvent) => {
+      const newMode = (event as CustomEvent<{ mode: AppViewMode }>).detail?.mode;
+      if (newMode) {
+        switchMode(newMode);
+      }
+    };
+
+    window.addEventListener('navigateToLearning', handleNavigateToLearning as EventListener);
+    window.addEventListener('switchMode', handleSwitchMode as EventListener);
+    return () => {
+      window.removeEventListener('navigateToLearning', handleNavigateToLearning as EventListener);
+      window.removeEventListener('switchMode', handleSwitchMode as EventListener);
+    };
+  }, [switchMode, scrollToTop]);
+
+  const performBackNavigation = useCallback(() => {
+    const history = modeHistoryRef.current;
+    if (mode !== 'hub' && history.length > 0) {
+      const prevMode = history[history.length - 1];
+      modeHistoryRef.current = history.slice(0, -1);
+      if (kundaliData && mode === 'kundali') setKundaliData(null);
+      if (horoscopeData && mode === 'daily') {
+        setHoroscopeData(null);
+        setSelectedSign(null);
+      }
+      if (panchangData && mode === 'panchang') setPanchangData(null);
+      setMode(prevMode);
+      setError(null);
+      scrollToTop();
+    }
+  }, [mode, kundaliData, horoscopeData, panchangData, scrollToTop]);
+
+  // Android back button + browser history back — go to previous screen
+  const handleBackNavigation = useCallback(() => {
+    if (showProfile) {
+      setShowProfile(false);
+      return;
+    }
+    const history = modeHistoryRef.current;
+    if (mode !== 'hub' && history.length > 0) {
+      const isLeavingFreeModule = !['tarot', 'palm-reading', 'numerology', 'cosmic-health', 'games', 'dreams'].includes(mode);
+      if (isCapacitor() && isLeavingFreeModule) {
+        admobService.showInterstitial()
+          .then(() => performBackNavigation())
+          .catch(() => performBackNavigation());
+        return;
+      }
+      performBackNavigation();
+    }
+  }, [mode, showProfile, performBackNavigation]);
+
+  // Push state when navigating so Android/browser back has history
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.history) {
+      window.history.replaceState({ mode: 'hub' }, '', window.location.pathname || '/');
+    }
+  }, []);
+  useEffect(() => {
+    if (isPopStateRef.current) {
+      isPopStateRef.current = false;
+      return;
+    }
+    if (mode && typeof window !== 'undefined' && window.history) {
+      window.history.pushState({ mode }, '', window.location.pathname || '/');
+    }
+  }, [mode]);
+
+  // Listen for popstate (browser/Android back)
+  useEffect(() => {
+    const handlePopState = (e: PopStateEvent) => {
+      const prevState = e.state as { mode?: AppViewMode } | null;
+      const targetMode = prevState?.mode || 'hub';
+      isPopStateRef.current = true;
+      if (kundaliData && mode === 'kundali') setKundaliData(null);
+      if (horoscopeData && mode === 'daily') {
+        setHoroscopeData(null);
+        setSelectedSign(null);
+      }
+      if (panchangData && mode === 'panchang') setPanchangData(null);
+      setMode(targetMode);
+      setError(null);
+      scrollToTop();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [mode, kundaliData, horoscopeData, panchangData, scrollToTop]);
+
+  // Android back button via Capacitor App plugin (when available)
+  useEffect(() => {
+    if (!isCapacitor() || !backButtonPluginReady) return;
+    const AppPlugin = appPluginRef.current;
+    if (!AppPlugin || typeof AppPlugin.addListener !== 'function') return;
+
+    const handleBackButton = () => {
+      handleBackNavigation();
+    };
+
+    AppPlugin.addListener('backButton', handleBackButton)
+      .then((l) => { backButtonListenerRef.current = l; })
+      .catch((err: any) => console.error("Failed to add back button listener:", err));
+
+    return () => {
+      const L = backButtonListenerRef.current;
+      backButtonListenerRef.current = null;
+      if (L?.remove) L.remove().catch(() => {});
+    };
+  }, [backButtonPluginReady, handleBackNavigation]);
+
+  const showInterstitialDelayed = (delayMs = 4000, onShown?: () => void) => {
+    if (!isCapacitor()) return;
+    admobService.showInterstitialDelayed(delayMs, onShown);
+  };
+
+  const handleFeatureClick = (target: string) => {
+    const mode = target as AppViewMode;
+    if (['tarot', 'palm-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode) && isCapacitor()) {
+      unlockFeature(mode);
+      switchMode(mode);
+      showInterstitialDelayed(4000);
+      return;
+    }
+    switchMode(mode);
+  };
+
+
+
+  const FeatureCard = ({ target, label, icon, desc, category, color, isPremium = false, isSubscriptionOnly = false, mustRead = false, isFeatured = false }: any) => (
+    <PremiumFeatureCard
+      target={target}
+      label={label}
+      icon={icon}
+      desc={desc}
+      category={category}
+      color={color}
+      onClick={() => handleFeatureClick(target)}
+      user={user}
+      isPremium={isPremium}
+      isSubscriptionOnly={isSubscriptionOnly}
+      mustRead={mustRead}
+      isFeatured={isFeatured}
+      language={language}
+    />
+  );
+
+  return (
+    <div
+      ref={scrollContainerRef}
+      className="cosmicjyoti-scroll-container"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        WebkitOverflowScrolling: 'touch',
+        touchAction: 'pan-y pan-x',
+      }}
+    >
+      <div className="min-h-screen w-full min-h-full relative text-slate-200 selection:bg-amber-500/30">
+      <StarBackground />
+      <OfflineBanner isOnline={isOnline} language={language} />
+      {showProfile && (
+        <UserProfileModal 
+          user={user}
+          language={language} 
+          onSave={(updatedUser) => {
+            setUser(updatedUser);
+            localStorage.setItem('cosmicjyoti_user', JSON.stringify(updatedUser));
+          }} 
+          onClose={() => setShowProfile(false)}
+          onLogout={async () => {
+            setUser(null);
+            localStorage.removeItem('cosmicjyoti_user');
+            localStorage.removeItem('cosmicjyoti_auth_token');
+          }}
+        />
+      )}
+      
+      <HamburgerMenu
+        isOpen={hamburgerOpen}
+        onClose={() => setHamburgerOpen(false)}
+        currentMode={mode}
+        onNavigate={(m) => {
+          setHamburgerOpen(false);
+          if (['tarot', 'palm-reading', 'numerology'].includes(m) && !isFeatureUnlocked(m) && isCapacitor()) {
+            unlockFeature(m);
+            switchMode(m);
+            showInterstitialDelayed(4000);
+            return;
+          }
+          switchMode(m);
+        }}
+        language={language}
+        onLanguageChange={setLanguage}
+        onOpenProfile={() => { setShowProfile(true); setHamburgerOpen(false); }}
+        user={user}
+        onLogout={async () => {
+          setUser(null);
+          localStorage.removeItem('cosmicjyoti_user');
+          localStorage.removeItem('cosmicjyoti_auth_token');
+        }}
+      />
+      
+      {showKarmaStore && (
+        <KarmaStore
+          language={language}
+          user={user}
+          karmaBalance={karmaBalance}
+          onEarnKarma={(amt) => { addKarma(amt); setKarmaBalance(getKarma()); }}
+          onWatchAd={() => {
+            setShowKarmaStore(false);
+            addKarma(2);
+            setKarmaBalance(getKarma());
+            if (isCapacitor()) showInterstitialDelayed(1500);
+          }}
+          onClose={() => setShowKarmaStore(false)}
+        />
+      )}
+      <ChatWidget 
+        language={language} 
+        context={kundaliData} 
+        onUseKarma={() => karmaBalance > 0} 
+        hasKarma={karmaBalance > 0} 
+        onOpenStore={() => setShowKarmaStore(true)} 
+        isPremium={false}
+        onWatchAdForChat={() => {
+          addBonusMessages(5);
+          setChatRefreshKey(k => k + 1);
+          if (isCapacitor()) showInterstitialDelayed(2000);
+        }}
+        refreshTrigger={chatRefreshKey}
+      />
+      <header 
+        className="fixed top-0 left-0 right-0 w-full z-[60] py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-slate-900/95 border-b border-white/5 backdrop-blur-md"
+        style={{ 
+          paddingTop: 'max(1rem, calc(env(safe-area-inset-top) + 0.75rem))',
+          paddingLeft: 'max(1rem, calc(env(safe-area-inset-left) + 0.75rem))',
+          paddingRight: 'max(1rem, calc(env(safe-area-inset-right) + 0.75rem))',
+          paddingBottom: '0.5rem',
+        }}
+      >
+        <div className="flex items-center justify-between gap-2 min-h-[44px] w-full sm:w-auto sm:min-w-0">
+          {/* Logo - collapses when search focused to give more space */}
+          <div 
+            className={`flex items-center gap-2 cursor-pointer touch-manipulation min-h-[44px] flex-shrink-0 overflow-hidden transition-all duration-300 ease-out ${
+              searchFocused ? 'max-w-0 sm:max-w-0 opacity-0 sm:opacity-0' : 'max-w-[200px] sm:max-w-none opacity-100'
+            }`}
+            onClick={() => { setMode('hub'); setKundaliData(null); setSelectedSign(null); setHamburgerOpen(false); }}
+          >
+            <Logo className="w-8 h-8 sm:w-10 sm:h-10 animate-spin-slow shrink-0" />
+            <span className="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-100 hidden sm:block tracking-widest uppercase whitespace-nowrap">CosmicJyoti</span>
+          </div>
+          {/* Hamburger + Notif - always visible on mobile */}
+          <div className="flex items-center gap-2 sm:hidden shrink-0">
+            <NotificationToggle language={language} />
+            <button
+              onClick={() => setHamburgerOpen(true)}
+              className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl bg-slate-800/80 border border-slate-700 hover:border-amber-500/50 text-amber-400 transition-colors touch-manipulation active:scale-[0.98]"
+              aria-label={language === 'hi' ? 'मेनू खोलें' : 'Open menu'}
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        {/* Search bar - expands left when focused (logo collapses) */}
+        <div className={`flex-1 min-w-0 transition-all duration-300 ease-out ${searchFocused ? 'sm:max-w-none' : 'sm:max-w-md'}`}>
+          <div className="relative">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              placeholder={language === 'hi' ? 'खोजें... (कुंडली, राशिफल, आदि)' : 'Search... (kundali, horoscope, etc.)'}
+              className="w-full pl-10 pr-4 py-2.5 min-h-[44px] bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 text-sm touch-manipulation"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-500 hover:text-slate-300 touch-manipulation"
+                aria-label="Clear"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 shrink-0 ml-auto">
+          <a 
+            {...getExternalLinkProps("https://www.cosmicjyoti.com/", language)}
+            className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-full hover:border-amber-500/50 transition-all text-[10px] font-bold uppercase tracking-widest text-amber-200 min-h-[44px] touch-manipulation"
+          >
+            Know More
+          </a>
+          <NotificationToggle language={language} />
+          <button
+            onClick={() => setHamburgerOpen(true)}
+            className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl bg-slate-800/80 border border-slate-700 hover:border-amber-500/50 text-amber-400 transition-colors touch-manipulation active:scale-[0.98]"
+            aria-label={language === 'hi' ? 'मेनू खोलें' : 'Open menu'}
+          >
+            <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main 
+        className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-6 pb-20 sm:pb-24 md:pb-32"
+        style={{ 
+          paddingTop: 'max(7.5rem, calc(env(safe-area-inset-top) + 6rem))',
+          paddingBottom: 'max(5rem, calc(env(safe-area-inset-bottom) + 4rem))',
+        }}
+      >
+        {loading && !(mode === 'daily' && selectedSign) && (
+          <div className="flex flex-col items-center justify-center py-32">
+            <Logo className="w-24 h-24 animate-spin-slow" />
+            <p className="text-amber-200 font-serif uppercase tracking-[0.3em] mt-6 animate-pulse">{t.loadingButton}</p>
+          </div>
+        )}
+        
+        {error && !loading && (
+            <div className="max-w-md mx-auto mb-10 bg-red-900/20 border border-red-500/30 rounded-2xl p-6 text-center animate-fade-in">
+                <p className="text-red-300 text-sm mb-4">{error}</p>
+                <button onClick={() => setError(null)} className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white underline">Dismiss</button>
+            </div>
+        )}
+
+        {mode === 'hub' && !loading && (
+          <div className="animate-fade-in-up space-y-10 md:space-y-14 pb-8">
+            {/* Hero */}
+            <div className="text-center space-y-2">
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-white to-amber-200">CosmicJyoti</h2>
+              <p className="text-slate-400 italic tracking-[0.3em] sm:tracking-[0.5em] uppercase text-xs">{t.subtitle}</p>
+            </div>
+            
+            <ThoughtOfTheDay language={language} />
+
+            {/* Daily Luck Score - KundaliCard style */}
+            <section className="animate-fade-in-up">
+              <DailyLuckScore
+                language={language}
+                onViewHoroscope={() => switchMode('daily')}
+              />
+            </section>
+
+            {/* Daily Do's & Don'ts - Co-Star style */}
+            <section className="animate-fade-in-up">
+              <DailyDoDonts language={language} />
+            </section>
+
+            {/* Daily Forecast - personalized if Kundali saved, else CTA */}
+            <section className="animate-fade-in-up bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-6 md:p-8">
+              <h3 className="text-xl font-serif font-bold text-amber-200 mb-4 flex items-center gap-2">
+                <span>🌞</span>
+                {language === 'hi' ? 'दैनिक राशिफल' : 'Daily Forecast'}
+              </h3>
+              {savedKundaliCharts.length > 0 ? (
+                <div className="space-y-3">
+                  <p className="text-slate-400 text-sm">
+                    {language === 'hi' 
+                      ? 'अपनी कुंडली के आधार पर व्यक्तिगत दैनिक भविष्यवाणी प्राप्त करें।'
+                      : 'Get personalized daily predictions based on your Kundali (Lagna, Moon, Sun, Nakshatra).'}
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {savedKundaliCharts.slice(0, 3).map((chart) => (
+                      <button
+                        key={chart.id || chart.name}
+                        onClick={() => handleGetDaily(chart)}
+                        className="px-5 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl transition-all active:scale-95"
+                      >
+                        {language === 'hi' ? `${chart.name} का राशिफल` : `Forecast for ${chart.name}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-slate-400 text-sm">
+                    {language === 'hi' 
+                      ? 'व्यक्तिगत दैनिक राशिफल के लिए कृपया पहले अपनी कुंडली बनाएं। लग्न, चंद्र राशि, सूर्य राशि और नक्षत्र के आधार पर भविष्यवाणी मिलेगी।'
+                      : 'For personalized daily forecast, please fill your Kundali details first. Predictions will be based on your Lagna, Moon Sign, Sun Sign, and Nakshatra.'}
+                  </p>
+                  <button
+                    onClick={() => switchMode('kundali')}
+                    className="px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold rounded-xl transition-all active:scale-95"
+                  >
+                    {language === 'hi' ? 'कुंडली बनाएं' : 'Create Kundali'}
+                  </button>
+                </div>
+              )}
+            </section>
+            
+            {/* Categorized modules - user-friendly sections */}
+            {MODULE_CATEGORIES.map((cat, catIdx) => {
+              const filteredModules = cat.modules.filter((m) => {
+                if (!searchQuery.trim()) return true;
+                const q = searchQuery.toLowerCase().trim();
+                return m.labelEn.toLowerCase().includes(q) || m.labelHi.includes(q) || m.mode.toLowerCase().includes(q) || cat.labelEn.toLowerCase().includes(q) || cat.labelHi.includes(q);
+              });
+              if (filteredModules.length === 0) return null;
+              const isPopular = cat.id === 'popular';
+              return (
+                <section key={cat.id} className="animate-fade-in-up" style={{ animationDelay: `${catIdx * 80}ms`, animationFillMode: 'both' }}>
+                  {/* Category header */}
+                  <div className={`flex items-center gap-3 mb-4 px-1 rounded-xl py-2 bg-gradient-to-r ${cat.color} border border-slate-700/30`}>
+                    <span className="text-2xl">{cat.icon}</span>
+                    <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider">
+                      {language === 'hi' ? cat.labelHi : cat.labelEn}
+                    </h3>
+                    <div className="h-px flex-1 bg-slate-600/50 rounded-full"></div>
+                  </div>
+                  {/* Module grid - larger for Popular */}
+                  <div className={`grid gap-3 ${isPopular ? 'grid-cols-2 sm:grid-cols-4 gap-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} `}>
+                    {filteredModules.map((m) => (
+                      <FeatureCard
+                        key={m.mode}
+                        target={m.mode}
+                        label={language === 'hi' ? m.labelHi : m.labelEn}
+                        icon={m.icon}
+                        desc={language === 'hi' ? m.descHi : m.descEn}
+                        category={language === 'hi' ? cat.labelHi : cat.labelEn}
+                        color={isPopular ? 'from-amber-500 to-orange-500' : 'from-amber-500 to-transparent'}
+                        isPremium={m.isPremium}
+                        isSubscriptionOnly={false}
+                        isFeatured={isPopular}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })}
+            
+            {/* Search no results */}
+            {searchQuery.trim() && !MODULE_CATEGORIES.some((cat) =>
+              cat.modules.some((m) => {
+                const q = searchQuery.toLowerCase().trim();
+                return m.labelEn.toLowerCase().includes(q) || m.labelHi.includes(q) || m.mode.toLowerCase().includes(q) || cat.labelEn.toLowerCase().includes(q) || cat.labelHi.includes(q);
+              })
+            ) && (
+              <div className="text-center py-12 px-4">
+                <p className="text-slate-500 text-sm mb-2">
+                  {language === 'hi' ? 'कोई परिणाम नहीं मिला।' : 'No results found.'}
+                </p>
+                <p className="text-slate-600 text-xs">
+                  {language === 'hi' ? 'कुंडली, राशिफल, पंचांग आदि खोजें' : 'Try: kundali, horoscope, panchang'}
+                </p>
+              </div>
+            )}
+
+            <div className="py-4">
+              <AdBanner variant="multiplex" />
+            </div>
+          </div>
+        )}
+
+        {mode === 'daily' && (
+          !selectedSign ? (
+            <ZodiacGrid onSelect={handleSelectSign} language={language} />
+          ) : horoscopeData && selectedSign ? (
+            <HoroscopeCard data={horoscopeData} sign={selectedSign} language={language} personalizedName={dailyForecastPersonalizedName} onBack={() => {setSelectedSign(null); setHoroscopeData(null); setDailyForecastPersonalizedName(null); setError(null); setMode('hub');}} />
+          ) : (
+            <div className="animate-fade-in space-y-6 max-w-md mx-auto px-4 py-12 text-center">
+              {loading ? (
+                <>
+                  <Logo className="w-16 h-16 mx-auto animate-spin-slow" />
+                  <p className="text-amber-200 font-serif uppercase tracking-[0.2em] animate-pulse">{t.loadingButton}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-slate-400">{language === 'hi' ? 'राशिफल लोड नहीं हुआ। पुनः प्रयास करें।' : 'Horoscope could not load. Please try again.'}</p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => selectedSign && handleSelectSign(selectedSign)}
+                      className="px-6 py-3 bg-amber-600/80 hover:bg-amber-500/80 text-white font-bold rounded-xl transition-colors"
+                    >
+                      {language === 'hi' ? 'पुनः प्रयास करें' : 'Retry'}
+                    </button>
+                    <button
+                      onClick={() => { setSelectedSign(null); setHoroscopeData(null); setError(null); setMode('hub'); }}
+                      className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white rounded-xl transition-colors"
+                    >
+                      {language === 'hi' ? 'वापस जाएं' : 'Go Back'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )
+        )}
+        {mode === 'kundali' && (kundaliData ? <KundaliResult data={kundaliData} name={kundaliFormData?.name || 'Seeker'} formInput={kundaliFormData ? { name: kundaliFormData.name, date: kundaliFormData.date, time: kundaliFormData.time, location: kundaliFormData.location } : undefined} language={language} onBack={() => { setKundaliData(null); setKundaliFormData(null); loadSavedKundaliCharts(); }} /> : <KundaliForm onSubmit={handleGenerateKundali} isLoading={loading} language={language} savedCharts={savedKundaliCharts} onLoadChart={handleLoadChart} onDeleteChart={handleDeleteChart} onGetDaily={handleGetDaily} />)}
+        {mode === 'panchang' && panchangData && <DailyPanchang data={panchangData} language={language} onBack={() => { setPanchangData(null); setMode('hub'); }} formInput={{ date: panchangData.date, location: panchangData.location }} />}
+        {mode === 'mantra' && <MantraLab language={language} />}
+        {mode === 'rudraksh' && <RudrakshLab language={language} />}
+        {mode === 'yantra' && <YantraLab language={language} />}
+        {mode === 'dreams' && <DreamInterpreter language={language} />}
+        {mode === 'vastu' && <VastuLab language={language} />}
+        {mode === 'gemstones' && <GemstoneLab language={language} />}
+        {mode === 'cosmic-health' && <CosmicHealthAI language={language} />}
+        {mode === 'palm-reading' && <PalmReading language={language} />}
+        {mode === 'tarot' && <TarotReading language={language} />}
+        {mode === 'numerology' && <Numerology language={language} />}
+        {mode === 'learning' && <LearningCenter language={language} />}
+        {mode === 'planets-houses' && <PlanetsHouses language={language} />}
+        {mode === 'zodiac-signs' && <ZodiacSignsGuide language={language} />}
+        {mode === 'nakshatra-library' && <NakshatraLibrary language={language} />}
+        {mode === 'kundali-basics' && <KundaliBasics language={language} />}
+        {mode === 'palmistry-guide' && <PalmistryGuide language={language} />}
+        {mode === 'numerology-guide' && <NumerologyGuide language={language} />}
+        {mode === 'star-legends' && <StarLegends language={language} />}
+        {mode === 'compatibility' && <CompatibilityTab language={language} />}
+        {mode === 'games' && <AstroGames language={language} />}
+        {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}
+        
+        {mode !== 'hub' && !loading && (
+          <button onClick={() => {setMode('hub'); setError(null);}} className="mt-12 mx-auto flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-amber-400 uppercase tracking-[0.4em] bg-slate-900/50 px-10 py-3 rounded-full border border-slate-800 transition-all shadow-lg">
+            {t.return}
+          </button>
+        )}
+      </main>
+
+      <footer className="relative z-10 bg-gradient-to-b from-slate-900/95 to-slate-950/95 border-t border-amber-500/20 backdrop-blur-xl py-12 sm:py-16 px-4 sm:px-6 mb-24 md:mb-32">
+        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none"></div>
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Main Footer Content */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12 mb-8 sm:mb-12">
+            {/* Brand Section */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+              <div className="flex items-center gap-3 mb-2">
+                <Logo className="w-10 h-10 sm:w-12 sm:h-12 animate-spin-slow" />
+                <span className="text-xl sm:text-2xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-200 to-amber-100 tracking-widest uppercase">CosmicJyoti</span>
+              </div>
+              <p className="text-slate-400 text-sm sm:text-base max-w-sm italic leading-relaxed">{t.footer}</p>
+              <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                <a 
+                  {...getExternalLinkProps("https://www.cosmicjyoti.com/", language)}
+                  className="group inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-bold text-xs sm:text-sm uppercase tracking-widest border-b-2 border-amber-500/30 pb-1 hover:border-amber-400 transition-all"
+                >
+                  <span>Know More</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Quick Links Section */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+              <h3 className="text-amber-300 font-serif font-bold text-base sm:text-lg uppercase tracking-wider mb-2">Quick Links</h3>
+              <div className="flex flex-col gap-3">
+                <a 
+                  href="/privacy-policy.html" 
+                  className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base"
+                >
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Privacy Policy
+                </a>
+                <a 
+                  href="/terms-of-service.html" 
+                  className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base"
+                >
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Terms of Service
+                </a>
+              </div>
+            </div>
+
+            {/* Contact & Social Section */}
+            <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
+              <h3 className="text-amber-300 font-serif font-bold text-base sm:text-lg uppercase tracking-wider mb-2">Connect With Us</h3>
+              <div className="flex gap-4 sm:gap-6 mb-4">
+                <a 
+                  {...getExternalLinkProps("https://www.linkedin.com/in/nikeshmaurya/", language)} 
+                  className="group w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-800/50 border border-slate-700 hover:border-blue-400 hover:bg-blue-500/10 transition-all"
+                  aria-label="LinkedIn"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-blue-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                  </svg>
+                </a>
+                <a 
+                  {...getExternalLinkProps("https://www.youtube.com/@NikeshMaurya", language)} 
+                  className="group w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-800/50 border border-slate-700 hover:border-red-400 hover:bg-red-500/10 transition-all"
+                  aria-label="YouTube"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-red-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                </a>
+                <a 
+                  {...getExternalLinkProps("https://www.instagram.com/cosmicjyoti.ai", language)} 
+                  className="group w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-full bg-slate-800/50 border border-slate-700 hover:border-pink-400 hover:bg-pink-500/10 transition-all"
+                  aria-label="Instagram"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-pink-400 transition-colors" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                  </svg>
+                </a>
+              </div>
+              <div className="bg-gradient-to-br from-slate-800/60 to-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-700/50 backdrop-blur-sm w-full max-w-xs space-y-2.5 sm:space-y-3 text-left">
+                <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                  <svg className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                  <a {...getExternalLinkProps("https://www.cosmicjyoti.com/", language)} className="text-blue-400 hover:text-blue-300 transition-colors hover:underline break-all">www.cosmicjyoti.com</a>
+                </div>
+                <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                  <svg className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <a href="tel:+919326715739" className="text-blue-400 hover:text-blue-300 transition-colors hover:underline whitespace-nowrap">+91 9326715739</a>
+                </div>
+                <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                  <svg className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  <a href="mailto:consultcosmicjyoti@gmail.com" className="text-blue-400 hover:text-blue-300 transition-colors hover:underline break-all">consultcosmicjyoti@gmail.com</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-slate-800/50 pt-6 sm:pt-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
+              <p className="text-slate-500 text-[10px] sm:text-xs uppercase tracking-widest">
+                © 2025 CosmicJyoti Team. All rights reserved.
+              </p>
+              <div className="flex flex-wrap gap-3 sm:gap-4 justify-center text-[9px] sm:text-xs text-slate-600">
+                <a href="/privacy-policy.html" className="hover:text-amber-400 transition-colors px-2 py-1 rounded hover:bg-amber-500/10">Privacy Policy</a>
+                <span className="text-slate-700">•</span>
+                <a href="/terms-of-service.html" className="hover:text-amber-400 transition-colors px-2 py-1 rounded hover:bg-amber-500/10">Terms of Service</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
+      </div>
+    </div>
+  );
+};
+
+export default App;

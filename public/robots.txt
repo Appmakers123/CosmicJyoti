@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://www.cosmicjyoti.com/sitemap.xml
+

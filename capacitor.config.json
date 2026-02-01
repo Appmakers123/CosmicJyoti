@@ -1,0 +1,36 @@
+{
+  "appId": "com.cosmicjyoti.app",
+  "appName": "CosmicJyoti",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "https://maps.googleapis.com",
+      "https://json.freeastrologyapi.com",
+      "https://json.apiastro.com",
+      "https://pagead2.googlesyndication.com",
+      "https://generativelanguage.googleapis.com",
+      "https://api.perplexity.ai",
+      "https://script.google.com",
+      "https://wa.me"
+    ]
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "",
+      "keystorePassword": "",
+      "keystoreAlias": "",
+      "keystoreAliasPassword": ""
+    },
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#020617",
+      "showSpinner": false
+    }
+  }
+}

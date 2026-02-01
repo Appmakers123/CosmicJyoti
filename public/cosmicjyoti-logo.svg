@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <style>
+      .spin { animation: spin 60s linear infinite; transform-origin: center; }
+      @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+  </defs>
+  
+  <!-- Background (Optional, dark slate) -->
+  <rect width="512" height="512" fill="#0f172a" rx="64" />
+  
+  <!-- Outer Glow -->
+  <circle cx="256" cy="256" r="245.76" fill="#f59e0b" fill-opacity="0.1" />
+
+  <!-- Rotating Zodiac Ring -->
+  <g class="spin">
+    <!-- Ring Border -->
+    <circle cx="256" cy="256" r="245.76" fill="none" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="2" />
+    <circle cx="256" cy="256" r="179.2" fill="none" stroke="#f59e0b" stroke-opacity="0.1" stroke-width="1" stroke-dasharray="10 10" />
+    
+      <g transform="rotate(0, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M12 21a9 9 0 0 0 9-9h-9v9"></path><path d="M12 21a9 9 0 0 1-9-9h9v9"></path><path d="M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18z" opacity="0"></path><path d="M12 3v9"></path><path d="M6.5 6.5C8 5 10 4 12 4s4 1 5.5 2.5"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(30, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M7 12a5 5 0 1 0 10 0A5 5 0 1 0 7 12z"></path><path d="M6 6c0 4 2 6 6 6s6-2 6-6"></path><path d="M12 12v9"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(60, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M6 3v18"></path><path d="M18 3v18"></path><path d="M6 7h12"></path><path d="M6 17h12"></path><path d="M4.5 3h15"></path><path d="M4.5 21h15"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(90, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M6 12a3 3 0 1 0 3-3"></path><path d="M18 12a3 3 0 1 1-3 3"></path><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="12" r="3"></circle><path d="M9 12h6" opacity="0.5"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(120, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M16 3.5a2.5 2.5 0 1 0-4.5 2 2.5 2.5 0 1 1-4.5 2A2.5 2.5 0 0 0 4.5 10v1a8 8 0 1 0 16 0"></path><circle cx="12" cy="12" r="1" fill="currentColor" opacity="0.2"></circle>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(150, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M4 4v16"></path><path d="M4 12c0-3 2-4 4-4s4 2 4 5v7"></path><path d="M12 12c0-3 2-4 4-4s4 2 4 5v7c0 2 2 3 3 1"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(180, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M12 21v-8"></path><path d="M5 13h14"></path><path d="M5 13a4 4 0 0 1 6.5-2.5"></path><path d="M12 10.5A4 4 0 0 1 19 13"></path><line x1="4" y1="21" x2="20" y2="21"></line>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(210, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M4 4v16"></path><path d="M4 12c0-3 2-4 4-4s4 2 4 5v7"></path><path d="M12 12c0-3 2-4 4-4s4 2 4 5v7l2 2 2-2"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(240, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M12 2l10 10"></path><path d="M22 2l-10 10"></path><path d="M22 2v5"></path><path d="M22 2h-5"></path><line x1="2" y1="22" x2="15" y2="9"></line>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(270, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M4 15a4 4 0 1 1 5-3"></path><path d="M9 12V9c0-3 2-4 4-4s4 1 4 4v3"></path><path d="M17 12c2 0 3 2 3 4s-3 5-5 5c-2 0-3-2-3-4"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(300, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M3 10c2-2 4-2 6 0s4 2 6 0 4-2 6 0"></path><path d="M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0"></path>
+           </svg>
+        </g>
+      </g>
+    
+      <g transform="rotate(330, 256, 256)">
+        <g transform="translate(235.52, 20.480000000000008)">
+           <svg width="40.96" height="40.96" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M10 4c0 8 4 10 4 16"></path><path d="M14 4c0 8-4 10-4 16"></path><line x1="2" y1="12" x2="22" y2="12"></line>
+           </svg>
+        </g>
+      </g>
+    
+  </g>
+
+  <!-- Central Sun -->
+  <g transform="translate(140.8, 140.8)">
+    <svg width="230.4" height="230.4" viewBox="0 0 24 24" fill="#fcd34d">
+      <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.061-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
+    </svg>
+  </g>
+</svg>

@@ -1,0 +1,310 @@
+================================================================================
+PLAY STORE – "What's new in this version" (Release notes for v1.2.8)
+================================================================================
+Copy each language block into Play Console → Release notes → Add language
+
+<en-US>
+v1.2.8
+• Cosmic Health: Birth → daily remedies directly
+• Kundali: Cleaner predictions
+• Profile: Consent required; fixes
+• Offline banner, crash recovery, validation & stability
+</en-US>
+
+<hi>
+
+v1.2.8
+• कॉस्मिक हेल्थ: जन्म विवरण → दैनिक उपाय सीधे
+• कुंडली: साफ भविष्यवाणियाँ, निर्देश पाठ नहीं
+• प्रोफ़ाइल: सहमति आवश्यक; सबमिशन सुधार
+• ऑफ़लाइन बैनर और क्रैश रिकवरी
+• फॉर्म सत्यापन और स्थिरता सुधार
+</hi>
+
+<bn>
+
+v1.2.8
+• কসমিক হেলথ: সরলীকৃত প্রবাহ—জন্মের বিবরণ সরাসরি দৈনিক প্রতিকার পর্যন্ত যায়
+• কুন্ডলী ভবিষ্যদ্বাণী: নির্দেশনা পাঠ ছাড়াই পরিষ্কার, আরও ভাল ফর্ম্যাটেড পাঠ্য
+• প্রোফাইল: সংরক্ষণের জন্য সম্মতি এখন স্পষ্টভাবে প্রয়োজনীয়; প্রোফাইল জমা দেওয়ার সংশোধন
+• অফলাইন ব্যানার: অফলাইনে থাকলে দেখুন যাতে জানা যায় কোন বৈশিষ্ট্যগুলির ইন্টারনেট প্রয়োজন
+• ক্র্যাশ রিকভারি: কিছু ভুল হলে অ্যাপ একটি বন্ধুত্বপূর্ণ পুনরুদ্ধার স্ক্রিন দেখায়—খালি স্ক্রিন নয়
+• ফর্ম বৈধতা: জন্ম তারিখ বৈধতা (ভবিষ্যতের তারিখ নয়) এবং উন্নত ত্রুটি বার্তা
+• সমস্ত ডিভাইসে স্থিতিশীলতা এবং সামঞ্জস্য উন্নতি
+</bn>
+
+<ta>
+
+v1.2.8
+• காஸ்மிக் ஹெல்த்: பிறப்பு விவரங்கள் → தினசரி சிகிச்சைகள் நேரடியாக
+• குண்டலி: தூய்மையான கணிப்புகள், வழிமுறை உரை இல்லை
+• சுயவிவரம்: சம்மதம் தேவை; சமர்ப்பிப்பு சரிசெய்தல்
+• ஆஃப்லைன் பானர் மற்றும் கிராஷ் மீட்பு
+• படிவ சரிபார்ப்பு மற்றும் நிலைத்தன்மை மேம்பாடுகள்
+</ta>
+
+<te>
+
+v1.2.8
+• కాస్మిక్ హెల్త్: పుట్టిన వివరాలు → రోజువారీ ఉపాయాలు నేరుగా
+• కుండలి: స్వచ్ఛమైన అంచనాలు, సూచనా వచనం లేదు
+• ప్రొఫైల్: సమ్మతి అవసరం; సమర్పణ సరిదిద్దుబాట్లు
+• ఆఫ్‌లైన్ బ్యానర్ మరియు క్రాష్ రికవరీ
+• ఫారమ్ ధ్రువీకరణ మరియు స్థిరత్వ మెరుగుదలలు
+</te>
+
+<mr>
+
+v1.2.8
+• कॉस्मिक हेल्थ: जन्म तपशील → दैनिक उपाय थेट
+• कुंडली: स्वच्छ भविष्यवाण्या, सूचना मजकूर नाही
+• प्रोफाइल: संमती आवश्यक; सबमिशन दुरुस्त्या
+• ऑफलाइन बॅनर आणि क्रॅश रिकव्हरी
+• फॉर्म वैधता आणि स्थिरता सुधारणा
+</mr>
+
+<gu>
+
+v1.2.8
+• કોસ્મિક હેલ્થ: જન્મ વિગતો → દૈનિક ઉપાયો સીધા
+• કુંડળી: સ્વચ્છ આગાહીઓ, સૂચના લખાણ નહીં
+• પ્રોફાઇલ: સંમતિ જરૂરી; સબમિશન સુધારણા
+• ઑફલાઇન બેનર અને ક્રેશ રિકવરી
+• ફોર્મ માન્યતા અને સ્થિરતા સુધારણા
+</gu>
+
+<kn>
+
+v1.2.8
+• ಕಾಸ್ಮಿಕ್ ಹೆಲ್ತ್: ಜನನ ವಿವರಗಳು → ದೈನಂದಿನ ಉಪಾಯಗಳಿಗೆ ನೇರವಾಗಿ
+• ಕುಂಡಲಿ: ಸ್ವಚ್ಛ ಭವಿಷ್ಯವಾಣಿಗಳು, ಸೂಚನಾ ಪಠ್ಯ ಇಲ್ಲ
+• ಪ್ರೊಫೈಲ್: ಸಮ್ಮತಿ ಅಗತ್ಯ; ಸಲ್ಲಿಕೆ ತಿದ್ದುಪಡಿಗಳು
+• ಆಫ್‌ಲೈನ್ ಬ್ಯಾನರ್ ಮತ್ತು ಕ್ರ್ಯಾಶ್ ರಿಕವರಿ
+• ಫಾರ್ಮ್ ಮೌಲ್ಯೀಕರಣ ಮತ್ತು ಸ್ಥಿರತೆ ಸುಧಾರಣೆಗಳು
+</kn>
+
+<ml>
+
+v1.2.8
+• കോസ്മിക് ഹെൽത്ത്: ജനന വിശദാംശങ്ങൾ → ദൈനംദിന പ്രതിവിധികളിലേക്ക് നേരിട്ട്
+• കുണ്ഡലി: വൃത്തിയുള്ള പ്രവചനങ്ങൾ, നിർദ്ദേശ ടെക്സ്റ്റ് ഇല്ല
+• പ്രൊഫൈൽ: സമ്മതം ആവശ്യം; സമർപ്പണ ഫിക്സുകൾ
+• ഓഫ്‌ലൈൻ ബാനർ, ക്രാഷ് റികവറി
+• ഫോം സാധുത, സ്ഥിരത മെച്ചപ്പെടുത്തലുകൾ
+</ml>
+
+<pa>
+
+v1.2.8
+• ਕਾਸਮਿਕ ਹੈਲਥ: ਜਨਮ ਵੇਰਵੇ → ਰੋਜ਼ਾਨਾ ਉਪਾਅ ਸਿੱਧੇ
+• ਕੁੰਡਲੀ: ਸਾਫ਼ ਭਵਿਖ਼ਵਾਣੀਆਂ, ਨਿਰਦੇਸ਼ ਟੈਕਸਟ ਨਹੀਂ
+• ਪ੍ਰੋਫਾਈਲ: ਸਹਿਮਤੀ ਲੋੜੀਂਦੀ; ਜਮ੍ਹਾਂ ਸੁਧਾਰਾਂ
+• ਔਫਲਾਈਨ ਬੈਨਰ ਅਤੇ ਕ੍ਰੈਸ਼ ਰਿਕਵਰੀ
+• ਫਾਰਮ ਪ੍ਰਮਾਣੀਕਰਨ ਅਤੇ ਸਥਿਰਤਾ ਸੁਧਾਰ
+</pa>
+
+<es>
+
+v1.2.8
+• Cosmic Health: flujo simplificado—los datos de nacimiento van directamente a los remedios diarios
+• Predicciones Kundali: lecturas más limpias y mejor formateadas sin texto de instrucciones
+• Perfil: el consentimiento ahora está claramente marcado como requerido para guardar; correcciones de envío de perfil
+• Banner sin conexión: ve cuándo estás desconectado para saber qué funciones necesitan internet
+• Recuperación de fallos: si algo sale mal, la app muestra una pantalla de recuperación amigable en lugar de una pantalla en blanco
+• Validación de formularios: validación de fecha de nacimiento (sin fechas futuras) y mensajes de error mejorados
+• Mejoras de estabilidad y compatibilidad en todos los dispositivos
+</es>
+
+<pt-BR>
+
+v1.2.8
+• Cosmic Health: fluxo simplificado—dados de nascimento vão diretamente para os remédios diários
+• Previsões Kundali: leituras mais limpas e melhor formatadas sem texto de instruções
+• Perfil: consentimento agora claramente marcado como necessário para salvar; correções de envio de perfil
+• Banner offline: veja quando estiver offline para saber quais recursos precisam de internet
+• Recuperação de falhas: se algo der errado, o app mostra uma tela de recuperação amigável em vez de tela em branco
+• Validação de formulário: validação de data de nascimento (sem datas futuras) e mensagens de erro aprimoradas
+• Melhorias de estabilidade e compatibilidade em todos os dispositivos
+</pt-BR>
+
+<fr>
+
+v1.2.8
+• Cosmic Health : flux simplifié—les données de naissance vont directement aux remèdes quotidiens
+• Prédictions Kundali : lectures plus propres et mieux formatées sans texte d'instructions
+• Profil : le consentement est maintenant clairement marqué comme requis pour enregistrer ; corrections de soumission de profil
+• Bannière hors ligne : voyez quand vous êtes hors ligne pour savoir quelles fonctionnalités nécessitent Internet
+• Récupération après plantage : en cas de problème, l'app affiche un écran de récupération convivial au lieu d'un écran vide
+• Validation de formulaire : validation de la date de naissance (pas de dates futures) et messages d'erreur améliorés
+• Améliorations de stabilité et de compatibilité sur tous les appareils
+</fr>
+
+<de>
+
+v1.2.8
+• Cosmic Health: vereinfachter Ablauf—Geburtsdaten gehen direkt zu den täglichen Heilmitteln
+• Kundali-Vorhersagen: sauberere, besser formatierte Lesungen ohne Anleitungstext
+• Profil: Einwilligung ist jetzt klar als erforderlich zum Speichern gekennzeichnet; Profil-Submission-Korrekturen
+• Offline-Banner: Sehen Sie, wann Sie offline sind, um zu wissen, welche Funktionen Internet benötigen
+• Absturz-Wiederherstellung: Bei Problemen zeigt die App einen freundlichen Wiederherstellungsbildschirm statt eines leeren Bildschirms
+• Formularvalidierung: Geburtsdatum-Validierung (keine zukünftigen Daten) und verbesserte Fehlermeldungen
+• Stabilitäts- und Kompatibilitätsverbesserungen auf allen Geräten
+</de>
+
+<ja>
+
+v1.2.8
+• Cosmic Health：簡素化されたフロー—出生情報が日々の対処法に直接進みます
+• クンダリ予測：指示テキストのない、よりクリーンでフォーマットされた読み取り
+• プロフィール：保存には同意が必要であることが明確に表示；プロフィール送信の修正
+• オフラインバナー：オフライン時に表示され、どの機能にインターネットが必要か分かります
+• クラッシュリカバリ：問題が発生した場合、アプリは空白画面ではなく親切なリカバリ画面を表示
+• フォーム検証：生年月日検証（未来の日付不可）と改善されたエラーメッセージ
+• 全デバイスでの安定性と互換性の向上
+</ja>
+
+<ko>
+
+v1.2.8
+• Cosmic Health: 간소화된 흐름—출생 정보가 일일 치료법으로 직접 이동
+• 쿤달리 예측: 지시 텍스트 없이 더 깔끔하고 잘 포맷된 독서
+• 프로필: 저장에 동의가 필요함이 명확히 표시됨; 프로필 제출 수정
+• 오프라인 배너: 오프라인일 때 표시되어 어떤 기능에 인터넷이 필요한지 알 수 있음
+• 크래시 복구: 문제가 발생하면 앱이 빈 화면 대신 친절한 복구 화면 표시
+• 양식 유효성 검사: 생년월일 유효성 검사(미래 날짜 불가) 및 개선된 오류 메시지
+• 모든 기기에서 안정성 및 호환성 개선
+</ko>
+
+<zh-CN>
+
+v1.2.8
+• Cosmic Health：简化流程—出生信息直接进入每日疗法
+• 昆达里预测：更清晰、格式更好的解读，无指令文本
+• 个人资料：同意现在明确标记为保存所需；个人资料提交修复
+• 离线横幅：离线时显示，以便了解哪些功能需要网络
+• 崩溃恢复：出现问题时，应用显示友好的恢复界面而非空白屏幕
+• 表单验证：出生日期验证（无未来日期）和改进的错误消息
+• 所有设备上的稳定性和兼容性改进
+</zh-CN>
+
+<zh-TW>
+
+v1.2.8
+• Cosmic Health：簡化流程—出生資訊直接進入每日療法
+• 昆達里預測：更清晰、格式更好的解讀，無指令文字
+• 個人資料：同意現在明確標記為儲存所需；個人資料提交修復
+• 離線橫幅：離線時顯示，以便了解哪些功能需要網路
+• 崩潰恢復：出現問題時，應用程式顯示友善的恢復畫面而非空白螢幕
+• 表單驗證：出生日期驗證（無未來日期）和改進的錯誤訊息
+• 所有裝置上的穩定性與相容性改進
+</zh-TW>
+
+<ar>
+
+v1.2.8
+• Cosmic Health: تدفق مبسط—تفاصيل الميلاد تذهب مباشرة إلى العلاجات اليومية
+• تنبؤات Kundali: قراءات أنظف وأفضل تنسيقًا بدون نص تعليمات
+• الملف الشخصي: الموافقة الآن محددة بوضوح كمطلوبة للحفظ؛ إصلاحات إرسال الملف الشخصي
+• بانر عدم الاتصال: اعرف متى تكون غير متصل لمعرفة الميزات التي تحتاج الإنترنت
+• استعادة التعطل: إذا حدث خطأ، يعرض التطبيق شاشة استعادة ودية بدلاً من شاشة فارغة
+• التحقق من النموذج: التحقق من تاريخ الميلاد (بدون تواريخ مستقبلية) ورسائل خطأ محسّنة
+• تحسينات الاستقرار والتوافق على جميع الأجهزة
+</ar>
+
+<ru>
+
+v1.2.8
+• Cosmic Health: упрощённый поток—данные о рождении переходят напрямую к ежедневным средствам
+• Предсказания Kundali: более чистые и лучше отформатированные чтения без инструкций
+• Профиль: согласие теперь чётко помечено как необходимое для сохранения; исправления отправки профиля
+• Офлайн-баннер: видно, когда вы офлайн, чтобы знать, каким функциям нужен интернет
+• Восстановление после сбоя: при проблемах приложение показывает дружелюбный экран восстановления вместо пустого экрана
+• Валидация формы: проверка даты рождения (без будущих дат) и улучшенные сообщения об ошибках
+• Улучшения стабильности и совместимости на всех устройствах
+</ru>
+
+<in>
+
+v1.2.8
+• Cosmic Health: alur disederhanakan—detail kelahiran langsung ke pengobatan harian
+• Prediksi Kundali: bacaan lebih bersih dan terformat lebih baik tanpa teks instruksi
+• Profil: persetujuan sekarang jelas ditandai sebagai wajib untuk menyimpan; perbaikan pengiriman profil
+• Banner offline: lihat saat Anda offline untuk mengetahui fitur mana yang membutuhkan internet
+• Pemulihan crash: jika ada yang salah, aplikasi menampilkan layar pemulihan yang ramah alih-alih layar kosong
+• Validasi formulir: validasi tanggal lahir (tanpa tanggal masa depan) dan pesan kesalahan yang ditingkatkan
+• Peningkatan stabilitas dan kompatibilitas di semua perangkat
+</in>
+
+<th>
+
+v1.2.8
+• Cosmic Health: โฟลว์ที่เรียบง่าย—รายละเอียดการเกิดไปยังการรักษารายวันโดยตรง
+• การทำนาย Kundali: การอ่านที่สะอาดและจัดรูปแบบดีขึ้นโดยไม่มีข้อความคำแนะนำ
+• โปรไฟล์: ความยินยอมตอนนี้ระบุชัดเจนว่าจำเป็นสำหรับการบันทึก; แก้ไขการส่งโปรไฟล์
+• แบนเนอร์ออฟไลน์: ดูเมื่อคุณออฟไลน์เพื่อทราบว่าฟีเจอร์ใดต้องการอินเทอร์เน็ต
+• การกู้คืนจากข้อขัดข้อง: หากมีอะไรผิดพลาด แอปจะแสดงหน้าจอกู้คืนที่เป็นมิตรแทนหน้าจอว่างเปล่า
+• การตรวจสอบแบบฟอร์ม: การตรวจสอบวันเกิด (ไม่มีวันที่ในอนาคต) และข้อความข้อผิดพลาดที่ดีขึ้น
+• การปรับปรุงความเสถียรและความเข้ากันได้บนอุปกรณ์ทั้งหมด
+</th>
+
+<vi>
+
+v1.2.8
+• Cosmic Health: luồng đơn giản hóa—chi tiết sinh trực tiếp đến biện pháp hàng ngày
+• Dự đoán Kundali: bài đọc sạch hơn, định dạng tốt hơn không có văn bản hướng dẫn
+• Hồ sơ: đồng ý hiện được đánh dấu rõ ràng là bắt buộc để lưu; sửa lỗi gửi hồ sơ
+• Biểu ngữ ngoại tuyến: xem khi bạn ngoại tuyến để biết tính năng nào cần internet
+• Khôi phục sự cố: nếu có gì sai, ứng dụng hiển thị màn hình khôi phục thân thiện thay vì màn hình trống
+• Xác thực biểu mẫu: xác thực ngày sinh (không có ngày tương lai) và thông báo lỗi cải thiện
+• Cải thiện ổn định và tương thích trên tất cả thiết bị
+</vi>
+
+<tr>
+
+v1.2.8
+• Cosmic Health: sadeleştirilmiş akış—doğum bilgileri doğrudan günlük tedavilere gider
+• Kundali tahminleri: talimat metni olmadan daha temiz, daha iyi formatlanmış okumalar
+• Profil: onay artık kaydetmek için gerekli olarak açıkça işaretleniyor; profil gönderimi düzeltmeleri
+• Çevrimdışı banner: hangi özelliklerin internet gerektirdiğini bilmek için çevrimdışıyken görün
+• Çökme kurtarma: bir şeyler ters giderse uygulama boş ekran yerine dostça bir kurtarma ekranı gösterir
+• Form doğrulama: doğum tarihi doğrulama (gelecek tarihler yok) ve geliştirilmiş hata mesajları
+• Tüm cihazlarda kararlılık ve uyumluluk iyileştirmeleri
+</tr>
+
+<nl>
+
+v1.2.8
+• Cosmic Health: gestroomlijnde flow—geboortegegevens gaan direct naar dagelijkse remedies
+• Kundali-voorspellingen: schonere, beter geformatteerde lezingen zonder instructietekst
+• Profiel: toestemming is nu duidelijk gemarkeerd als vereist om op te slaan; profielinzendingcorrecties
+• Offline-banner: zie wanneer u offline bent om te weten welke functies internet nodig hebben
+• Crashherstel: als er iets misgaat, toont de app een vriendelijk herstelscherm in plaats van een leeg scherm
+• Formuliervalidatie: geboortedatumvalidatie (geen toekomstige datums) en verbeterde foutmeldingen
+• Stabiliteits- en compatibiliteitsverbeteringen op alle apparaten
+</nl>
+
+<it>
+
+v1.2.8
+• Cosmic Health: flusso semplificato—i dettagli di nascita vanno direttamente ai rimedi giornalieri
+• Previsioni Kundali: letture più pulite e meglio formattate senza testo di istruzioni
+• Profilo: il consenso è ora chiaramente contrassegnato come richiesto per salvare; correzioni invio profilo
+• Banner offline: vedi quando sei offline per sapere quali funzionalità richiedono internet
+• Ripristino crash: se qualcosa va storto, l'app mostra una schermata di ripristino amichevole invece di una schermata vuota
+• Validazione modulo: validazione data di nascita (nessuna data futura) e messaggi di errore migliorati
+• Miglioramenti di stabilità e compatibilità su tutti i dispositivi
+</it>
+
+<pl>
+
+v1.2.8
+• Cosmic Health: uproszczony przepływ—dane urodzenia przechodzą bezpośrednio do codziennych środków zaradczych
+• Przewidywania Kundali: czystsze, lepiej sformatowane odczyty bez tekstu instrukcji
+• Profil: zgoda jest teraz wyraźnie oznaczona jako wymagana do zapisania; poprawki wysyłania profilu
+• Baner offline: zobacz, kiedy jesteś offline, aby wiedzieć, które funkcje wymagają internetu
+• Odzyskiwanie po awarii: jeśli coś pójdzie nie tak, aplikacja pokazuje przyjazny ekran odzyskiwania zamiast pustego ekranu
+• Walidacja formularza: walidacja daty urodzenia (bez przyszłych dat) i ulepszone komunikaty o błędach
+• Ulepszenia stabilności i kompatybilności na wszystkich urządzeniach
+</pl>
+
+================================================================================

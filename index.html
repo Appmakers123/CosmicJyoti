@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="Free Kundali, daily horoscope, marriage match, Panchang, Muhurat &amp; AI astrology. Vedic birth chart, Numerology, Tarot, Nakshatra, Palmistry. Get accurate predictions in English &amp; Hindi." />
+    <meta name="keywords" content="vedic astrology, kundali, free kundali, horoscope, daily horoscope, numerology, tarot, panchang, muhurat, birth chart, janam kundali, marriage match, compatibility, nakshatra, palmistry, rashifal, AI astrology, cosmicjyoti, kundli, lal kitab" />
+    <meta name="author" content="CosmicJyoti Team" />
+    <meta name="robots" content="index, follow" />
+    <!-- Open Graph / Facebook, WhatsApp, LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.cosmicjyoti.com/" />
+    <meta property="og:title" content="CosmicJyoti – Free Kundali, Horoscope &amp; Vedic AI Astrology" />
+    <meta property="og:description" content="Free Kundali, daily horoscope, marriage match, Panchang, Muhurat &amp; AI astrology. Vedic birth chart, Numerology, Tarot in English &amp; Hindi." />
+    <meta property="og:image" content="https://www.cosmicjyoti.com/app-logo.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:site_name" content="CosmicJyoti" />
+    <meta property="og:locale" content="en_IN" />
+    <meta property="og:locale:alternate" content="hi_IN" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://www.cosmicjyoti.com/" />
+    <meta name="twitter:title" content="CosmicJyoti – Free Kundali, Horoscope &amp; Vedic AI Astrology" />
+    <meta name="twitter:description" content="Free Kundali, daily horoscope, marriage match, Panchang, Muhurat &amp; AI astrology. Vedic birth chart, Numerology, Tarot in English &amp; Hindi." />
+    <meta name="twitter:image" content="https://www.cosmicjyoti.com/app-logo.png" />
+    <meta name="twitter:image:alt" content="CosmicJyoti – Vedic Astrology &amp; AI Horoscope" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="CosmicJyoti" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/app-logo.png" type="image/png" />
+    <link rel="canonical" href="https://www.cosmicjyoti.com/" />
+    <title>CosmicJyoti – Free Kundali, Horoscope, Marriage Match &amp; Vedic AI Astrology</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Preload critical fonts for faster rendering -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Lato', sans-serif;
+        background-color: #020617;
+        color: #e2e8f0;
+        cursor: default;
+        /* Mobile fixes */
+        overscroll-behavior-y: contain;
+        overscroll-behavior-x: contain;
+        -webkit-tap-highlight-color: transparent;
+        padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        /* Ensure single-finger scrolling works on all devices */
+        touch-action: pan-y pan-x;
+        -webkit-overflow-scrolling: touch;
+        /* Prevent pull-to-refresh */
+        overscroll-behavior: contain;
+      }
+      h1, h2, h3, h4, .font-serif {
+        font-family: 'Cinzel', serif;
+      }
+      .animate-spin-slow {
+        animation: spin 20s linear infinite;
+      }
+      @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .shadow-glow {
+        box-shadow: 0 0 15px rgba(245, 158, 11, 0.4);
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #020617; }
+      ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+      ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+      
+      .animate-fade-in-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+      }
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      /* Global touch-action for all elements - ensures single-finger scrolling */
+      * {
+        touch-action: pan-y pan-x;
+      }
+      
+      /* Interactive elements use manipulation for better touch response */
+      a, button, input, select, textarea {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(245, 158, 11, 0.2);
+      }
+      
+      /* Mobile & Tablet Optimizations */
+      @media (max-width: 640px) {
+        /* Touch-friendly targets */
+        button, a, input, select, textarea {
+          min-height: 44px;
+          min-width: 44px;
+        }
+        /* Prevent text size adjustment on iOS */
+        input, select, textarea {
+          font-size: 16px !important;
+        }
+        /* Better scrolling on mobile - ensure all elements allow panning */
+        * {
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-y pan-x;
+        }
+        /* But interactive elements should use manipulation */
+        a, button, input, select, textarea {
+          touch-action: manipulation;
+        }
+      }
+      
+      /* Cookie consent banner - Pro Kerala style, aligned with safe areas */
+      .cookie-consent-banner {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: rgba(15, 23, 42, 0.98);
+        border-top: 1px solid rgba(251, 191, 36, 0.3);
+        padding: 1rem 1.5rem;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .cookie-consent-banner.visible { display: block; }
+      .cookie-consent-inner {
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .cookie-consent-text {
+        color: #cbd5e1;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.5;
+      }
+      .cookie-consent-link { color: #f59e0b; text-decoration: none; }
+      .cookie-consent-link:hover { text-decoration: underline; }
+      .cookie-consent-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+      .cookie-consent-accept {
+        background: linear-gradient(135deg, #f59e0b, #fbbf24);
+        color: #020617;
+        font-weight: 700;
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .cookie-consent-essential {
+        background: transparent;
+        color: #94a3b8;
+        padding: 0.6rem 1rem;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        cursor: pointer;
+      }
+      .cookie-consent-settings {
+        background: transparent;
+        color: #64748b;
+        padding: 0.5rem 0.75rem;
+        border: none;
+        font-size: 0.85rem;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      
+      /* Tablet optimizations */
+      @media (min-width: 641px) and (max-width: 1024px) {
+        /* Ensure readable text sizes */
+        body {
+          font-size: 15px;
+        }
+        /* Ensure single-finger scrolling on tablets */
+        html, body, #root, * {
+          touch-action: pan-y pan-x;
+          -webkit-overflow-scrolling: touch;
+        }
+        /* Make links easily tappable on tablets */
+        a, button, input, select, textarea {
+          touch-action: manipulation;
+          -webkit-tap-highlight-color: rgba(245, 158, 11, 0.2);
+        }
+      }
+      
+      /* Single scroll context for Android/Capacitor: app uses .cosmicjyoti-scroll-container */
+      html, body {
+        height: 100%;
+        overflow: hidden;
+        overflow-x: hidden;
+        max-width: 100vw;
+        touch-action: pan-y pan-x;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      
+      #root {
+        height: 100%;
+        overflow: hidden;
+        touch-action: pan-y pan-x;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+      }
+      
+      /* All scrollable containers */
+      [class*="overflow"], .overflow-auto, .overflow-y-auto, .custom-scrollbar {
+        touch-action: pan-y pan-x;
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Safe area insets for notched devices */
+      @supports (padding: max(0px)) {
+        body {
+          padding-left: max(12px, env(safe-area-inset-left));
+          padding-right: max(12px, env(safe-area-inset-right));
+        }
+      }
+    </style>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936"
+     crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/index.css">
+<!-- JSON-LD: WebSite + WebApplication for search engines -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.cosmicjyoti.com/#website",
+      "url": "https://www.cosmicjyoti.com/",
+      "name": "CosmicJyoti",
+      "description": "Free Kundali, daily horoscope, marriage match, Panchang, Muhurat and Vedic AI Astrology. Birth chart, Numerology, Tarot, Nakshatra, Palmistry in English and Hindi.",
+      "inLanguage": ["en-IN", "hi-IN"],
+      "potentialAction": { "@type": "SearchAction", "target": "https://www.cosmicjyoti.com/", "query-input": "required name=search_term_string" }
+    },
+    {
+      "@type": "WebApplication",
+      "name": "CosmicJyoti",
+      "url": "https://www.cosmicjyoti.com/",
+      "applicationCategory": "LifestyleApplication",
+      "operatingSystem": "Any",
+      "description": "Vedic Astrology, Kundali, Horoscope, Numerology, Tarot, Panchang, Muhurat, Marriage Match and AI-powered readings.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "INR" }
+    }
+  ]
+}
+</script>
+<!-- Google tag (gtag.js) - GA4 with consent mode -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-GZ53ZGTB2Q"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('consent', 'default', { 'analytics_storage': 'denied', 'ad_storage': 'denied' });
+  gtag('js', new Date());
+  gtag('config', 'G-GZ53ZGTB2Q', { anonymize_ip: true });
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <div id="cookie-consent-banner" role="dialog" aria-label="Cookie consent" class="cookie-consent-banner">
+      <div class="cookie-consent-inner">
+        <p class="cookie-consent-text">We use cookies and similar technologies to improve your experience, analyze traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies. <a href="/privacy-policy.html" class="cookie-consent-link">Privacy Policy</a> | <a href="/privacy-policy.html#cookies" class="cookie-consent-link">Cookie Policy</a></p>
+        <div class="cookie-consent-buttons">
+          <button id="cookie-consent-accept" type="button" class="cookie-consent-accept">Accept All</button>
+          <button id="cookie-consent-essential" type="button" class="cookie-consent-essential">Essential Only</button>
+          <button id="cookie-consent-settings" type="button" class="cookie-consent-settings">Cookie Settings</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function() {
+        var stored = localStorage.getItem('cosmicjyoti_cookie_consent');
+        var banner = document.getElementById('cookie-consent-banner');
+        var acceptBtn = document.getElementById('cookie-consent-accept');
+        var essentialBtn = document.getElementById('cookie-consent-essential');
+        var settingsBtn = document.getElementById('cookie-consent-settings');
+        if (!banner || !acceptBtn) return;
+        function hideBanner() { banner.classList.remove('visible'); document.body.classList.remove('cookie-banner-visible'); }
+        function showBanner() { banner.classList.add('visible'); document.body.classList.add('cookie-banner-visible'); }
+        function grantConsent() {
+          try { gtag('consent', 'update', { 'analytics_storage': 'granted', 'ad_storage': 'granted' }); } catch (e) {}
+          localStorage.setItem('cosmicjyoti_cookie_consent', 'granted');
+          hideBanner();
+        }
+        function essentialOnly() {
+          try { gtag('consent', 'update', { 'analytics_storage': 'denied', 'ad_storage': 'denied' }); } catch (e) {}
+          localStorage.setItem('cosmicjyoti_cookie_consent', 'essential');
+          hideBanner();
+        }
+        if (stored === 'granted') grantConsent();
+        else if (stored === 'declined' || stored === 'essential') hideBanner();
+        else showBanner();
+        acceptBtn.addEventListener('click', function() { grantConsent(); });
+        if (essentialBtn) essentialBtn.addEventListener('click', function() { essentialOnly(); });
+        if (settingsBtn) settingsBtn.addEventListener('click', function() { window.location.href = '/privacy-policy.html#cookies'; hideBanner(); });
+      })();
+    </script>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

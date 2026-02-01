@@ -1,0 +1,50 @@
+================================================================================
+PLAY STORE – "What's new in this version" (Release notes for v1.2.1)
+================================================================================
+Copy the text below into:
+  Play Console → Your app → Production (or testing track) → Create new release
+  → "Release notes" / "What's new in this version"
+
+--------------------------------------------------------------------------------
+FULL VERSION (use if you have enough character limit)
+--------------------------------------------------------------------------------
+
+Version 1.2.1 – What's new
+
+• Love Harmony & Bond – Clear date-of-birth hint added. When entering birth details for Person A and Person B, you now see "Date of birth (YYYY-MM-DD)" so it's easier to fill the form.
+• Picture-in-picture – App now supports picture-in-picture for a better experience when switching between apps.
+• Android 13+ – Advertising ID handling updated to meet latest Play Store and Android requirements.
+• General improvements – Stability and compatibility updates.
+
+--------------------------------------------------------------------------------
+SHORT VERSION (use if there is a strict character limit)
+--------------------------------------------------------------------------------
+
+v1.2.1
+• Date of birth placeholder added in Love Harmony & Bond (Compatibility)
+• Picture-in-picture support
+• Android 13+ and Play Store compliance updates
+• Other stability improvements
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – FULL (copy from next line, no headers)
+--------------------------------------------------------------------------------
+
+Version 1.2.1 – What's new
+
+• Love Harmony & Bond – Clear date-of-birth hint added. When entering birth details for Person A and Person B, you now see "Date of birth (YYYY-MM-DD)" so it's easier to fill the form.
+• Picture-in-picture – App now supports picture-in-picture for a better experience when switching between apps.
+• Android 13+ – Advertising ID handling updated to meet latest Play Store and Android requirements.
+• General improvements – Stability and compatibility updates.
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – SHORT (copy from next line)
+--------------------------------------------------------------------------------
+
+v1.2.1
+• Date of birth placeholder added in Love Harmony & Bond (Compatibility)
+• Picture-in-picture support
+• Android 13+ and Play Store compliance updates
+• Other stability improvements
+
+================================================================================

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Free Vedic Astrology Tools – CosmicJyoti. Kundali, Horoscope, Numerology, Compatibility, Panchang, Muhurat calculators. English &amp; Hindi.">
+    <meta name="keywords" content="free astrology tools, kundali calculator, horoscope, numerology calculator, compatibility checker, panchang, muhurat, cosmicjyoti">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.cosmicjyoti.com/tools.html">
+    <meta property="og:url" content="https://www.cosmicjyoti.com/tools.html">
+    <meta property="og:title" content="Free Astrology Tools – CosmicJyoti | Kundali, Horoscope &amp; Numerology">
+    <meta property="og:description" content="Free Vedic Astrology Tools – Kundali, Horoscope, Numerology, Compatibility, Panchang, Muhurat. English &amp; Hindi.">
+    <meta property="og:image" content="https://www.cosmicjyoti.com/app-logo.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Free Astrology Tools – CosmicJyoti | Kundali, Horoscope &amp; Numerology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Lato', sans-serif;
+            background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        h1, h2, h3, .font-serif { font-family: 'Cinzel', serif; }
+        .gradient-text {
+            background: linear-gradient(135deg, #fbbf24 0%, #ffffff 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .feature-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.8) 100%);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(12px);
+        }
+        .feature-card:hover { 
+            transform: translateY(-4px); 
+            border-color: rgba(251, 191, 36, 0.6); 
+            box-shadow: 0 12px 32px rgba(251, 191, 36, 0.25); 
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #020617; 
+            font-weight: 700; 
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            text-decoration: none;
+            display: inline-flex; 
+            align-items: center; 
+            gap: 0.5rem;
+            min-height: 44px;
+            padding: 12px 24px;
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.6); 
+        }
+        .section-divider { 
+            height: 1px; 
+            background: linear-gradient(90deg, transparent 0%, rgba(251, 191, 36, 0.4) 50%, transparent 100%); 
+            margin: 1.5rem auto; 
+            max-width: 200px;
+        }
+        .navbar-space { padding-top: 80px; }
+        @media (max-width: 640px) { .navbar-space { padding-top: 60px; } }
+        @media (min-width: 641px) and (max-width: 1024px) { .navbar-space { padding-top: 75px; } }
+        .web-tool-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.9) 100%);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .web-tool-card h3 { font-size: 1.25rem; margin-bottom: 1rem; }
+        .web-tool-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .web-tool-input:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+        .web-tool-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            color: #e2e8f0;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+        }
+        .web-tool-result {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        .web-tool-result.hidden { display: none; }
+        .btn-tool {
+            background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+            color: #020617;
+            font-weight: 700;
+            padding: 0.6rem 1.25rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+        .btn-tool:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+        .sticky-cta {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(251, 191, 36, 0.95) 100%);
+            padding: 0.75rem 1rem; display: none; align-items: center; justify-content: center; gap: 0.75rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3); border-top: 1px solid rgba(251, 191, 36, 0.5);
+        }
+        .sticky-cta.visible { display: flex; }
+        .sticky-cta a { background: #020617; color: #fbbf24; font-weight: 700; padding: 0.6rem 1rem; border-radius: 10px; text-decoration: none; font-size: 0.9rem; }
+        .sticky-cta-dismiss { background: transparent; border: 1px solid #020617; color: #020617; padding: 0.4rem 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem; }
+        @media (min-width: 1025px) { .sticky-cta { display: none !important; } }
+    </style>
+</head>
+<body class="navbar-space">
+    <nav class="fixed top-0 w-full z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 py-2 sm:py-2.5 px-3 sm:px-4">
+        <div class="container mx-auto flex items-center justify-between max-w-7xl">
+            <a href="landing.html" class="flex items-center gap-1.5 sm:gap-2">
+                <span class="text-2xl sm:text-3xl">☀</span>
+                <span class="text-lg sm:text-xl md:text-2xl font-serif font-bold gradient-text">CosmicJyoti</span>
+            </a>
+            <div class="hidden lg:flex items-center gap-3 xl:gap-4">
+                <a href="landing.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Home</a>
+                <a href="tools.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Tools</a>
+                <a href="blog.html#todays-horoscope" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Horoscope</a>
+                <a href="blog.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Blog</a>
+                <a href="about.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">About</a>
+                <a href="contact.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Contact</a>
+                <a href="terms-of-service.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Terms</a>
+                <a href="privacy-policy.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Privacy</a>
+            </div>
+            <button id="mobile-menu-btn" class="lg:hidden text-amber-400 text-xl sm:text-2xl p-2 rounded hover:bg-slate-800 transition min-w-[44px] min-h-[44px] flex items-center justify-center" aria-label="Menu">☰</button>
+        </div>
+        <div id="mobile-menu" class="lg:hidden hidden bg-slate-900/95 border-t border-slate-800 px-4 py-3 space-y-1">
+            <a href="landing.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">🏠 Home</a>
+            <a href="tools.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">🔧 Tools</a>
+            <a href="blog.html#todays-horoscope" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">🌞 Horoscope</a>
+            <a href="blog.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">📝 Blog</a>
+            <a href="about.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">ℹ️ About</a>
+            <a href="contact.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">✉️ Contact</a>
+            <a href="terms-of-service.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">📋 Terms</a>
+            <a href="privacy-policy.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition text-base min-h-[44px] flex items-center">🔒 Privacy</a>
+        </div>
+    </nav>
+
+    <div class="container mx-auto max-w-6xl px-4 py-8 sm:py-12">
+        <div class="text-center mb-8 sm:mb-12">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-bold gradient-text mb-4">Free Vedic Astrology Tools</h1>
+            <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto mb-4">Access our comprehensive collection of astrology calculators and tools to explore your cosmic destiny</p>
+            
+            <!-- App CTA Banner - Primary conversion -->
+            <div class="bg-gradient-to-r from-amber-900/50 via-amber-800/40 to-amber-900/50 border-2 border-amber-400/60 rounded-xl p-5 sm:p-6 mb-6 max-w-3xl mx-auto shadow-xl">
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <div class="text-5xl sm:text-6xl">📱</div>
+                    <div class="text-center sm:text-left">
+                        <h2 class="text-xl sm:text-2xl font-serif font-bold text-amber-200 mb-2">Use All Tools in Our Free App</h2>
+                        <p class="text-sm sm:text-base text-slate-200 mb-2">Kundali, Horoscope, Numerology, Tarot &amp; more — one app, completely free.</p>
+                        <p class="text-xs text-slate-400 mb-4">Join thousands of users exploring Vedic Astrology</p>
+                        <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center justify-center min-h-[48px] px-6 py-3 text-base font-bold">📱 Download on Google Play</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-divider mt-4"></div>
+        </div>
+
+        <!-- Interactive Web Tools -->
+        <section class="mb-10" id="web-tools">
+            <h2 class="text-2xl sm:text-3xl font-serif font-bold gradient-text mb-6 text-center">Try Free Web Tools</h2>
+            <p class="text-slate-300 text-center mb-6 max-w-2xl mx-auto">Use these tools right here—no app download needed. For full features, get the CosmicJyoti app.</p>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Daily Horoscope by Sign -->
+                <div class="web-tool-card">
+                    <h3 class="font-serif font-bold text-amber-300">🌞 Daily Horoscope</h3>
+                    <p class="text-slate-400 text-sm mb-3">Select your zodiac sign to see today&apos;s prediction:</p>
+                    <select id="horoscope-sign" class="web-tool-select">
+                        <option value="">Choose your sign</option>
+                        <option value="aries">♈ Aries (Mesha)</option>
+                        <option value="taurus">♉ Taurus (Vrishabha)</option>
+                        <option value="gemini">♊ Gemini (Mithuna)</option>
+                        <option value="cancer">♋ Cancer (Karka)</option>
+                        <option value="leo">♌ Leo (Simha)</option>
+                        <option value="virgo">♍ Virgo (Kanya)</option>
+                        <option value="libra">♎ Libra (Tula)</option>
+                        <option value="scorpio">♏ Scorpio (Vrishchika)</option>
+                        <option value="sagittarius">♐ Sagittarius (Dhanu)</option>
+                        <option value="capricorn">♑ Capricorn (Makara)</option>
+                        <option value="aquarius">♒ Aquarius (Kumbha)</option>
+                        <option value="pisces">♓ Pisces (Meena)</option>
+                    </select>
+                    <div id="horoscope-result" class="web-tool-result hidden"></div>
+                </div>
+
+                <!-- Basic Numerology -->
+                <div class="web-tool-card">
+                    <h3 class="font-serif font-bold text-amber-300">🔢 Numerology</h3>
+                    <p class="text-slate-400 text-sm mb-3">Enter your full name for Life Path &amp; Destiny number:</p>
+                    <input type="text" id="numerology-name" class="web-tool-input" placeholder="e.g. John Doe" maxlength="80">
+                    <button type="button" class="btn-tool" id="numerology-btn">Calculate</button>
+                    <div id="numerology-result" class="web-tool-result hidden"></div>
+                </div>
+
+                <!-- Quick Compatibility -->
+                <div class="web-tool-card">
+                    <h3 class="font-serif font-bold text-amber-300">❤️ Compatibility</h3>
+                    <p class="text-slate-400 text-sm mb-3">Select two signs for a quick compatibility glimpse:</p>
+                    <select id="compat-sign1" class="web-tool-select">
+                        <option value="">Sign 1</option>
+                        <option value="aries">♈ Aries</option>
+                        <option value="taurus">♉ Taurus</option>
+                        <option value="gemini">♊ Gemini</option>
+                        <option value="cancer">♋ Cancer</option>
+                        <option value="leo">♌ Leo</option>
+                        <option value="virgo">♍ Virgo</option>
+                        <option value="libra">♎ Libra</option>
+                        <option value="scorpio">♏ Scorpio</option>
+                        <option value="sagittarius">♐ Sagittarius</option>
+                        <option value="capricorn">♑ Capricorn</option>
+                        <option value="aquarius">♒ Aquarius</option>
+                        <option value="pisces">♓ Pisces</option>
+                    </select>
+                    <select id="compat-sign2" class="web-tool-select">
+                        <option value="">Sign 2</option>
+                        <option value="aries">♈ Aries</option>
+                        <option value="taurus">♉ Taurus</option>
+                        <option value="gemini">♊ Gemini</option>
+                        <option value="cancer">♋ Cancer</option>
+                        <option value="leo">♌ Leo</option>
+                        <option value="virgo">♍ Virgo</option>
+                        <option value="libra">♎ Libra</option>
+                        <option value="scorpio">♏ Scorpio</option>
+                        <option value="sagittarius">♐ Sagittarius</option>
+                        <option value="capricorn">♑ Capricorn</option>
+                        <option value="aquarius">♒ Aquarius</option>
+                        <option value="pisces">♓ Pisces</option>
+                    </select>
+                    <button type="button" class="btn-tool" id="compat-btn">Check Compatibility</button>
+                    <div id="compat-result" class="web-tool-result hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- YMYL Disclaimer -->
+        <div class="bg-slate-900/80 backdrop-blur-sm border-2 border-amber-500/50 rounded-lg p-4 sm:p-5 md:p-6 mb-8 shadow-xl">
+            <div class="flex items-start gap-3 sm:gap-4">
+                <div class="text-2xl sm:text-3xl flex-shrink-0">⚠️</div>
+                <div class="flex-1">
+                    <h3 class="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-300 mb-2 sm:mb-3">Important Disclaimer</h3>
+                    <p class="text-xs sm:text-sm md:text-base text-slate-200 leading-relaxed">
+                        <strong class="text-amber-200">These tools are for entertainment and educational purposes only.</strong> Results should not replace professional medical, legal, financial, or psychological advice. Always consult qualified professionals for important life decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tools Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6 mb-8">
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">📿</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Janam Kundali</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Generate your complete birth chart with planetary positions, houses, and detailed astrological analysis.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">🌞</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Daily Horoscope</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Get personalized daily predictions for career, love, health, and finances based on your zodiac sign.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">⏱️</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Muhurat Planner</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Find auspicious timings for important events like weddings, business launches, and ceremonies.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">⭐</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Panchang</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Access daily Vedic almanac with tithi, nakshatra, yoga, karana, and auspicious timings.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">🔢</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Numerology Calculator</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Calculate your life path number, destiny number, and lucky numbers based on your birth date and name.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">❤️</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Compatibility Checker</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Check love compatibility using Ashtakoot Guna Milan and discover relationship insights.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">🔮</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Tarot Reading</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Get AI-powered tarot card readings for guidance on life questions and decisions.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">✋</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Palmistry Analysis</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Learn palmistry and analyze palm lines, mounts, and markings for personality insights (Premium).</p>
+                <a href="https://www.cosmicjyoti.com/" onclick="localStorage.setItem('cosmicjyoti_mode', 'palmistry'); return true;" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+
+            <div class="feature-card p-5 md:p-6 rounded-xl">
+                <div class="text-3xl md:text-4xl mb-3 text-center">💎</div>
+                <h3 class="text-lg md:text-xl font-serif font-bold mb-2 text-amber-300 text-center">Gemstone Recommender</h3>
+                <p class="text-sm md:text-base text-slate-300 leading-relaxed mb-4">Get personalized gemstone recommendations based on your birth chart and planetary positions.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center justify-center">🚀 Use in App</a>
+            </div>
+        </div>
+
+        <!-- AdSense Ad Placement -->
+        <section class="py-4">
+            <div class="container mx-auto max-w-6xl">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-3559865379099936"
+                     data-ad-slot="5280660455"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </section>
+
+        <!-- App Features Section -->
+        <div class="mt-12 bg-gradient-to-r from-amber-900/20 via-slate-900/60 to-amber-900/20 p-6 md:p-8 rounded-xl border-2 border-amber-500/30 mb-8">
+            <h2 class="text-2xl md:text-3xl font-serif font-bold gradient-text mb-4 text-center">Why Use Our Free App?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm md:text-base text-slate-300">
+                <div class="text-center">
+                    <div class="text-3xl mb-2">✨</div>
+                    <h3 class="font-serif font-bold text-amber-300 mb-2">All Tools Free</h3>
+                    <p>Access all astrology tools completely free - no hidden costs, no subscriptions required.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">📱</div>
+                    <h3 class="font-serif font-bold text-amber-300 mb-2">Works Everywhere</h3>
+                    <p>Use on your phone, tablet, or computer. Works seamlessly across all devices.</p>
+                </div>
+                <div class="text-center">
+                    <div class="text-3xl mb-2">🔒</div>
+                    <h3 class="font-serif font-bold text-amber-300 mb-2">Privacy First</h3>
+                    <p>Your data stays on your device. We never store your personal information on servers.</p>
+                </div>
+            </div>
+            <div class="text-center mt-6">
+                <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg px-8 py-4">🚀 Launch Free App Now</a>
+            </div>
+        </div>
+
+        <!-- Information Section -->
+        <div class="mt-12 bg-slate-900/60 p-6 md:p-8 rounded-xl border border-amber-500/20">
+            <h2 class="text-2xl md:text-3xl font-serif font-bold gradient-text mb-4 text-center">How to Use These Tools</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm md:text-base text-slate-300">
+                <div>
+                    <h3 class="text-lg font-serif font-bold text-amber-300 mb-2">For Best Results</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Provide accurate birth date, time, and location</li>
+                        <li>Use exact birth time for precise Kundali calculations</li>
+                        <li>Ensure location coordinates are correct</li>
+                        <li>Read interpretations with an open mind</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-serif font-bold text-amber-300 mb-2">Understanding Results</h3>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li>Results are based on traditional Vedic principles</li>
+                        <li>Astrology is a guidance tool, not absolute prediction</li>
+                        <li>Combine insights with your own judgment</li>
+                        <li>Consult professional astrologers for detailed analysis</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sticky Mobile CTA -->
+    <div id="sticky-cta" class="sticky-cta" role="banner" aria-label="Download app">
+        <a href="https://play.google.com/store/apps/details?id=com.cosmicjyoti.app" target="_blank" rel="noopener noreferrer">📱 Download App</a>
+        <button type="button" class="sticky-cta-dismiss" id="sticky-cta-dismiss" aria-label="Dismiss">✕</button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8 px-4 border-t border-slate-800/50 bg-slate-900/30 mt-12">
+        <div class="container mx-auto max-w-6xl text-center text-sm text-slate-500 space-y-2">
+            <p>&copy; 2025 CosmicJyoti. All rights reserved.</p>
+            <p>
+                <a href="privacy-policy.html" class="text-amber-400 hover:text-amber-300 mx-1 transition">Privacy Policy</a> | 
+                <a href="terms-of-service.html" class="text-amber-400 hover:text-amber-300 mx-1 transition">Terms of Service</a> |
+                <a href="about.html" class="text-amber-400 hover:text-amber-300 mx-1 transition">About Us</a>
+            </p>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+        // Sticky mobile CTA
+        (function() {
+            var cta = document.getElementById('sticky-cta');
+            var dismiss = document.getElementById('sticky-cta-dismiss');
+            if (!cta || !dismiss) return;
+            dismiss.addEventListener('click', function() {
+                cta.classList.remove('visible');
+                localStorage.setItem('cosmicjyoti_sticky_cta_dismissed', '1');
+            });
+            window.addEventListener('scroll', function() {
+                if (window.innerWidth < 1025 && !localStorage.getItem('cosmicjyoti_sticky_cta_dismissed')) {
+                    cta.classList.toggle('visible', window.scrollY > 300);
+                }
+            });
+            if (window.innerWidth < 1025 && window.scrollY > 300 && !localStorage.getItem('cosmicjyoti_sticky_cta_dismissed')) {
+                setTimeout(function() { cta.classList.add('visible'); }, 1500);
+            }
+        })();
+
+        // Horoscope tool
+        var horoscopeData = {
+            aries: 'Mars energizes your path today. Bold moves in career may bring rewards. Stay mindful in partnerships—patience will smooth tensions.',
+            taurus: 'Venus blesses finances and relationships. A stable approach to investments pays off. Love and harmony favor you; express gratitude.',
+            gemini: 'Mercury sharpens communication. Important conversations or documents may arise. Stay curious—learning opens new doors today.',
+            cancer: 'The Moon nurtures emotions and home life. Family matters take center stage. Trust your intuition; it guides you well today.',
+            leo: 'The Sun amplifies creativity and confidence. A good day for leadership and self-expression. Generosity brings joy to others and yourself.',
+            virgo: 'Mercury supports detail-oriented work. Health and routine improvements are favored. Service to others brings inner satisfaction.',
+            libra: 'Venus enhances balance and diplomacy. Partnerships and collaborations flourish. Seek beauty and harmony in your surroundings.',
+            scorpio: 'Pluto deepens transformation. Hidden insights may surface. Use discernment in financial or emotional matters.',
+            sagittarius: 'Jupiter expands wisdom and travel. Philosophy or higher learning calls. Share your optimism—it inspires others.',
+            capricorn: 'Saturn strengthens discipline and long-term goals. Steady progress in career is likely. Honor tradition while embracing change.',
+            aquarius: 'Uranus sparks innovation and friendship. New ideas or social connections emerge. Embrace uniqueness—yours and others\'.',
+            pisces: 'Neptune deepens spirituality and compassion. Creative or meditative pursuits bring peace. Trust the flow of life today.'
+        };
+        document.getElementById('horoscope-sign').addEventListener('change', function() {
+            var sign = this.value;
+            var result = document.getElementById('horoscope-result');
+            if (sign && horoscopeData[sign]) {
+                result.textContent = horoscopeData[sign];
+                result.classList.remove('hidden');
+            } else {
+                result.classList.add('hidden');
+            }
+        });
+
+        // Numerology tool - Life Path / Destiny number from name
+        function reduceToDigit(n) {
+            while (n > 9 && n !== 11 && n !== 22 && n !== 33) {
+                n = String(n).split('').reduce((a, b) => a + parseInt(b, 10), 0);
+            }
+            return n;
+        }
+        var letterValues = { A:1,B:2,C:3,D:4,E:5,F:6,G:7,H:8,I:9,J:1,K:2,L:3,M:4,N:5,O:6,P:7,Q:8,R:9,S:1,T:2,U:3,V:4,W:5,X:6,Y:7,Z:8 };
+        document.getElementById('numerology-btn').addEventListener('click', function() {
+            var name = (document.getElementById('numerology-name').value || '').toUpperCase().replace(/[^A-Z\s]/g, '');
+            var result = document.getElementById('numerology-result');
+            if (!name.trim()) {
+                result.textContent = 'Please enter your name.';
+                result.classList.remove('hidden');
+                return;
+            }
+            var sum = name.split('').reduce(function(acc, c) {
+                return acc + (letterValues[c] || 0);
+            }, 0);
+            var destiny = reduceToDigit(sum);
+            var meanings = { 1:'Leader, independent, pioneering', 2:'Diplomat, cooperative, intuitive', 3:'Creative, expressive, social', 4:'Practical, disciplined, builder', 5:'Freedom-loving, adaptable, curious', 6:'Nurturing, responsible, harmonious', 7:'Analytical, spiritual, seeker', 8:'Ambitious, authoritative, material', 9:'Compassionate, humanitarian, wise', 11:'Intuitive master, inspirational', 22:'Master builder, visionary', 33:'Master teacher, compassionate' };
+            result.innerHTML = '<strong>Destiny Number:</strong> ' + destiny + '<br><strong>Meaning:</strong> ' + (meanings[destiny] || 'Unique path');
+            result.classList.remove('hidden');
+        });
+
+        // Compatibility tool - static snippets
+        var compatData = {
+            'aries-taurus':'Aries brings fire and energy; Taurus offers stability. Balance action with patience for harmony.',
+            'aries-gemini':'Both love excitement. Great mental connection. Keep communication open.',
+            'aries-cancer':'Opposites attract. Aries needs to soften; Cancer to open up. Worth the effort.',
+            'aries-leo':'Two fires! Passionate and dynamic. Share the spotlight for lasting harmony.',
+            'aries-virgo':'Different rhythms. Aries slows down; Virgo loosens up. Mutual respect is key.',
+            'aries-libra':'Libra balances Aries. Strong attraction. Compromise on decisions.',
+            'aries-scorpio':'Intense chemistry. Power dynamics need care. Honesty builds trust.',
+            'aries-sagittarius':'Perfect match! Adventure, freedom, shared optimism. Natural compatibility.',
+            'aries-capricorn':'Different goals. Aries inspires; Capricorn grounds. Patience rewards.',
+            'aries-aquarius':'Innovative duo. Independence respected. Exciting intellectual bond.',
+            'aries-pisces':'Dreamer meets doer. Pisces softens Aries. Gentle understanding grows.',
+            'taurus-gemini':'Stability meets curiosity. Taurus grounds Gemini. Steady communication helps.',
+            'taurus-cancer':'Earth and water blend. Nurturing, secure bond. Highly compatible.',
+            'taurus-leo':'Luxury and drama. Both love comfort. Share appreciation for beauty.',
+            'taurus-virgo':'Earth signs unite. Practical, loyal, harmonious. Strong foundation.',
+            'taurus-libra':'Venus rules both. Beauty, harmony, romance. Natural affinity.',
+            'taurus-scorpio':'Deep passion. Intensity and loyalty. Transformative connection.',
+            'taurus-sagittarius':'Different paces. Taurus seeks security; Sagittarius adventure. Find middle ground.',
+            'taurus-capricorn':'Earth alliance. Ambitious, stable, lasting. Excellent match.',
+            'taurus-aquarius':'Fixed signs clash sometimes. Respect differences. Unconventional can work.',
+            'taurus-pisces':'Sensual and dreamy. Both value beauty and comfort. Romantic bond.',
+            'gemini-cancer':'Air and water. Gemini stimulates; Cancer nurtures. Communication is vital.',
+            'gemini-leo':'Fun-loving pair. Intellectual and creative. Keep the spark alive.',
+            'gemini-virgo':'Mercury rules both. Mental connection strong. Detail-oriented harmony.',
+            'gemini-libra':'Air signs flow. Social, intellectual, balanced. Natural chemistry.',
+            'gemini-scorpio':'Depth vs surface. Gemini lightens Scorpio. Honesty deepens bond.',
+            'gemini-sagittarius':'Mutable fire and air. Adventure, learning, freedom. Great match.',
+            'gemini-capricorn':'Different approaches. Gemini brings fun; Capricorn stability. Complement each other.',
+            'gemini-aquarius':'Air duo. Innovative, friendly, independent. Exciting partnership.',
+            'gemini-pisces':'Dreamer and thinker. Pisces adds depth; Gemini adds variety. Creative pair.',
+            'cancer-leo':'Water and fire. Cancer nurtures; Leo leads. Emotional warmth shared.',
+            'cancer-virgo':'Nurturing earth and water. Practical care. Harmonious home life.',
+            'cancer-libra':'Balance and emotion. Libra soothes; Cancer deepens. Gentle connection.',
+            'cancer-scorpio':'Water signs unite. Deep, intense, loyal. Soul-level bond.',
+            'cancer-sagittarius':'Different needs. Cancer seeks security; Sagittarius freedom. Patience required.',
+            'cancer-capricorn':'Cardinal signs. Cancer nurtures; Capricorn provides. Strong foundation.',
+            'cancer-aquarius':'Unconventional mix. Cancer needs closeness; Aquarius space. Understanding helps.',
+            'cancer-pisces':'Water harmony. Empathetic, romantic, intuitive. Deeply compatible.',
+            'leo-virgo':'Fire and earth. Leo inspires; Virgo refines. Mutual admiration.',
+            'leo-libra':'Dramatic and balanced. Both love beauty. Social harmony.',
+            'leo-scorpio':'Power couple. Intensity and passion. Share the throne wisely.',
+            'leo-sagittarius':'Fire duo! Adventurous, optimistic. Dynamic partnership.',
+            'leo-capricorn':'Ambitious pair. Leo leads; Capricorn builds. Respect each other\'s drive.',
+            'leo-aquarius':'Fixed signs. Leo needs attention; Aquarius needs freedom. Creative tension.',
+            'leo-pisces':'Dreamer and star. Leo shines; Pisces supports. Romantic blend.',
+            'virgo-libra':'Earth and air. Virgo analyzes; Libra balances. Refined connection.',
+            'virgo-scorpio':'Analytical depth. Both seek truth. Strong mental bond.',
+            'virgo-sagittarius':'Different styles. Virgo details; Sagittarius big picture. Learn from each other.',
+            'virgo-capricorn':'Earth alliance. Practical, ambitious, loyal. Excellent match.',
+            'virgo-aquarius':'Innovation meets precision. Unconventional harmony. Intellectual bond.',
+            'virgo-pisces':'Opposites attract. Virgo grounds; Pisces inspires. Complementary pair.',
+            'libra-scorpio':'Balance and depth. Libra charms; Scorpio transforms. Intense attraction.',
+            'libra-sagittarius':'Air and fire. Social, philosophical. Adventurous partnership.',
+            'libra-capricorn':'Venus and Saturn. Beauty and structure. Elegant compatibility.',
+            'libra-aquarius':'Air signs. Social, fair, progressive. Natural harmony.',
+            'libra-pisces':'Romantic duo. Both value beauty and peace. Gentle bond.',
+            'scorpio-sagittarius':'Depth vs breadth. Scorpio deepens; Sagittarius expands. Exciting contrast.',
+            'scorpio-capricorn':'Ambitious intensity. Both determined. Powerful alliance.',
+            'scorpio-aquarius':'Fixed signs. Scorpio needs depth; Aquarius needs space. Unique chemistry.',
+            'scorpio-pisces':'Water harmony. Deep, psychic, romantic. Soulmate potential.',
+            'sagittarius-capricorn':'Fire and earth. Optimism meets discipline. Balanced growth.',
+            'sagittarius-aquarius':'Fire and air. Freedom-loving, innovative. Adventurous pair.',
+            'sagittarius-pisces':'Philosophical and dreamy. Both seek meaning. Spiritual connection.',
+            'capricorn-aquarius':'Structure and innovation. Capricorn builds; Aquarius invents. Progressive pair.',
+            'capricorn-pisces':'Earth and water. Capricorn grounds; Pisces inspires. Complementary.',
+            'aquarius-pisces':'Air and water. Innovative and intuitive. Unconventional harmony.'
+        };
+        function compatKey(s1, s2) {
+            var arr = [s1, s2].sort();
+            return arr[0] + '-' + arr[1];
+        }
+        document.getElementById('compat-btn').addEventListener('click', function() {
+            var s1 = document.getElementById('compat-sign1').value;
+            var s2 = document.getElementById('compat-sign2').value;
+            var result = document.getElementById('compat-result');
+            if (!s1 || !s2) {
+                result.textContent = 'Please select both signs.';
+                result.classList.remove('hidden');
+                return;
+            }
+            if (s1 === s2) {
+                result.textContent = 'Same sign! You share deep understanding. Focus on individual growth within the relationship.';
+            } else {
+                var key = compatKey(s1, s2);
+                result.textContent = compatData[key] || 'A unique combination! Explore your connection with an open heart. For detailed Ashtakoot analysis, use the CosmicJyoti app.';
+            }
+            result.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
+

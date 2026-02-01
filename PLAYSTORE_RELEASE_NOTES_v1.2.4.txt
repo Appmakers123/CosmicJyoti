@@ -1,0 +1,42 @@
+================================================================================
+PLAY STORE – "What's new in this version" (Release notes for v1.2.4)
+================================================================================
+Copy the text below into:
+  Play Console → Your app → Production (or testing track) → Create new release
+  → "Release notes" / "What's new in this version"
+
+--------------------------------------------------------------------------------
+FULL VERSION (use if you have enough character limit)
+--------------------------------------------------------------------------------
+
+Version 1.2.4 – What's new
+
+• Play Store compliance – App updated to align with current advertising ID and policy requirements so you get a smooth publishing experience.
+• Stability and performance – General improvements and bug fixes for a more reliable experience across devices.
+
+--------------------------------------------------------------------------------
+SHORT VERSION (use if there is a strict character limit)
+--------------------------------------------------------------------------------
+
+v1.2.4
+• Play Store compliance and policy alignment
+• Stability and performance improvements
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – FULL (copy from next line, no headers)
+--------------------------------------------------------------------------------
+
+Version 1.2.4 – What's new
+
+• Play Store compliance – App updated to align with current advertising ID and policy requirements so you get a smooth publishing experience.
+• Stability and performance – General improvements and bug fixes for a more reliable experience across devices.
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – SHORT (copy from next line)
+--------------------------------------------------------------------------------
+
+v1.2.4
+• Play Store compliance and policy alignment
+• Stability and performance improvements
+
+================================================================================

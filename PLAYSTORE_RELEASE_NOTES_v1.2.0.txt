@@ -1,0 +1,58 @@
+================================================================================
+PLAY STORE – "What's new in this version" (Release notes for v1.2.0)
+================================================================================
+Copy the text below into:
+  Play Console → Your app → Production (or testing track) → Create new release
+  → "Release notes" / "What's new in this version"
+
+--------------------------------------------------------------------------------
+FULL VERSION (use if you have enough character limit)
+--------------------------------------------------------------------------------
+
+Version 1.2.0 – What's new
+
+• Scrolling on Android – Fixed scrolling on some Android devices (including Android 15). The app content now scrolls reliably with one finger.
+• Back button behaviour – Hardware back button now takes you to the previous screen inside the app (same as "Back to Sanctuary") and no longer exits the app when you're on the home screen.
+• Chart display – Removed the zoom overlay on Kundali and Transits charts. Charts are shown clearly on screen without opening a separate zoom view.
+• Location entry – You can type any city and country worldwide. "Pick from list or type any city, country" is shown wherever birth/location is asked. Added "Use as entered" when your place isn't in the list. Works in Kundali, Compatibility, Personal Transits, and Cosmic Health.
+• Cosmic Health location – Birth place/city is now a text field with suggestions; you can enter any city and country.
+• General improvements – Smoother navigation, clearer location hints, and better behaviour on different Android versions.
+
+--------------------------------------------------------------------------------
+SHORT VERSION (use if there is a strict character limit)
+--------------------------------------------------------------------------------
+
+v1.2.0
+• Fixed scrolling on Android (including Android 15)
+• Back button now goes to previous screen instead of closing the app
+• Charts show directly without zoom overlay
+• You can type any city/country for birth place and location everywhere
+• Cosmic Health now supports typing location like other sections
+• Other stability and usability improvements
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – FULL (copy from next line, no headers)
+--------------------------------------------------------------------------------
+
+Version 1.2.0 – What's new
+
+• Scrolling on Android – Fixed scrolling on some Android devices (including Android 15). The app content now scrolls reliably with one finger.
+• Back button behaviour – Hardware back button now takes you to the previous screen inside the app (same as "Back to Sanctuary") and no longer exits the app when you're on the home screen.
+• Chart display – Removed the zoom overlay on Kundali and Transits charts. Charts are shown clearly on screen without opening a separate zoom view.
+• Location entry – You can type any city and country worldwide. "Pick from list or type any city, country" is shown wherever birth/location is asked. Added "Use as entered" when your place isn't in the list. Works in Kundali, Compatibility, Personal Transits, and Cosmic Health.
+• Cosmic Health location – Birth place/city is now a text field with suggestions; you can enter any city and country.
+• General improvements – Smoother navigation, clearer location hints, and better behaviour on different Android versions.
+
+--------------------------------------------------------------------------------
+PLAIN TEXT BLOCK – SHORT (copy from next line)
+--------------------------------------------------------------------------------
+
+v1.2.0
+• Fixed scrolling on Android (including Android 15)
+• Back button now goes to previous screen instead of closing the app
+• Charts show directly without zoom overlay
+• You can type any city/country for birth place and location everywhere
+• Cosmic Health now supports typing location like other sections
+• Other stability and usability improvements
+
+================================================================================

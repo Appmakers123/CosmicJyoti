@@ -172,6 +172,43 @@ export async function generateKundaliFromBackend(
 }
 
 /**
+ * Generate Cosmic Health analysis using backend API
+ */
+export async function generateChartBasedHealthAnalysisFromBackend(
+  birthData: { date: string; time: string; city: string },
+  language: string = 'en'
+): Promise<{ healthIssues: string[]; chartSummary: string; remedies: { dosha: string; description: string; remedies: string[] }[] }> {
+  if (!API_BASE_URL) {
+    throw new Error('Backend not available, using direct API calls');
+  }
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/cosmic-health`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        date: birthData.date,
+        time: birthData.time,
+        city: birthData.city,
+        language,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Cosmic Health API error: ${response.status} - ${errorText}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error('Backend Cosmic Health API error:', error);
+    throw error;
+  }
+}
+
+/**
  * Generate Muhurat using backend API
  */
 export async function generateMuhuratFromBackend(

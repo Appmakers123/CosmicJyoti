@@ -12,6 +12,7 @@ import { generatePanchang } from './services/panchangService.js';
 import { generateMatchmaking } from './services/matchmakingService.js';
 import { generateTarot } from './services/tarotService.js';
 import { generatePredictions } from './services/predictionService.js';
+import { generateChartBasedHealthAnalysis } from './services/healthService.js';
 
 dotenv.config();
 
@@ -144,6 +145,47 @@ app.post('/api/navamsha', async (req, res) => {
   } catch (error) {
     console.error('Navamsha API error:', error);
     res.status(500).json({ error: error.message || 'Failed to generate Navamsha chart' });
+  }
+});
+
+// Cosmic Health - chart-based health analysis
+app.post('/api/cosmic-health', async (req, res) => {
+  try {
+    const { date, time, city, language = 'en' } = req.body;
+
+    if (!date || !time || !city) {
+      return res.status(400).json({ error: 'Missing required fields: date, time, city' });
+    }
+
+    const cacheKey = `cosmic-health:${date}:${time}:${city}:${language}`;
+
+    const result = await getCachedOrCompute(cacheKey, async () => {
+      const kundaliData = await generateKundali({
+        name: 'Health Seeker',
+        date,
+        time,
+        location: city,
+      }, language);
+
+      if (genAI) {
+        const predictions = await generatePredictions(kundaliData, language, genAI);
+        kundaliData.predictions = predictions;
+      } else {
+        kundaliData.predictions = generateBasicPredictions(kundaliData, language);
+      }
+
+      return await generateChartBasedHealthAnalysis(
+        kundaliData,
+        { date, time, city },
+        language,
+        genAI
+      );
+    }, 3600); // Cache for 1 hour
+
+    res.json(result);
+  } catch (error) {
+    console.error('Cosmic Health API error:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate health analysis' });
   }
 });
 

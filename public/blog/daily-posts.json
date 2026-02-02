@@ -1,0 +1,42 @@
+{
+  "lastGenerated": "2025-02-01",
+  "generatedAt": "2025-02-01T00:00:00.000Z",
+  "totalPosts": 3,
+  "posts": [
+    {
+      "id": "2025-02-01-understanding-vedic-kundali",
+      "articleId": "2025-02-01-understanding-vedic-kundali",
+      "slug": "understanding-vedic-kundali",
+      "date": "2025-02-01",
+      "title": "Understanding Your Vedic Kundali: A Beginner's Guide",
+      "excerpt": "Your birth chart holds the key to understanding your cosmic blueprint. Learn how to read your Kundali and unlock insights about your life path.",
+      "content": "<h2>What is a Kundali?</h2><p>A Vedic Kundali, or birth chart, captures the exact positions of planets at your birth. It's your cosmic blueprint.</p><h3>Getting Started</h3><p>Try our free Kundali generator at cosmicjyoti.com to create your chart in minutes.</p>",
+      "readingTime": "5 min",
+      "topic": "Kundali",
+      "serviceMode": "kundali",
+      "serviceLabel": "Birth Chart"
+    },
+    {
+      "id": "2025-02-01-gemstones-planetary-remedies",
+      "articleId": "2025-02-01-gemstones-planetary-remedies",
+      "slug": "gemstones-planetary-remedies",
+      "date": "2025-02-01",
+      "title": "Gemstones for Planetary Remedies: A Quick Guide",
+      "excerpt": "Discover how the right gemstone can strengthen weak planets and bring balance to your life according to Vedic astrology.",
+      "content": "<h2>Planetary Gemstones</h2><p>Ruby for Sun, Pearl for Moon, Red Coral for Mars—each planet has its healing stone.</p><h3>Choosing Wisely</h3><p>Consult your birth chart before wearing any gemstone. Visit cosmicjyoti.com for personalized recommendations.</p>",
+      "readingTime": "5 min",
+      "topic": "Remedies"
+    },
+    {
+      "id": "2025-02-01-numerology-life-path",
+      "articleId": "2025-02-01-numerology-life-path",
+      "slug": "numerology-life-path",
+      "date": "2025-02-01",
+      "title": "Numerology and Your Life Path Number",
+      "excerpt": "Your Life Path number reveals your core purpose and natural talents. Learn how to calculate and interpret yours.",
+      "content": "<h2>Finding Your Life Path</h2><p>Add the digits of your birth date until you get a single digit (1–9) or master numbers 11, 22.</p><h3>What It Means</h3><p>Each number carries unique energy. Use our Numerology tool at cosmicjyoti.com for a full analysis.</p>",
+      "readingTime": "5 min",
+      "topic": "Numerology"
+    }
+  ]
+}

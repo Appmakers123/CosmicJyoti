@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Language, KundaliFormData, KundaliResponse } from "../types";
 import { generateKundali } from "./geminiService";
+import { generateChartBasedHealthAnalysisFromBackend } from "./backendService";
 
 // Master System Prompt for Vedic Health Advisor
 const MASTER_HEALTH_SYSTEM_PROMPT = `You are CosmicHealth AI, an expert Vedic astrology-based health advisor with deep knowledge of:
@@ -99,12 +100,21 @@ export interface ChartHealthAnalysis {
 }
 
 /**
- * Generate chart-based health analysis: health issues + remedies from birth chart
+ * Generate chart-based health analysis: health issues + remedies from birth chart.
+ * Tries backend first (avoids CORS when backend is deployed), then falls back to direct API.
  */
 export const generateChartBasedHealthAnalysis = async (
   birthData: { date: string; time: string; city: string },
   language: Language = 'en'
 ): Promise<ChartHealthAnalysis> => {
+  try {
+    // Try backend first (works when VITE_API_BASE_URL is set - local dev or deployed backend)
+    return await generateChartBasedHealthAnalysisFromBackend(birthData, language);
+  } catch (backendErr: any) {
+    // Fall through to direct call on any backend failure (not available, network, 5xx, etc.)
+    console.warn('Cosmic Health backend unavailable, trying direct:', backendErr?.message);
+  }
+
   try {
     const formData: KundaliFormData = {
       name: 'Health Seeker',

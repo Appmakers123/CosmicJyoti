@@ -34,6 +34,7 @@ import UserProfileModal from './components/UserProfileModal';
 import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
 import DailyDoDonts from './components/DailyDoDonts';
+import DailyAIBlog from './components/DailyAIBlog';
 import DailyLuckScore from './components/DailyLuckScore';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
@@ -125,6 +126,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'palmistry-guide', labelEn: 'Palmistry Guide', labelHi: 'हस्तरेखा गाइड', icon: '✋', descEn: 'Hand lines', descHi: 'हाथ की रेखाएं', isPremium: false },
       { mode: 'numerology-guide', labelEn: 'Numerology Guide', labelHi: 'अंक गाइड', icon: '🔢', descEn: 'Number meanings', descHi: 'अंक अर्थ', isPremium: false },
       { mode: 'star-legends', labelEn: 'Star Legends', labelHi: 'तारा कथाएं', icon: '🌟', descEn: 'Cosmic stories', descHi: 'आकाशीय कथाएं', isPremium: false },
+      { mode: 'ai-blog', labelEn: 'AI Articles', labelHi: 'AI लेख', icon: '📝', descEn: 'Daily astrology articles', descHi: 'दैनिक ज्योतिष लेख', isPremium: false },
     ],
   },
   {
@@ -938,7 +940,7 @@ const App: React.FC = () => {
                 </div>
               )}
             </section>
-            
+
             {/* Categorized modules - user-friendly sections */}
             {MODULE_CATEGORIES.map((cat, catIdx) => {
               const filteredModules = cat.modules.filter((m) => {
@@ -1056,6 +1058,7 @@ const App: React.FC = () => {
         {mode === 'palmistry-guide' && <PalmistryGuide language={language} />}
         {mode === 'numerology-guide' && <NumerologyGuide language={language} />}
         {mode === 'star-legends' && <StarLegends language={language} />}
+        {mode === 'ai-blog' && <DailyAIBlog language={language} onBack={() => setMode('hub')} />}
         {mode === 'compatibility' && <CompatibilityTab language={language}  />}
         {mode === 'games' && <AstroGames language={language} />}
         {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}

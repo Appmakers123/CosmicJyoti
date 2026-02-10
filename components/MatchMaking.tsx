@@ -40,17 +40,41 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                         <h3 className="text-xl font-serif text-blue-300">Boy's Details</h3>
-                        <input type="text" placeholder="Enter name" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={boy.name} onChange={e => setBoy({...boy, name: e.target.value})} required />
-                        <input type="date" placeholder="Birth date" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={boy.date} onChange={e => setBoy({...boy, date: e.target.value})} required />
-                        <input type="time" placeholder="Birth time" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={boy.time} onChange={e => setBoy({...boy, time: e.target.value})} required />
-                        <input type="text" placeholder="e.g. Mumbai, Delhi" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={boy.location} onChange={e => setBoy({...boy, location: e.target.value})} required />
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Name</label>
+                            <input type="text" placeholder="Enter name" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={boy.name} onChange={e => setBoy({...boy, name: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Birth date</label>
+                            <input type="date" placeholder="Birth date" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={boy.date} onChange={e => setBoy({...boy, date: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Birth time</label>
+                            <input type="time" placeholder="Birth time" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={boy.time} onChange={e => setBoy({...boy, time: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Place of birth (e.g. Mumbai, Delhi)</label>
+                            <input type="text" placeholder="e.g. Mumbai, Delhi" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={boy.location} onChange={e => setBoy({...boy, location: e.target.value})} required />
+                        </div>
                     </div>
                     <div className="space-y-4">
                         <h3 className="text-xl font-serif text-pink-300">Girl's Details</h3>
-                        <input type="text" placeholder="Enter name" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={girl.name} onChange={e => setGirl({...girl, name: e.target.value})} required />
-                        <input type="date" placeholder="Birth date" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={girl.date} onChange={e => setGirl({...girl, date: e.target.value})} required />
-                        <input type="time" placeholder="Birth time" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={girl.time} onChange={e => setGirl({...girl, time: e.target.value})} required />
-                        <input type="text" placeholder="e.g. Mumbai, Delhi" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={girl.location} onChange={e => setGirl({...girl, location: e.target.value})} required />
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Name</label>
+                            <input type="text" placeholder="Enter name" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={girl.name} onChange={e => setGirl({...girl, name: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Birth date</label>
+                            <input type="date" placeholder="Birth date" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={girl.date} onChange={e => setGirl({...girl, date: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Birth time</label>
+                            <input type="time" placeholder="Birth time" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 [color-scheme:dark]" value={girl.time} onChange={e => setGirl({...girl, time: e.target.value})} required />
+                        </div>
+                        <div>
+                            <label className="block text-slate-400 text-sm mb-1">Place of birth (e.g. Mumbai, Delhi)</label>
+                            <input type="text" placeholder="e.g. Mumbai, Delhi" className="w-full bg-slate-900 border border-slate-600 rounded-lg p-3" value={girl.location} onChange={e => setGirl({...girl, location: e.target.value})} required />
+                        </div>
                     </div>
                     <button type="submit" disabled={loading} className="md:col-span-2 py-4 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl text-white font-serif font-bold disabled:opacity-50">
                         {loading ? "Calculating Vedic Bond..." : t.matchSubmit}

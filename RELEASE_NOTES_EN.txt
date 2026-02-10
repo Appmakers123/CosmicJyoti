@@ -1,0 +1,29 @@
+================================================================================
+RELEASE NOTES – English only (en-US)
+================================================================================
+Copy the block below for Play Console → Release notes → English (United States).
+
+--------------------------------------------------------------------------------
+v1.2.9 – What's new
+--------------------------------------------------------------------------------
+
+• Guna Milan (Match Making) now in Popular section, right next to Birth Chart
+• Transits (Gochara): smoother loading, single fetch, clearer error messages
+• Mantra: improved playback in browser
+• Know More links now open the app landing page
+• App always shows the latest content—updates come from the web, no app update needed for new features
+• Cleaner ad experience: no "Watch Ad to unlock" on cards
+• Stability and performance improvements
+
+--------------------------------------------------------------------------------
+Previous versions (for reference)
+--------------------------------------------------------------------------------
+
+v1.2.8
+• Cosmic Health: birth details flow directly to daily remedies
+• Kundali: cleaner predictions, no instruction text
+• Profile: consent required to save; submission fixes
+• Offline banner and crash recovery
+• Form validation and stability improvements
+
+================================================================================

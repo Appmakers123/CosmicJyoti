@@ -46,7 +46,7 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'assets',
       sourcemap: false,
       minify: 'esbuild',
-      chunkSizeWarningLimit: 500, // Warn if chunks exceed 500KB
+      chunkSizeWarningLimit: 600, // Warn if chunks exceed 600KB (main app chunk is large due to many features)
       cssCodeSplit: true, // Split CSS for better caching
       rollupOptions: {
         external: (id) => {

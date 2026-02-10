@@ -16,6 +16,8 @@ npm run preview   # Optional: preview the build locally
 
 # Android APK Build (Mobile App)
 
+**The Android app is a web shell:** it loads the live site **https://www.cosmicjyoti.com** (see `capacitor.config.json` → `server.url`). You do **not** need to update or re-publish the app for content or UI changes—just deploy the website. Rebuild and release a new APK only when you change native code (e.g. plugins, MainActivity) or Capacitor config.
+
 ## Prerequisites
 - Node.js 18+
 - Java 17 (JDK) – for Android build
@@ -27,16 +29,17 @@ npm run preview   # Optional: preview the build locally
 npm install
 ```
 
-## Step 2: Build Web App
+## Step 2: Build Web App (optional for content-only updates)
 ```bash
 npm run build
 ```
+Only needed if you change native plugins or run a release build; the app loads the live URL, so normal updates are done by deploying the web app.
 
 ## Step 3: Sync to Android
 ```bash
 npx cap sync android
 ```
-This copies the `dist` folder to `android/app/src/main/assets/public`. **Without this step, the app will show a blank screen.**
+Run this when you change native code, Capacitor config, or plugins. The app loads from the server URL, so a fresh `dist` copy is not required for content updates.
 
 ## Step 4: Build APK
 
@@ -87,6 +90,7 @@ npm run build && npx cap sync android && cd android && .\gradlew assembleDebug
 | **App crashes on launch** | Ensure full build + sync: `npm run build && npx cap sync android` |
 | **"Unable to open asset"** | Web assets not synced – run `npx cap sync android` |
 | **Ads not showing** | Check AdMob App ID in `AndroidManifest.xml`; ensure AD_ID permission is declared |
+| **"Bluetooth keeps stopping"** | App does not use Bluetooth; often device/Play Services. Manifest now marks Bluetooth optional. User: update Google Play Services, clear app cache, or try another device. |
 | **Profile submit fails** | Add `VITE_PROFILE_SUBMIT_URL` to `.env.local`; rebuild; redeploy Google Apps Script |
 | **Gradle build fails** | Ensure Java 17 is installed: `java -version` |
 | **Capacitor not found** | Run `npm install @capacitor/core @capacitor/cli @capacitor/android` |

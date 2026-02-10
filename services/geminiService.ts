@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
-import { generateHoroscopeFromPerplexity, hasPerplexityKey } from "./perplexityService";
+import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { askRishiFromBackend } from "./backendService";
 
 // Gemini API key (single key only - no fallback)
@@ -1846,12 +1846,12 @@ function getDefaultPanchang(location: string, language: Language): DailyPanchang
     };
 }
 
-export const generateMuhuratPlanner = async (location: string, language: Language, date?: string): Promise<MuhuratItem[]> => {
+export const generateMuhuratPlanner = async (location: string, language: Language, date?: string, activity: string = 'general'): Promise<MuhuratItem[]> => {
     try {
         // Use backend API first
         const selectedDate = date || new Date().toISOString().split('T')[0];
-        console.log("Generating muhurat for date:", selectedDate, "location:", location);
-        const backendResponse = await generateMuhuratFromBackend(selectedDate, location, 'general', language);
+        console.log("Generating muhurat for date:", selectedDate, "location:", location, "activity:", activity);
+        const backendResponse = await generateMuhuratFromBackend(selectedDate, location, activity, language);
         
         console.log("Backend muhurat response:", {
             hasMuhurats: !!backendResponse.muhurats,
@@ -2588,13 +2588,44 @@ export const generateGenericTransits = async (location: string, rashi: string, l
                               backendError?.code === "ETIMEDOUT";
         
         if (isNetworkError) {
-            console.log("Backend network error detected, will try Gemini fallback");
+            console.log("Backend network error detected, will try Perplexity then Gemini fallback");
         } else {
-            console.log("Backend returned an error, will try Gemini fallback");
+            console.log("Backend returned an error, will try Perplexity then Gemini fallback");
+        }
+    }
+
+    // Try Perplexity fallback (before Gemini) when API key is available
+    if (hasPerplexityKey()) {
+        try {
+            console.log("Trying Perplexity for generic transits...");
+            const perplexityResponse = await generateGenericTransitsFromPerplexity(location, rashi, language);
+            if (perplexityResponse?.currentPositions?.length > 0) {
+                const signMap: { [key: string]: number } = {
+                    'Aries': 1, 'Taurus': 2, 'Gemini': 3, 'Cancer': 4,
+                    'Leo': 5, 'Virgo': 6, 'Libra': 7, 'Scorpio': 8,
+                    'Sagittarius': 9, 'Capricorn': 10, 'Aquarius': 11, 'Pisces': 12
+                };
+                const referenceSignId = signMap[rashi] || 1;
+                const processedPositions = perplexityResponse.currentPositions.map((p: any) => {
+                    if (!p.signId && p.sign) p.signId = signMap[p.sign] || 1;
+                    if (!p.sign && p.signId) {
+                        const signNames = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+                        p.sign = signNames[(p.signId - 1) || 0] || 'Aries';
+                    }
+                    if (p.signId) p.house = ((p.signId - referenceSignId + 12) % 12) + 1;
+                    if (p.planet && p.planet.toLowerCase().includes('moon')) p.isRetrograde = false;
+                    return p;
+                });
+                const personalImpact = generateTransitPredictions(processedPositions, null, language);
+                console.log("Using Perplexity for transit data");
+                return { currentPositions: processedPositions, personalImpact };
+            }
+        } catch (perplexityError: any) {
+            console.warn("Perplexity fallback failed for generic transits:", perplexityError);
         }
     }
     
-    // Fallback to AI-generated transits (only if backend failed)
+    // Fallback to Gemini-generated transits (only if backend and Perplexity failed)
     try {
         return await (async () => {
             const ai = getAI();
@@ -2664,7 +2695,12 @@ Language: ${language}.`;
         }
     });
             
-            const parsed = JSON.parse(response.text || "{}");
+            let parsed: any;
+            try {
+                parsed = JSON.parse(response.text || "{}");
+            } catch (_) {
+                throw new Error("We couldn't load transit data right now. Please try again in a moment.");
+            }
             
             // Post-process: Calculate houses correctly and ensure all planets have correct data
             if (parsed.currentPositions && Array.isArray(parsed.currentPositions)) {
@@ -2774,7 +2810,11 @@ Language: ${language}.`;
             throw new Error("Cosmic is busy aligning the stars. Please try again after some time.");
         }
         
-        throw new Error(`Failed to generate transit data. Backend API failed and Gemini API also failed: ${errorMessage}`);
+        const raw = errorMessage || '';
+        if (raw.includes('JSON') || raw.includes('position') || raw.includes('Unexpected token') || raw.includes('Expected')) {
+          throw new Error("We couldn't load transit data right now. Please try again in a moment.");
+        }
+        throw new Error("We couldn't load transit data right now. Please try again later.");
     }
 };
 

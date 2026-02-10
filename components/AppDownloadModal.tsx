@@ -39,18 +39,27 @@ const AppDownloadModal: React.FC<AppDownloadModalProps> = ({ isOpen, onClose, la
         onClick={onClose}
         aria-hidden="true"
       />
+      {/* Mobile: bottom sheet (always visible) | Desktop: centered modal */}
       <div
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[91] w-[min(360px,calc(100vw-2rem))] max-h-[min(85vh,560px)] overflow-y-auto bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500/40 rounded-2xl shadow-2xl shadow-amber-500/20 p-6 animate-fade-in-up touch-manipulation"
+        className="fixed z-[91] overflow-y-auto overscroll-contain bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-amber-500/40 shadow-2xl shadow-amber-500/20 touch-manipulation
+          inset-x-0 bottom-0
+          sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2
+          w-full sm:w-[min(360px,calc(100vw-2rem))]
+          max-h-[85vh] sm:max-h-[560px]
+          rounded-t-2xl sm:rounded-2xl
+          animate-slide-in-up sm:animate-fade-in-up"
         style={{
-          marginTop: 'env(safe-area-inset-top)',
-          marginBottom: 'env(safe-area-inset-bottom)',
+          paddingTop: 'max(1rem, env(safe-area-inset-top))',
+          paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))',
+          paddingLeft: 'max(1rem, env(safe-area-inset-left))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right))',
         }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="app-download-title"
       >
         <div className="text-center">
-          <div className="text-4xl sm:text-5xl mb-3 sm:mb-4">📱</div>
+          <div className="text-4xl sm:text-5xl mb-3 sm:mb-4" aria-hidden="true">📱</div>
           <h2 id="app-download-title" className="text-lg sm:text-xl font-serif font-bold text-amber-200 mb-2">
             {title}
           </h2>
@@ -58,15 +67,15 @@ const AppDownloadModal: React.FC<AppDownloadModalProps> = ({ isOpen, onClose, la
           <div className="flex flex-col gap-3">
             <a
               {...getExternalLinkProps(PLAY_STORE_URL, language)}
-              className="flex items-center justify-center gap-2 w-full min-h-[48px] py-3 px-6 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 active:from-amber-700 active:to-orange-700 text-white font-bold rounded-xl transition-all active:scale-[0.98] touch-manipulation"
+              className="flex items-center justify-center gap-2 w-full min-h-[48px] min-w-[44px] py-3 px-6 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 active:from-amber-700 active:to-orange-700 text-white font-bold rounded-xl transition-all active:scale-[0.98] touch-manipulation"
             >
-              <span>📱</span>
+              <span aria-hidden="true">📱</span>
               <span className="text-sm sm:text-base">{ctaText}</span>
             </a>
             <button
               type="button"
               onClick={onClose}
-              className="min-h-[44px] text-slate-500 hover:text-slate-300 active:text-slate-200 text-sm font-medium py-3 transition-colors touch-manipulation"
+              className="min-h-[48px] min-w-[44px] text-slate-500 hover:text-slate-300 active:text-slate-200 text-sm font-medium py-3 px-4 transition-colors touch-manipulation"
               aria-label={laterText}
             >
               {laterText}
@@ -75,11 +84,14 @@ const AppDownloadModal: React.FC<AppDownloadModalProps> = ({ isOpen, onClose, la
         </div>
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 sm:top-3 sm:right-3 min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-slate-500 hover:text-white active:text-white rounded-full hover:bg-slate-700/50 active:bg-slate-700/70 transition-colors touch-manipulation"
-          style={{ top: 'max(0.5rem, env(safe-area-inset-top))', right: 'max(0.5rem, env(safe-area-inset-right))' }}
+          className="absolute min-w-[48px] min-h-[48px] flex items-center justify-center p-2 text-slate-500 hover:text-white active:text-white rounded-full hover:bg-slate-700/50 active:bg-slate-700/70 transition-colors touch-manipulation"
+          style={{
+            top: 'max(0.5rem, env(safe-area-inset-top))',
+            right: 'max(0.5rem, env(safe-area-inset-right))',
+          }}
           aria-label={language === 'hi' ? 'बंद करें' : 'Close'}
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>

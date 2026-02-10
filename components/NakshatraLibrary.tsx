@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { NAKSHATRAS_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface NakshatraLibraryProps {
   language: Language;
@@ -103,6 +104,7 @@ const NakshatraLibrary: React.FC<NakshatraLibraryProps> = ({ language }) => {
           </div>
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

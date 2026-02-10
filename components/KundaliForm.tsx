@@ -2,9 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { KundaliFormData, Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import { getGlobalProfile } from '../utils/profileStorageService';
+import {
+  isValidTime,
+  isValidLocationFormat,
+  getDatePresets,
+  loadKundaliDraft,
+  saveKundaliDraft,
+  clearKundaliDraft,
+} from '../utils/kundaliFormUtils';
+import AdBanner from './AdBanner';
 
 interface KundaliFormProps {
-  onSubmit: (data: KundaliFormData, options?: { saveToProfile?: boolean }) => void;
+  onSubmit: (data: KundaliFormData, options?: { saveToProfile?: boolean; consentToShare?: boolean }) => void;
   isLoading: boolean;
   language: Language;
   savedCharts?: KundaliFormData[];
@@ -36,11 +45,12 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
     onGetDaily
 }) => {
   const t = useTranslation(language);
+  const defaultLocation = 'Mumbai, India';
   const [formData, setFormData] = useState<KundaliFormData>({
     name: '',
     date: '',
-    time: '',
-    location: '',
+    time: '12:00',
+    location: defaultLocation,
     gender: undefined,
     lat: undefined,
     lon: undefined,
@@ -60,24 +70,80 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
   const [showNameSuggestions, setShowNameSuggestions] = useState(false);
   const [saveToProfile, setSaveToProfile] = useState(true);
+  const [consentToShare, setConsentToShare] = useState(false);
+  const [use24Hour, setUse24Hour] = useState(true);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [timeError, setTimeError] = useState<string | null>(null);
+  const lastSaveRef = useRef<string>('');
   
-  // Pre-fill from global profile on mount (user confirms and hits submit)
+  // Restore draft or profile on mount (run once)
+  const hasRestoredRef = useRef(false);
   useEffect(() => {
+    if (hasRestoredRef.current) return;
+    hasRestoredRef.current = true;
+    
     const profile = getGlobalProfile();
-    if (profile?.self?.name || profile?.self?.date || profile?.self?.location) {
+    const draft = loadKundaliDraft();
+    const hasProfile = profile?.self && (profile.self.name || profile.self.date || profile.self.location);
+    const hasDraft = draft && (draft.name || draft.date || draft.time || draft.location);
+    
+    if (hasProfile && hasDraft) {
+      const overwrite = window.confirm(
+        language === 'hi' ? 'प्रोफ़ाइल डेटा से सहेजा गया ड्राफ्ट ओवरराइट करें?' : 'Overwrite saved draft with profile data?'
+      );
+      if (overwrite) {
+        setFormData(prev => ({
+          ...prev,
+          name: profile!.self!.name || prev.name,
+          date: profile!.self!.date || prev.date,
+          time: profile!.self!.time || '12:00',
+          location: profile!.self!.location || defaultLocation,
+          gender: profile!.self!.gender ?? prev.gender,
+          lat: profile!.self!.lat ?? prev.lat,
+          lon: profile!.self!.lon ?? prev.lon,
+          tzone: profile!.self!.tzone ?? prev.tzone,
+        }));
+        clearKundaliDraft();
+      } else {
+        setFormData(prev => ({ ...prev, ...draft, location: draft.location || defaultLocation }));
+      }
+    } else if (hasDraft) {
+      const restore = window.confirm(
+        language === 'hi' ? 'सहेजा गया ड्राफ्ट पुनर्स्थापित करें?' : 'Restore saved draft?'
+      );
+      if (restore) {
+        setFormData(prev => ({ ...prev, ...draft, location: draft.location || defaultLocation }));
+      }
+    } else if (hasProfile) {
       setFormData(prev => ({
         ...prev,
-        name: profile.self.name || prev.name,
-        date: profile.self.date || prev.date,
-        time: profile.self.time || prev.time,
-        location: profile.self.location || prev.location,
-        gender: profile.self.gender ?? prev.gender,
-        lat: profile.self.lat ?? prev.lat,
-        lon: profile.self.lon ?? prev.lon,
-        tzone: profile.self.tzone ?? prev.tzone,
+        name: profile!.self!.name || prev.name,
+        date: profile!.self!.date || prev.date,
+        time: profile!.self!.time || '12:00',
+        location: profile!.self!.location || defaultLocation,
+        gender: profile!.self!.gender ?? prev.gender,
+        lat: profile!.self!.lat ?? prev.lat,
+        lon: profile!.self!.lon ?? prev.lon,
+        tzone: profile!.self!.tzone ?? prev.tzone,
       }));
     }
-  }, []);
+  }, [language]);
+  
+  // Auto-save draft every 30 seconds
+  useEffect(() => {
+    const hasData = !!(formData.name || formData.date || formData.time || (formData.location && formData.location.trim()));
+    if (!hasData) return;
+    
+    const timer = setInterval(() => {
+      const payload = { name: formData.name, date: formData.date, time: formData.time, location: formData.location };
+      const key = JSON.stringify(payload);
+      if (key !== lastSaveRef.current) {
+        lastSaveRef.current = key;
+        saveKundaliDraft(payload);
+      }
+    }, 30000);
+    return () => clearInterval(timer);
+  }, [formData.name, formData.date, formData.time, formData.location]);
   
   // Save form to cache when submitted
   const saveToCache = (data: KundaliFormData) => {
@@ -391,39 +457,37 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
     return null;
   };
 
+  const saveDraftOnBlur = () => {
+    const hasData = formData.name || formData.date || formData.time || (formData.location && formData.location.trim());
+    if (hasData) saveKundaliDraft({ name: formData.name, date: formData.date, time: formData.time, location: formData.location });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // If user manually types location, clear the precise coordinates to force re-geocoding
+    setTimeError(null);
+    setLocationError(null);
+    if (name === 'time') {
+      if (value && !isValidTime(value)) setTimeError(language === 'hi' ? 'समय HH:MM प्रारूप में होना चाहिए' : 'Time must be in HH:MM format');
+    }
     if (name === 'location') {
         setFormData(prev => ({ ...prev, location: value, lat: undefined, lon: undefined, tzone: undefined }));
-        
-        // Show suggestions immediately if there's text
-        if (value.length > 0) {
-          setShowSuggestions(true);
-        }
-        
-        // Clear previous timeout
-        if (geocodeTimeoutRef.current) {
-          clearTimeout(geocodeTimeoutRef.current);
-        }
-        
-        // Debounce geocoding - reduced to 300ms for faster response
+        if (value.trim() && !isValidLocationFormat(value)) setLocationError(t.locationFormatError || 'Use City, Country format');
+        else setLocationError(null);
+        if (value.length > 0) setShowSuggestions(true);
+        if (geocodeTimeoutRef.current) clearTimeout(geocodeTimeoutRef.current);
         if (value.length >= 1) {
-          geocodeTimeoutRef.current = setTimeout(() => {
-            geocodeLocation(value);
-          }, 300);
-        } else {
-          setLocationSuggestions([]);
-        }
+          geocodeTimeoutRef.current = setTimeout(() => geocodeLocation(value), 300);
+        } else setLocationSuggestions([]);
     } else {
         setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const selectCity = async (city: string) => {
+    setLocationError(null);
     setFormData(prev => ({ ...prev, location: city, lat: undefined, lon: undefined, tzone: undefined }));
     setShowSuggestions(false);
-    // Geocode the selected city to get coordinates
+    saveKundaliDraft({ name: formData.name, date: formData.date, time: formData.time, location: city });
     await geocodeSelectedLocation(city);
   };
 
@@ -569,7 +633,14 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       alert(language === 'hi' ? "कृपया सभी आवश्यक फ़ील्ड भरें" : "Please fill in all required fields");
       return;
     }
-    // Basic date validation: must be valid date, not too far future for birth chart
+    if (!isValidTime(formData.time)) {
+      setTimeError(language === 'hi' ? 'समय HH:MM प्रारूप में होना चाहिए' : 'Time must be in HH:MM format');
+      return;
+    }
+    if (!formData.lat && !isValidLocationFormat(formData.location)) {
+      setLocationError(t.locationFormatError || (language === 'hi' ? 'शहर, देश प्रारूप प्रयोग करें' : 'Use City, Country format'));
+      return;
+    }
     const dateObj = new Date(formData.date);
     if (isNaN(dateObj.getTime())) {
       alert(language === 'hi' ? "कृपया मान्य जन्म तिथि दर्ज करें" : "Please enter a valid date of birth");
@@ -582,6 +653,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       return;
     }
     saveToCache(formData);
+    clearKundaliDraft();
     if (isLoading) return;
     let dataToSubmit = formData;
     if (!formData.lat || !formData.lon) {
@@ -611,7 +683,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       time: dataToSubmit.time
     });
     
-    onSubmit(dataToSubmit, { saveToProfile });
+    onSubmit(dataToSubmit, { saveToProfile, consentToShare });
   };
 
   const filteredCities = COMMON_CITIES.filter(city => 
@@ -665,12 +737,30 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       {/* Main Form */}
       <div className={`w-full min-w-0 ${savedCharts.length > 0 ? 'md:w-2/3' : 'md:w-full max-w-xl md:mx-auto'}`}>
         <div className="bg-slate-800/60 backdrop-blur-md border border-amber-500/20 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+            {/* Loading overlay to prevent perceived freeze */}
+            {isLoading && (
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-2xl" aria-live="polite">
+                <div className="flex flex-col items-center gap-4">
+                  <svg className="w-12 h-12 animate-spin text-amber-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                  <p className="text-amber-200 font-medium">{t.loadingButton}</p>
+                </div>
+              </div>
+            )}
             {/* Background Mandala Effect */}
             <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
             <div className="text-center mb-6 sm:mb-8">
               <h2 className="text-2xl sm:text-3xl font-serif text-amber-100 mb-2">{t.formTitle}</h2>
               <p className="text-slate-400 text-sm">{t.formSubtitle}</p>
+              <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left">
+                <p className="text-emerald-200/90 text-xs sm:text-sm flex items-start gap-2">
+                  <span className="shrink-0 mt-0.5" aria-hidden="true">💡</span>
+                  <span>{t.saveDetailsHint || (language === 'hi' ? 'आपकी जानकारी स्वतः सहेजी जाती है। प्रोफ़ाइल में सेव करें—दोबारा लिखने की ज़रूरत नहीं।' : 'Your details are auto-saved. Save to profile to use across Kundali, Compatibility & more.')}</span>
+                </p>
+              </div>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
@@ -690,6 +780,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                     }
                 }}
                 onBlur={() => {
+                    saveDraftOnBlur();
                     setTimeout(() => setShowNameSuggestions(false), 200);
                 }}
                 placeholder={language === 'hi' ? "उदाहरण: अदिति राव" : "e.g. Aditi Rao"}
@@ -741,28 +832,55 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                 </div>
             </div>
 
-            {/* Date of Birth - same pattern as CompatibilityTab */}
+            {/* Date of Birth - calendar with presets */}
             <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wider text-amber-500/80 font-bold">{t.dob} / {t.tob}</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {getDatePresets().map(({ key, value }) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => { setFormData(prev => ({ ...prev, date: value })); saveDraftOnBlur(); }}
+                      className="px-3 py-1.5 text-xs rounded-lg bg-slate-700/80 hover:bg-amber-500/20 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 transition-all"
+                    >
+                      {key === 'today' ? t.datePresetToday : key === '1yr' ? t.datePreset1yr : key === '5yr' ? t.datePreset5yr : key === '10yr' ? t.datePreset10yr : t.datePreset20yr}
+                    </button>
+                  ))}
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                     <input
                         type="date"
                         name="date"
                         value={formData.date}
                         onChange={handleChange}
+                        onBlur={saveDraftOnBlur}
                         placeholder={t.dobPlaceholder || (language === 'hi' ? 'जन्म तिथि (वर्ष-महीना-दिन)' : 'Date of birth (YYYY-MM-DD)')}
                         className="w-full min-h-[48px] bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all [color-scheme:dark] cursor-pointer"
                         required
                     />
-                    <input
-                        type="time"
-                        name="time"
-                        value={formData.time}
-                        onChange={handleChange}
-                        step="1"
-                        className="w-full min-h-[48px] bg-slate-900/50 border border-slate-600 rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all [color-scheme:dark]"
-                        required
-                    />
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <input
+                          type="time"
+                          name="time"
+                          value={formData.time}
+                          onChange={handleChange}
+                          onBlur={saveDraftOnBlur}
+                          step="1"
+                          className={`flex-1 min-h-[48px] bg-slate-900/50 border rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all [color-scheme:dark] ${timeError ? 'border-red-500/50' : 'border-slate-600'}`}
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setUse24Hour(!use24Hour)}
+                          className="min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg bg-slate-700/80 border border-slate-600 text-xs text-slate-400 hover:text-amber-200 transition-all"
+                          title={language === 'hi' ? '12/24 घंटे प्रारूप' : '12/24 hour format'}
+                        >
+                          {use24Hour ? '24h' : '12h'}
+                        </button>
+                      </div>
+                      {timeError && <p className="text-xs text-red-400">{timeError}</p>}
+                    </div>
                 </div>
                 <p className="text-xs text-slate-500 -mt-2">{t.dobPlaceholder || (language === 'hi' ? 'जन्म तिथि (वर्ष-महीना-दिन)' : 'Date of birth (YYYY-MM-DD)')}</p>
             </div>
@@ -781,14 +899,21 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                         value={formData.location}
                         onChange={handleChange}
                         onFocus={() => {
+                            setLocationError(null);
                             if (formData.location.length >= 1) {
                                 setShowSuggestions(true);
                                 geocodeLocation(formData.location);
                             }
                         }}
-                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                        onBlur={() => {
+                            saveDraftOnBlur();
+                            if (formData.location.trim() && !isValidLocationFormat(formData.location) && !formData.lat) {
+                                setLocationError(t.locationFormatError || (language === 'hi' ? 'शहर, देश प्रारूप प्रयोग करें' : 'Use City, Country format'));
+                            }
+                            setTimeout(() => setShowSuggestions(false), 200);
+                        }}
                         placeholder={t.pobPlaceholder}
-                        className={`w-full min-h-[48px] bg-slate-900/50 border ${formData.lat ? 'border-emerald-500/50' : 'border-slate-600'} rounded-lg px-4 py-3 pr-12 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all`}
+                        className={`w-full min-h-[48px] bg-slate-900/50 border rounded-lg px-4 py-3 pr-12 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all ${locationError ? 'border-red-500/50' : formData.lat ? 'border-emerald-500/50' : 'border-slate-600'}`}
                         autoComplete="off"
                         required
                     />
@@ -810,8 +935,8 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                         )}
                     </button>
                 </div>
-                <p className="text-xs text-amber-500/70 mt-1.5">
-                  {t.locationOrEnterHint || (language === 'hi' ? 'सूची से चुनें या कोई भी शहर, देश टाइप करें' : 'Pick from list or type any city, country')}
+                <p className={`text-xs mt-1.5 ${locationError ? 'text-red-400' : 'text-amber-500/70'}`}>
+                  {locationError || t.locationOrEnterHint || (language === 'hi' ? 'सूची से चुनें या कोई भी शहर, देश टाइप करें (शहर, देश)' : 'Pick from list or type City, Country')}
                 </p>
                 {(showSuggestions && (locationSuggestions.length > 0 || filteredCities.length > 0 || isGeocoding || formData.location.trim().length >= 2)) && (
                 <ul className="absolute z-50 w-full bg-slate-800/95 backdrop-blur-sm border border-amber-500/30 rounded-lg mt-1 max-h-60 overflow-y-auto shadow-2xl animate-fade-in">
@@ -868,17 +993,40 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                 )}
             </div>
 
-            <label className="flex items-center gap-3 mt-6 cursor-pointer group">
+            <label className="flex items-center gap-3 mt-6 cursor-pointer group p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 hover:border-amber-500/40 transition-colors">
               <input
                 type="checkbox"
                 checked={saveToProfile}
                 onChange={(e) => setSaveToProfile(e.target.checked)}
-                className="w-4 h-4 rounded border-amber-500/50 bg-slate-800 text-amber-500 focus:ring-amber-500/50"
+                className="w-5 h-5 rounded border-amber-500/50 bg-slate-800 text-amber-500 focus:ring-amber-500/50"
               />
-              <span className="text-slate-300 text-sm group-hover:text-amber-200 transition-colors">
-                {language === 'hi' ? 'मेरे प्रोफ़ाइल में सेव करें' : 'Save to my profile'}
-              </span>
+              <div>
+                <span className="text-slate-200 text-sm font-medium group-hover:text-amber-200 transition-colors block">
+                  {language === 'hi' ? 'मेरे प्रोफ़ाइल में सेव करें' : 'Save to my profile'}
+                </span>
+                <span className="text-slate-500 text-xs mt-0.5 block">
+                  {t.saveDetailsHintShort || (language === 'hi' ? 'एक बार सेव करें, हर जगह उपयोग करें।' : 'Save once, use everywhere.')}
+                </span>
+              </div>
             </label>
+            {saveToProfile && (
+              <label className="flex items-center gap-3 mt-3 cursor-pointer group p-4 rounded-xl bg-slate-800/40 border border-slate-600/50 hover:border-slate-500/60 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={consentToShare}
+                  onChange={(e) => setConsentToShare(e.target.checked)}
+                  className="w-5 h-5 rounded border-amber-500/50 bg-slate-800 text-amber-500 focus:ring-amber-500/50"
+                />
+                <div>
+                  <span className="text-slate-300 text-sm font-medium group-hover:text-slate-200 transition-colors block">
+                    {language === 'hi' ? 'मैं अपनी जानकारी साझा करने के लिए सहमत हूं' : 'I consent to save my details to our records'}
+                  </span>
+                  <span className="text-slate-500 text-xs mt-0.5 block">
+                    {language === 'hi' ? 'आपकी जानकारी सुरक्षित रूप से सहेजी जाएगी।' : 'Your details will be saved securely.'}
+                  </span>
+                </div>
+              </label>
+            )}
             <button
                 type="submit"
                 disabled={isLoading}
@@ -889,6 +1037,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
             </form>
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8 w-full max-w-xl" />
     </div>
   );
 };

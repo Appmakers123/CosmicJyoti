@@ -3,8 +3,11 @@
   "appName": "CosmicJyoti",
   "webDir": "dist",
   "server": {
+    "url": "https://www.cosmicjyoti.com",
     "androidScheme": "https",
     "allowNavigation": [
+      "https://www.cosmicjyoti.com",
+      "https://cosmicjyoti.com",
       "https://maps.googleapis.com",
       "https://json.freeastrologyapi.com",
       "https://json.apiastro.com",

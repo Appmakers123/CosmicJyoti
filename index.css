@@ -157,6 +157,15 @@ button, a {
 }
 .animate-slide-in-right {
   animation: slide-in-right 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Bottom sheet / modal slide up from bottom (mobile) */
+@keyframes slide-in-up {
+  from { transform: translateY(100%); opacity: 0.9; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.animate-slide-in-up {
+  animation: slide-in-up 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }/* Hub category cards - subtle stagger */
 @keyframes fade-in-up-soft {
   from { opacity: 0; transform: translateY(8px); }

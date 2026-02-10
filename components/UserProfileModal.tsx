@@ -77,6 +77,9 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
         partner: showPartner && partner.name ? { ...partner, language } : undefined,
       };
       saveGlobalProfile(profileData);
+      try {
+        localStorage.setItem('cosmicjyoti_profile_consent', 'granted');
+      } catch {}
       submitProfileWithConsent(profileData, updatedUser.name, updatedUser.email).catch(() => {});
       onProfileSaved?.();
       onClose();
@@ -133,9 +136,15 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
           <h2 className="text-xl font-serif text-white mb-1">
             {language === 'hi' ? 'आपकी प्रोफ़ाइल' : 'Your Profile'}
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 mb-3">
             {language === 'hi' ? 'सभी मॉड्यूल में ऑटो-भरने के लिए' : 'Auto-fills forms across all modules'}
           </p>
+          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left">
+            <p className="text-emerald-200/90 text-xs flex items-start gap-2">
+              <span className="shrink-0" aria-hidden="true">💡</span>
+              <span>{language === 'hi' ? 'एक बार सेव करें—कुंडली, संगतता, राशिफल में दोबारा लिखने की ज़रूरत नहीं।' : 'Save once—no need to re-enter in Kundali, Compatibility, Horoscope & more.'}</span>
+            </p>
+          </div>
         </div>
 
         <div className="space-y-5">

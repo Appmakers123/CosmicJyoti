@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface PalmistryGuideProps {
   language: Language;
@@ -892,6 +893,7 @@ const PalmistryGuide: React.FC<PalmistryGuideProps> = ({ language }) => {
           </div>
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

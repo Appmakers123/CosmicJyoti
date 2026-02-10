@@ -1,6 +1,5 @@
 import React from 'react';
 import { User, Language } from '../types';
-import { isFeatureUnlocked, formatRemainingTime } from '../utils/adUnlockService';
 
 interface PremiumFeatureCardProps {
   target: string;
@@ -33,10 +32,8 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
   mustRead = false,
   isFeatured = false,
 }) => {
-  const isUnlockedViaAd = isFeatureUnlocked(target);
   const showSubscribeBadge = false; // Subscription removed - ads only
-  const showAdUnlockBadge = isPremium && !isSubscriptionOnly && !isUnlockedViaAd;
-  const remainingTime = formatRemainingTime(target, language);
+  // Ad-unlock badge/footer removed: ads are shown in every module now
 
   return (
     <button
@@ -98,11 +95,6 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
             {language === 'hi' ? 'सब्सक्राइब' : 'Subscribe'}
           </div>
         )}
-        {showAdUnlockBadge && (
-          <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[8px] font-bold px-2 py-1 rounded-full uppercase tracking-tighter">
-            Ad
-          </div>
-        )}
         <div className="text-[8px] uppercase tracking-tighter text-slate-500 font-bold group-hover:text-amber-500 transition-colors max-w-[80px] truncate" title={category}>
           {category}
         </div>
@@ -125,29 +117,6 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
             <span className="whitespace-nowrap">{language === 'en' ? 'Subscribe for unlimited AI' : 'असीमित AI के लिए सब्सक्राइब करें'}</span>
-          </div>
-        </div>
-      )}
-      {showAdUnlockBadge && (
-        <div className="mt-auto pt-3 border-t border-slate-700/50 w-full">
-          <div className="flex items-center justify-start gap-2 text-xs text-blue-400">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <span className="whitespace-nowrap">{language === 'en' ? 'Watch Ad to unlock' : 'अनलॉक करने के लिए विज्ञापन देखें'}</span>
-          </div>
-        </div>
-      )}
-      
-      {isUnlockedViaAd && (
-        <div className="mt-auto pt-3 border-t border-slate-700/50 w-full">
-          <div className="flex items-center justify-start gap-2 text-xs text-blue-400">
-            <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-            </svg>
-            <span className="font-bold whitespace-nowrap">
-              {language === 'en' ? `Unlocked via Ad • ${remainingTime}` : `विज्ञापन से अनलॉक • ${remainingTime}`}
-            </span>
           </div>
         </div>
       )}

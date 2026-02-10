@@ -56,6 +56,7 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
                         {loading ? "Calculating Vedic Bond..." : t.matchSubmit}
                     </button>
                 </form>
+                <AdBanner variant="display" className="mt-8" />
             </div>
         ) : (
             <div className="space-y-8">
@@ -70,6 +71,7 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
                      </div>
                 </div>
                 <button onClick={() => setResult(null)} className="px-6 py-2 border border-slate-600 text-slate-400 rounded-full text-xs uppercase font-bold">{t.return}</button>
+                <AdBanner variant="display" className="mt-8" />
             </div>
         )}
     </div>

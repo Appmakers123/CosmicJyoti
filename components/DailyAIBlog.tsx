@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { BackButton } from './common';
+import AdBanner from './AdBanner';
 
 interface DailyPost {
   id: string;
@@ -132,6 +133,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack }) => {
           </div>
         ))}
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </section>
   );
 };

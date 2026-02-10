@@ -4,6 +4,7 @@ import Logo from './Logo';
 import { BackButton } from './common';
 import { openExternalLink, getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
 import { PLAY_STORE_URL } from '../constants';
+import AdBanner from './AdBanner';
 
 const WHATSAPP_NUMBER = '919326715739';
 const WHATSAPP_URL_MAX_LEN = 2000; // Approx limit for wa.me?text=
@@ -378,6 +379,7 @@ const BookAppointment: React.FC<BookAppointmentProps> = ({ language, onBack }) =
           {language === 'hi' ? 'बुक करें' : 'Book Appointment'}
         </button>
       </form>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

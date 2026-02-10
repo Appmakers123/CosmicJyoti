@@ -507,18 +507,37 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
     }
   }, [activeCategory]);
 
-  // Load voices when component mounts
-  useEffect(() => {
-    if (window.speechSynthesis) {
-      // Voices might not be loaded immediately
-      const loadVoices = () => {
-        const voices = window.speechSynthesis.getVoices();
-        console.log("Available voices:", voices.map(v => `${v.name} (${v.lang})`));
+  // Ensure speech synthesis voices are loaded (Chrome returns [] until voiceschanged)
+  const getVoicesForMantra = (): SpeechSynthesisVoice[] => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return [];
+    return window.speechSynthesis.getVoices();
+  };
+
+  const getVoicesWithWait = (): Promise<SpeechSynthesisVoice[]> => {
+    return new Promise((resolve) => {
+      const voices = getVoicesForMantra();
+      if (voices.length > 0) {
+        resolve(voices);
+        return;
+      }
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        resolve(getVoicesForMantra());
       };
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-  }, []);
+      const timeout = setTimeout(finish, 600);
+      try {
+        window.speechSynthesis.onvoiceschanged = () => {
+          clearTimeout(timeout);
+          finish();
+        };
+      } catch (_) {
+        clearTimeout(timeout);
+        finish();
+      }
+    });
+  };
 
   const stopAudio = () => {
     if (sourceNodeRef.current) {
@@ -560,87 +579,79 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
         const ctx = audioContextRef.current;
         if (ctx.state === 'suspended') await ctx.resume();
 
-        // Check if we should use browser TTS fallback
-        const audioData = await generateMantraAudio(selected.sanskrit);
+        // In browser, Gemini TTS often fails (CORS). Use browser TTS directly for reliable playback.
+        const isBrowser = typeof window !== 'undefined';
+        let audioData: string | null = null;
+        if (!isBrowser) {
+            audioData = await generateMantraAudio(selected.sanskrit);
+        }
+        if (audioData !== "BROWSER_TTS_FALLBACK" && audioData) {
+            // Use Gemini audio (decode below)
+        } else {
+            // Use browser's Web Speech API (default in browser for reliability)
+            if (isBrowser) {
+                audioData = "BROWSER_TTS_FALLBACK";
+            }
+        }
         
         if (audioData === "BROWSER_TTS_FALLBACK" || !audioData) {
             // Use browser's Web Speech API
-            console.log("Using browser TTS for mantra:", selected.sanskrit);
-            if (!window.speechSynthesis) {
-                throw new Error("Browser TTS not supported. Please use a modern browser.");
+            if (typeof window === 'undefined' || !window.speechSynthesis) {
+                throw new Error(language === 'hi' ? 'इस ब्राउज़र में ध्वनि समर्थित नहीं है। Chrome या Edge आज़माएं।' : "Audio not supported in this browser. Try Chrome or Edge.");
             }
-            
-            const utterance = new SpeechSynthesisUtterance(selected.sanskrit);
-            utterance.lang = 'hi-IN'; // Hindi/Sanskrit
-            utterance.rate = 0.6; // Slower for mantras
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            
-            // Try to find a Hindi/Sanskrit voice
-            const voices = window.speechSynthesis.getVoices();
+            window.speechSynthesis.cancel();
+            const voices = await getVoicesWithWait();
             const hindiVoice = voices.find(v => v.lang.includes('hi') || v.lang.includes('IN')) || 
                               voices.find(v => v.name.includes('Hindi')) ||
-                              voices.find(v => v.lang.includes('en')); // Fallback to English
+                              voices.find(v => v.lang.includes('en')) ||
+                              voices[0];
             
-            if (hindiVoice) {
-                utterance.voice = hindiVoice;
-                console.log("Using voice:", hindiVoice.name, hindiVoice.lang);
-            }
+            const utterance = new SpeechSynthesisUtterance(selected.sanskrit);
+            utterance.lang = 'hi-IN';
+            utterance.rate = 0.6;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            if (hindiVoice) utterance.voice = hindiVoice;
             
-            // Create a looping function that checks the ref
             const loopSpeech = () => {
                 if (!speechSynthesisRef.current) {
                     setIsPlaying(false);
                     return;
                 }
-                
                 const newUtterance = new SpeechSynthesisUtterance(selected.sanskrit);
                 newUtterance.lang = 'hi-IN';
                 newUtterance.rate = 0.6;
                 newUtterance.pitch = 1.0;
                 newUtterance.volume = 1.0;
                 if (hindiVoice) newUtterance.voice = hindiVoice;
-                
                 newUtterance.onend = () => {
-                    // Check if still playing (ref is set) before looping
                     if (speechSynthesisRef.current) {
                         setTimeout(() => {
-                            if (speechSynthesisRef.current) {
-                                loopSpeech();
-                            }
+                            if (speechSynthesisRef.current) loopSpeech();
                         }, 100);
                     } else {
                         setIsPlaying(false);
                     }
                 };
-                
                 newUtterance.onerror = () => {
                     setIsPlaying(false);
                     speechSynthesisRef.current = null;
                 };
-                
                 speechSynthesisRef.current = newUtterance;
                 window.speechSynthesis.speak(newUtterance);
             };
             
             utterance.onend = () => {
-                if (speechSynthesisRef.current) {
-                    loopSpeech();
-                } else {
-                    setIsPlaying(false);
-                }
+                if (speechSynthesisRef.current) loopSpeech();
+                else setIsPlaying(false);
             };
-            
-            utterance.onerror = (e) => {
-                console.error("Speech synthesis error:", e);
+            utterance.onerror = () => {
                 setIsPlaying(false);
                 speechSynthesisRef.current = null;
             };
-            
             speechSynthesisRef.current = utterance;
             window.speechSynthesis.speak(utterance);
             setIsPlaying(true);
-            
             return;
         }
         

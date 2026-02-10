@@ -29,6 +29,9 @@ import RudrakshLab from './components/RudrakshLab';
 import YantraLab from './components/YantraLab';
 import CosmicHealthAI from './components/CosmicHealthAI';
 import BookAppointment from './components/BookAppointment';
+import MuhuratLab from './components/MuhuratLab';
+import PersonalTransits from './components/PersonalTransits';
+import MatchMaking from './components/MatchMaking';
 import NotificationToggle from './components/NotificationToggle';
 import UserProfileModal from './components/UserProfileModal';
 import Logo from './components/Logo';
@@ -53,7 +56,9 @@ import { addBonusMessages } from './utils/chatLimitService';
 import { addKarma, getKarma } from './utils/karmaService';
 import { unlockFeature, isFeatureUnlocked } from './utils/adUnlockService';
 import { getReportByForm, saveReport, listReports, getReport, deleteReport } from './utils/reportStorageService';
-import { getGlobalProfile } from './utils/profileStorageService';
+import { getGlobalProfile, saveGlobalProfile } from './utils/profileStorageService';
+import { recordVisit, getStreak } from './utils/streakService';
+import { submitProfileWithConsent, isProfileSubmitEnabled } from './services/profileSubmissionService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import OfflineBanner from './components/OfflineBanner';
 import AppDownloadModal from './components/AppDownloadModal';
@@ -78,8 +83,10 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     color: 'from-amber-500/20 to-orange-500/10',
     modules: [
       { mode: 'kundali', labelEn: 'Birth Chart', labelHi: 'जन्म कुंडली', icon: '🧭', descEn: 'Your cosmic blueprint', descHi: 'आपका आकाशीय नक्शा', isPremium: false },
+      { mode: 'matchmaking', labelEn: 'Guna Milan', labelHi: 'गुण मिलान', icon: '💒', descEn: 'Ashtakoot match score', descHi: 'अष्टकूट मिलान', isPremium: false },
       { mode: 'daily', labelEn: 'Horoscope', labelHi: 'राशिफल', icon: '🌞', descEn: 'Today\'s predictions', descHi: 'आज का भविष्य', isPremium: false },
       { mode: 'panchang', labelEn: 'Panchang', labelHi: 'पंचांग', icon: '📅', descEn: 'Celestial almanac', descHi: 'दैनिक पंचांग', isPremium: false },
+      { mode: 'muhurat', labelEn: 'Muhurat', labelHi: 'मुहूर्त', icon: '🕐', descEn: 'Auspicious timing', descHi: 'शुभ समय', isPremium: false },
       { mode: 'compatibility', labelEn: 'Compatibility', labelHi: 'कुंडली मिलान', icon: '❤️', descEn: 'Match & harmony', descHi: 'मिलान और सामंजस्य', isPremium: false },
     ],
   },
@@ -136,6 +143,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     icon: '🎲',
     color: 'from-pink-500/20 to-rose-500/10',
     modules: [
+      { mode: 'transits', labelEn: 'Transits (Gochara)', labelHi: 'गोचर', icon: '🪐', descEn: 'Planetary transits', descHi: 'ग्रह गोचर', isPremium: false },
       { mode: 'games', labelEn: 'Astro Games', labelHi: 'पहेलियाँ', icon: '🎲', descEn: 'Play & learn', descHi: 'खेलें और सीखें', isPremium: false },
     ],
   },
@@ -205,6 +213,17 @@ const App: React.FC = () => {
     checkExistingSession();
   }, []);
 
+  // Load AdSense script only on web (not in app) - policy compliance, AdMob used in app
+  useEffect(() => {
+    if (isCapacitor() || typeof window === 'undefined') return;
+    if (document.querySelector('script[src*="adsbygoogle"]')) return;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936';
+    s.crossOrigin = 'anonymous';
+    document.head.appendChild(s);
+  }, []);
+
   // Initialize and preload AdMob ads on app start (Android only)
   useEffect(() => {
     if (!isCapacitor()) return;
@@ -256,6 +275,15 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
+  const [streakCount, setStreakCount] = useState(0);
+
+  // Record visit and update streak when hub is shown
+  useEffect(() => {
+    if (mode === 'hub') {
+      const updated = recordVisit();
+      setStreakCount(updated);
+    }
+  }, [mode]);
 
   // Show app download popup on web only, after delay, once per 7 days
   useEffect(() => {
@@ -394,7 +422,7 @@ const App: React.FC = () => {
     }
   }, [handleSelectSign, language]);
 
-  const handleGenerateKundali = useCallback(async (formData: KundaliFormData, options?: { saveToProfile?: boolean }) => {
+  const handleGenerateKundali = useCallback(async (formData: KundaliFormData, options?: { saveToProfile?: boolean; consentToShare?: boolean }) => {
     const saveToProfile = options?.saveToProfile !== false;
     const formInput = { name: formData.name, date: formData.date, time: formData.time, location: formData.location };
     if (saveToProfile) {
@@ -409,12 +437,40 @@ const App: React.FC = () => {
     setKundaliFormData(formData);
     setLoading(true);
     try {
-      const data = await generateKundali(formData, language);
+      const timeoutMs = 10000;
+      const data = await Promise.race([
+        generateKundali(formData, language),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(language === 'hi' ? 'कुंडली जनरेशन समय सीमा से अधिक हो गया' : 'Kundali generation timed out after 10 seconds')), timeoutMs)
+        ),
+      ]);
       setKundaliData(data);
       setMode('kundali');
       if (saveToProfile) {
         saveReport('kundali', data, formInput, `Kundali for ${formData.name}`);
         loadSavedKundaliCharts();
+        const profileData = {
+          self: { ...formData, language },
+          partner: undefined,
+        };
+        saveGlobalProfile(profileData);
+        if (options?.consentToShare) {
+          try { localStorage.setItem('cosmicjyoti_profile_consent', 'granted'); } catch {}
+        }
+        const hasConsent = typeof localStorage !== 'undefined' && localStorage.getItem('cosmicjyoti_profile_consent') === 'granted';
+        if (hasConsent && isProfileSubmitEnabled()) {
+          let accountName = formData.name;
+          let accountEmail = '';
+          try {
+            const raw = localStorage.getItem('cosmicjyoti_user');
+            if (raw) {
+              const u = JSON.parse(raw) as User;
+              if (u?.name) accountName = u.name;
+              if (u?.email) accountEmail = u.email;
+            }
+          } catch {}
+          submitProfileWithConsent(profileData, accountName, accountEmail).catch(() => {});
+        }
       }
       if (isCapacitor()) admobService.showInterstitialDelayed(4500, () => { lastAdShownTime.current = Date.now(); });
     } catch (err) { 
@@ -703,7 +759,6 @@ const App: React.FC = () => {
           switchMode(m);
         }}
         language={language}
-        onLanguageChange={setLanguage}
         onOpenProfile={() => { setShowProfile(true); setHamburgerOpen(false); }}
         user={user}
         onLogout={async () => {
@@ -795,8 +850,24 @@ const App: React.FC = () => {
             <Logo className="w-8 h-8 sm:w-10 sm:h-10 animate-spin-slow shrink-0" />
             <span className="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-100 hidden sm:block tracking-widest uppercase whitespace-nowrap">CosmicJyoti</span>
           </div>
-          {/* Hamburger + Notif - always visible on mobile */}
+          {/* Language + Hamburger + Notif - always visible on mobile */}
           <div className="flex items-center gap-2 sm:hidden shrink-0">
+            <div className="flex rounded-lg overflow-hidden border border-slate-700">
+              <button
+                onClick={() => setLanguage('en')}
+                className={`min-h-[40px] min-w-[40px] px-2 text-xs font-bold transition-all touch-manipulation ${language === 'en' ? 'bg-amber-500/30 text-amber-200 border-r border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
+                aria-label="English"
+              >
+                EN
+              </button>
+              <button
+                onClick={() => setLanguage('hi')}
+                className={`min-h-[40px] min-w-[40px] px-2 text-xs font-bold transition-all touch-manipulation ${language === 'hi' ? 'bg-amber-500/30 text-amber-200 border-l border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
+                aria-label="हिंदी"
+              >
+                HI
+              </button>
+            </div>
             <NotificationToggle language={language} />
             <button
               onClick={() => setHamburgerOpen(true)}
@@ -836,8 +907,24 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-2 shrink-0 ml-auto">
+          <div className="flex rounded-lg overflow-hidden border border-slate-700">
+            <button
+              onClick={() => setLanguage('en')}
+              className={`min-h-[40px] min-w-[44px] px-3 text-xs font-bold transition-all touch-manipulation ${language === 'en' ? 'bg-amber-500/30 text-amber-200 border-r border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
+              aria-label="English"
+            >
+              EN
+            </button>
+            <button
+              onClick={() => setLanguage('hi')}
+              className={`min-h-[40px] min-w-[44px] px-3 text-xs font-bold transition-all touch-manipulation ${language === 'hi' ? 'bg-amber-500/30 text-amber-200 border-l border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
+              aria-label="हिंदी"
+            >
+              HI
+            </button>
+          </div>
           <a 
-            {...getExternalLinkProps("https://www.cosmicjyoti.com/", language)}
+            href="/landing.html"
             className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-full hover:border-amber-500/50 transition-all text-[10px] font-bold uppercase tracking-widest text-amber-200 min-h-[44px] touch-manipulation"
           >
             Know More
@@ -885,6 +972,24 @@ const App: React.FC = () => {
             </div>
             
             <ThoughtOfTheDay language={language} />
+
+            {/* Today for you: streak + quick links */}
+            <section className="animate-fade-in-up flex flex-wrap items-center justify-center gap-3 py-2">
+              {streakCount > 0 && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-sm font-medium">
+                  <span>🔥</span>
+                  <span>{language === 'hi' ? `${streakCount} दिन स्ट्रीक` : `${streakCount} day streak`}</span>
+                </div>
+              )}
+              <div className="flex flex-wrap justify-center gap-2">
+                <button onClick={() => switchMode('transits')} className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  {language === 'hi' ? 'गोचर देखें' : 'View Transits'}
+                </button>
+                <button onClick={() => switchMode('muhurat')} className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  {language === 'hi' ? 'मुहूर्त' : 'Muhurat'}
+                </button>
+              </div>
+            </section>
 
             {/* Daily Luck Score - KundaliCard style */}
             <section className="animate-fade-in-up">
@@ -1060,6 +1165,9 @@ const App: React.FC = () => {
         {mode === 'star-legends' && <StarLegends language={language} />}
         {mode === 'ai-blog' && <DailyAIBlog language={language} onBack={() => setMode('hub')} />}
         {mode === 'compatibility' && <CompatibilityTab language={language}  />}
+        {mode === 'muhurat' && <MuhuratLab language={language} onBack={() => setMode('hub')} />}
+        {mode === 'transits' && <PersonalTransits language={language} kundali={null} onOpenKundali={() => setMode('kundali')} />}
+        {mode === 'matchmaking' && <MatchMaking language={language} />}
         {mode === 'games' && <AstroGames language={language} />}
         {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}
         
@@ -1084,7 +1192,7 @@ const App: React.FC = () => {
               <p className="text-slate-400 text-sm sm:text-base max-w-sm italic leading-relaxed">{t.footer}</p>
               <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                 <a 
-                  {...getExternalLinkProps("https://www.cosmicjyoti.com/", language)}
+                  href="/landing.html"
                   className="group inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-bold text-xs sm:text-sm uppercase tracking-widest border-b-2 border-amber-500/30 pb-1 hover:border-amber-400 transition-all"
                 >
                   <span>Know More</span>

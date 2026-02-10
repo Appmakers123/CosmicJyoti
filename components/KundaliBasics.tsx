@@ -4,6 +4,7 @@ import { HOUSES_INFO, PLANETS_INFO_DETAILED, PLANETS_INFO, ZODIAC_SIGNS } from '
 import { generateConjunctionAnalysis } from '../services/geminiService';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 interface KundaliBasicsProps {
   language: Language;
@@ -673,6 +674,7 @@ const KundaliBasics: React.FC<KundaliBasicsProps> = ({ language }) => {
           <AstroLabSection language={language} />
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

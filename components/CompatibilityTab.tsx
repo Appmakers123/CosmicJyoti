@@ -228,13 +228,28 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
     setLoading(true);
     setResult(null);
     
+    const maxRetries = 3;
+    const withRetry = async <T,>(fn: () => Promise<T>, label: string): Promise<T> => {
+      let lastErr: any;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          return await fn();
+        } catch (err) {
+          lastErr = err;
+          if (attempt < maxRetries) {
+            await new Promise(r => setTimeout(r, 1000 * attempt));
+          }
+        }
+      }
+      throw lastErr;
+    };
+    
     try {
-      // Generate kundali for both people using the main generateKundali function (handles backend/fallback internally)
       let kundaliA, kundaliB;
       
       console.log('Generating kundali for Person A:', personA.name);
       try {
-        kundaliA = await generateKundali(personA, language);
+        kundaliA = await withRetry(() => generateKundali(personA, language), 'Person A');
         console.log('Person A kundali generated:', {
           moonSign: kundaliA.basicDetails?.moonSign,
           nakshatra: kundaliA.basicDetails?.nakshatra
@@ -248,7 +263,7 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
       
       console.log('Generating kundali for Person B:', personB.name);
       try {
-        kundaliB = await generateKundali(personB, language);
+        kundaliB = await withRetry(() => generateKundali(personB, language), 'Person B');
         console.log('Person B kundali generated:', {
           moonSign: kundaliB.basicDetails?.moonSign,
           nakshatra: kundaliB.basicDetails?.nakshatra
@@ -390,6 +405,17 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
     <div className="w-full max-w-5xl mx-auto px-4 pb-12 animate-fade-in-up">
       {!result ? (
         <div className="bg-slate-800/80 backdrop-blur-md border border-pink-500/30 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+          {loading && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-2xl" aria-live="polite">
+              <div className="flex flex-col items-center gap-4">
+                <svg className="w-12 h-12 animate-spin text-pink-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                  <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                <p className="text-pink-200 font-medium">{language === 'hi' ? 'जांच रहा है...' : 'Checking compatibility...'}</p>
+              </div>
+            </div>
+          )}
           <div className="text-center mb-10">
             <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-white to-pink-200 mb-2">
               {t.compTitle || (language === 'hi' ? 'प्रेम सामंजस्य' : 'Love Harmony')}
@@ -397,6 +423,12 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
             <p className="text-slate-400 text-sm">
               {t.compSubtitle || (language === 'hi' ? 'कुंडली आधारित संगतता विश्लेषण' : 'Kundali-based compatibility analysis')}
             </p>
+            <div className="mt-4 p-3 rounded-xl bg-pink-500/10 border border-pink-500/20 text-left max-w-xl mx-auto">
+              <p className="text-pink-200/90 text-xs sm:text-sm flex items-start gap-2">
+                <span className="shrink-0 mt-0.5" aria-hidden="true">💡</span>
+                <span>{language === 'hi' ? 'प्रोफ़ाइल सेव करें—कुंडली व संगतता दोनों में आपकी जानकारी स्वतः भर जाएगी।' : 'Save to profile—your details will auto-fill in Kundali & Compatibility.'}</span>
+              </p>
+            </div>
           </div>
 
           {error && (

@@ -4,7 +4,7 @@
  * Supports multiple API keys via PERPLEXITY_API_KEYS (comma-separated) for load balancing.
  */
 
-import type { HoroscopeResponse } from '../types';
+import type { HoroscopeResponse, TransitResponse, PlanetaryPosition } from '../types';
 import type { Language } from '../types';
 import { getNextPerplexityKey, getAllPerplexityKeys } from '../utils/perplexityApiKeys';
 
@@ -224,6 +224,97 @@ function parseHoroscopeFromContent(
   }
 
   return result;
+}
+
+const SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+const SIGN_MAP: Record<string, number> = Object.fromEntries(SIGN_NAMES.map((s, i) => [s, i + 1]));
+const REQUIRED_PLANETS = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu'];
+
+/**
+ * Generate generic planetary transits (Gochara) using Perplexity.
+ * Returns currentPositions + optional personalImpact. Caller should run house recalculation and generateTransitPredictions if needed.
+ */
+export async function generateGenericTransitsFromPerplexity(
+  location: string,
+  rashi: string,
+  language: Language
+): Promise<TransitResponse> {
+  const today = new Date().toLocaleDateString('en-IN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  const langName = LANGUAGE_NAMES[language] || 'English';
+  const refSignId = SIGN_MAP[rashi] || 1;
+
+  const systemPrompt = `You are a Vedic astrology expert. For TODAY (${today}) at location ${location}, provide CURRENT sidereal positions of all 9 planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu).
+Reference Moon Sign for the user: ${rashi} (signId ${refSignId}).
+Respond ONLY with a single valid JSON object, no other text. Use this exact structure:
+{"currentPositions":[{"planet":"Sun","sign":"Aries","signId":1,"house":1,"isRetrograde":false,"nakshatra":"Ashwini","degree":"12.50"}, ...]}
+Rules:
+- planet: one of Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu
+- sign: one of Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces
+- signId: 1-12 (1=Aries, 12=Pisces)
+- house: 1-12, relative to ${rashi} as house 1 (so ${rashi}=1, next sign=2, etc.)
+- isRetrograde: true/false (Moon is ALWAYS false)
+- nakshatra: string (e.g. Ashwini, Bharani)
+- degree: string (e.g. "15.30")
+Include all 9 planets. Moon is never retrograde.`;
+
+  const userPrompt = `Give me today's (${today}) planetary transit positions for ${location} with reference sign ${rashi}. Output only the JSON object.`;
+
+  const content = await perplexityFetch({
+    model: 'sonar',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    max_tokens: 2048,
+    temperature: 0.2,
+  });
+
+  const trimmed = content.trim();
+  let jsonStr = trimmed;
+  const jsonBlock = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (jsonBlock) jsonStr = jsonBlock[1].trim();
+  else {
+    const start = trimmed.indexOf('{');
+    const end = trimmed.lastIndexOf('}');
+    if (start !== -1 && end > start) jsonStr = trimmed.slice(start, end + 1);
+  }
+  let parsed: any;
+  try {
+    parsed = JSON.parse(jsonStr);
+  } catch (_) {
+    throw new Error('TRANSIENT'); // User-friendly message handled by caller
+  }
+
+  if (!parsed || !Array.isArray(parsed.currentPositions) || parsed.currentPositions.length === 0) {
+    throw new Error('TRANSIENT');
+  }
+
+  const positions: PlanetaryPosition[] = parsed.currentPositions.map((p: any) => {
+    const sign = p.sign && SIGN_MAP[p.sign] ? p.sign : (SIGN_NAMES[(p.signId - 1)] || 'Aries');
+    const signId = p.signId >= 1 && p.signId <= 12 ? p.signId : (SIGN_MAP[p.sign] || 1);
+    const house = ((signId - refSignId + 12) % 12) + 1;
+    const planet = p.planet || '';
+    const isRetro = planet.toLowerCase().includes('moon') ? false : !!p.isRetrograde;
+    return {
+      planet,
+      sign,
+      signId,
+      house,
+      isRetrograde: isRetro,
+      nakshatra: p.nakshatra || '',
+      degree: p.degree != null ? String(p.degree) : '0.00',
+    };
+  }).filter((p: any) => p && p.planet);
+
+  return {
+    currentPositions: positions,
+    personalImpact: Array.isArray(parsed.personalImpact) ? parsed.personalImpact : [],
+  };
 }
 
 export function hasPerplexityKey(): boolean {

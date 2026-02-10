@@ -9,7 +9,6 @@ interface HamburgerMenuProps {
   currentMode: AppViewMode;
   onNavigate: (mode: AppViewMode) => void;
   language: Language;
-  onLanguageChange: (lang: Language) => void;
   onOpenProfile: () => void;
   user: User | null;
   onLogout: () => void;
@@ -21,7 +20,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   currentMode,
   onNavigate,
   language,
-  onLanguageChange,
   onOpenProfile,
   user,
   onLogout,
@@ -102,27 +100,6 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
 
         {/* Content - scrollable, touch-friendly */}
         <div className="flex-1 py-6 flex flex-col gap-5 overflow-y-auto overflow-x-hidden custom-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
-
-          {/* Language */}
-          <div className="space-y-2">
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block px-1">
-              {language === 'hi' ? 'भाषा' : 'Language'}
-            </span>
-            <div className="flex gap-2">
-              <button
-                onClick={() => { onLanguageChange('en'); }}
-                className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-bold transition-all touch-manipulation active:scale-[0.98] ${language === 'en' ? 'bg-amber-500/25 text-amber-300 border-2 border-amber-500/50 shadow-[0_0_20px_rgba(251,191,36,0.15)]' : 'bg-slate-800/80 text-slate-400 hover:text-white border-2 border-slate-700/70 hover:border-amber-500/30'}`}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => { onLanguageChange('hi'); }}
-                className={`flex-1 min-h-[44px] px-4 py-2.5 rounded-xl text-sm font-bold transition-all touch-manipulation active:scale-[0.98] ${language === 'hi' ? 'bg-amber-500/25 text-amber-300 border-2 border-amber-500/50 shadow-[0_0_20px_rgba(251,191,36,0.15)]' : 'bg-slate-800/80 text-slate-400 hover:text-white border-2 border-slate-700/70 hover:border-amber-500/30'}`}
-              >
-                HI
-              </button>
-            </div>
-          </div>
 
           {/* Download App - only show on web (not in native app) */}
           {!isCapacitor() && (

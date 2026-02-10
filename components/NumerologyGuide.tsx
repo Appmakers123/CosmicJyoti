@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface NumerologyGuideProps {
   language: Language;
@@ -1593,6 +1594,7 @@ const NumerologyGuide: React.FC<NumerologyGuideProps> = ({ language }) => {
           </div>
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

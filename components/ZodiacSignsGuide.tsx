@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { ZODIAC_SIGNS_DETAILED } from '../constants';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface ZodiacSignsGuideProps {
   language: Language;
@@ -91,6 +92,7 @@ const ZodiacSignsGuide: React.FC<ZodiacSignsGuideProps> = ({ language }) => {
           </div>
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

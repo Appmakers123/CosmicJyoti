@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { KundaliResponse, TransitResponse, Language, PlanetaryPosition } from '../types';
 import { generateGenericTransits } from '../services/geminiService';
 import { useTranslation } from '../utils/translations';
@@ -7,6 +7,7 @@ import { ZODIAC_SIGNS } from '../constants';
 import NorthIndianChart from './NorthIndianChart';
 import SouthIndianChart from './SouthIndianChart';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 interface Props {
   language: Language;
@@ -23,45 +24,66 @@ const PersonalTransits: React.FC<Props> = ({ language, kundali, onOpenKundali })
   // Generic Mode states - always use generic mode
   const [location, setLocation] = useState("New Delhi, India");
   const [rashi, setRashi] = useState("Aries");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const fetchInProgressRef = useRef(false);
+  const hasFetchedOnceRef = useRef(false);
 
   const fetchData = useCallback(async () => {
+    if (fetchInProgressRef.current) return;
+    fetchInProgressRef.current = true;
     setLoading(true);
-    setData(null); // Clear previous data
+    setData(null);
+    setErrorMsg(null);
     try {
-      console.log("Fetching transit data for:", { location, rashi, language });
       const result: TransitResponse = await generateGenericTransits(location, rashi, language);
-      
-      // Validate and log the result
-      console.log("Transit data received:", result);
-      console.log("Current positions count:", result?.currentPositions?.length || 0);
-      console.log("Personal impact count:", result?.personalImpact?.length || 0);
-      
-      // Ensure we have valid data structure
       if (!result || !result.currentPositions || !Array.isArray(result.currentPositions) || result.currentPositions.length === 0) {
-        console.warn("Invalid or empty currentPositions data:", result);
-        throw new Error(language === 'hi' ? 'ग्रह स्थिति डेटा प्राप्त नहीं हुआ' : 'Failed to get planetary positions data');
+        throw new Error('invalid');
       }
-      
       if (!result.personalImpact || !Array.isArray(result.personalImpact)) {
-        console.warn("Invalid personalImpact data, setting empty array");
         result.personalImpact = [];
       }
-      
       setData(result);
+      hasFetchedOnceRef.current = true;
     } catch (e: any) {
-      console.error("Error fetching transit data:", e);
-      const errorMessage = e?.message || e?.toString() || (language === 'hi' ? 'ट्रांजिट डेटा लोड करने में त्रुटि' : 'Error loading transit data');
-      alert(errorMessage);
+      console.error("Transit fetch error:", e);
+      setErrorMsg(language === 'hi'
+        ? 'गोचर डेटा इस समय लोड नहीं हो सका। कृपया कुछ देर बाद पुनः प्रयास करें।'
+        : "We couldn't load transit data right now. Please try again in a moment.");
       setData(null);
     } finally {
       setLoading(false);
+      fetchInProgressRef.current = false;
     }
   }, [location, rashi, language]);
 
+  // Fetch once on mount; user clicks "Update" to refetch after changing location/rashi
   useEffect(() => {
-    // Always fetch generic transit data
-    fetchData();
-  }, [fetchData]);
+    let cancelled = false;
+    if (hasFetchedOnceRef.current || fetchInProgressRef.current) return;
+    fetchInProgressRef.current = true;
+    setLoading(true);
+    setData(null);
+    setErrorMsg(null);
+    generateGenericTransits(location, rashi, language)
+      .then((result) => {
+        if (cancelled) return;
+        if (!result?.currentPositions?.length) throw new Error('invalid');
+        if (!Array.isArray(result.personalImpact)) result.personalImpact = [];
+        setData(result);
+        hasFetchedOnceRef.current = true;
+      })
+      .catch((e) => {
+        if (!cancelled) {
+          setErrorMsg(language === 'hi' ? 'गोचर डेटा इस समय लोड नहीं हो सका। कृपया पुनः प्रयास करें।' : "We couldn't load transit data right now. Please try again.");
+          setData(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+        fetchInProgressRef.current = false;
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   // Determine the reference Sign ID for the chart layout
   const activeAscendantId = useMemo(() => {
@@ -147,6 +169,14 @@ const PersonalTransits: React.FC<Props> = ({ language, kundali, onOpenKundali })
                         </div>
                     ) : t.syncTransitData}
                 </button>
+                {errorMsg && (
+                  <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-200 text-sm text-center">
+                    {errorMsg}
+                    <button type="button" onClick={() => { setErrorMsg(null); fetchData(); }} className="block mx-auto mt-2 text-amber-400 hover:text-amber-300 text-xs font-bold uppercase">
+                      {language === 'hi' ? 'पुनः प्रयास करें' : 'Try again'}
+                    </button>
+                  </div>
+                )}
         </div>
 
         {loading ? (
@@ -300,6 +330,7 @@ const PersonalTransits: React.FC<Props> = ({ language, kundali, onOpenKundali })
             <div className="text-center pt-10">
                  <p className="text-[9px] text-slate-700 uppercase tracking-[1.5em]">Cosmic Geometric Alignment • Vedic Realtime Engine</p>
             </div>
+            <AdBanner variant="display" className="mt-10" />
           </div>
         )}
 

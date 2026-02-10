@@ -4,6 +4,7 @@ import { useTranslation } from '../utils/translations';
 import { generateAstroStory } from '../services/geminiService';
 import { ZODIAC_SIGNS, PLANETS_INFO, PLANETS_INFO_DETAILED, NAKSHATRAS_INFO } from '../constants';
 import RichText from './RichText';
+import AdBanner from './AdBanner';
 
 interface StarLegendsProps {
   language: Language;
@@ -229,6 +230,7 @@ const StarLegends: React.FC<StarLegendsProps> = ({ language }) => {
           </div>
         )}
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

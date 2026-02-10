@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { PLANETS_INFO_DETAILED, HOUSES_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
+import AdBanner from './AdBanner';
 
 interface PlanetsHousesProps {
   language: Language;
@@ -111,6 +112,7 @@ const PlanetsHouses: React.FC<PlanetsHousesProps> = ({ language }) => {
           )}
         </div>
       </div>
+      <AdBanner variant="display" className="mt-8" />
     </div>
   );
 };

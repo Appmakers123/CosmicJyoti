@@ -1,9 +1,12 @@
 #!/usr/bin/env node
 /**
  * Generate 3 daily AI blog posts using Gemini (no backend required).
- * Each article is tied to a specific CosmicJyoti module for SEO and service awareness.
- * Appends new posts to existing ones - previous days' content is kept.
+ * - Researches each topic via web (what famous astrologers/sites have written), then writes
+ *   entirely original articles in its own words to avoid plagiarism.
+ * - Uses Google Search grounding when available (gemini-2.0-flash); else gemini-1.5-flash.
+ * - Each article is tied to a CosmicJyoti module for SEO. Appends to existing posts (max 100).
  * Run: API_KEY=xxx node scripts/generate-daily-blog.mjs
+ * Optional: USE_GOOGLE_SEARCH_GROUNDING=false to disable web search (e.g. if model not supported).
  * Used by GitHub Actions daily workflow.
  */
 import { GoogleGenAI } from '@google/genai';
@@ -54,8 +57,12 @@ function getModulesForDate(dateStr) {
 }
 
 const PROMPT_TEMPLATE = (modules) => `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
-Generate exactly 3 unique, in-depth blog articles. Each article MUST be about the specified module topic below.
-This drives SEO and awareness for CosmicJyoti's tools - articles must resonate with and redirect readers to the corresponding service.
+
+RESEARCH FIRST (use web search): For each of the 3 topics below, search the internet to find what famous astrologers, well-known astrology websites, and authoritative Vedic astrology sources have written about these topics. Look at popular articles, expert opinions, and trending angles so your articles feel current and informed.
+
+ORIGINAL WRITING ONLY (no plagiarism): Do NOT copy any sentences or paragraphs from search results. Use the research only for ideas and factual accuracy. Write each article entirely in your own words: your own structure, your own examples, your own explanations. The output must be 100% original and plagiarism-free. Paraphrasing is not enough – create fresh content.
+
+Generate exactly 3 unique, in-depth blog articles. Each article MUST be about the specified module topic below. This drives SEO and awareness for CosmicJyoti's tools - articles must resonate with and redirect readers to the corresponding service.
 
 CRITICAL: Each article must be SUBSTANTIAL and INFORMATIVE. Do NOT write short or shallow content.
 - 900-1400 words per article (aim for comprehensive coverage)
@@ -136,11 +143,35 @@ async function main() {
 
   const ai = new GoogleGenAI({ apiKey });
   const prompt = PROMPT_TEMPLATE(modulesForToday);
-  const response = await ai.models.generateContent({
-    model: 'gemini-1.5-flash',
-    contents: `${prompt}\n\nGenerate 3 blog posts for today (${today}). Output JSON only.`,
-    config: { responseMimeType: 'application/json' },
-  });
+  const useGrounding = process.env.USE_GOOGLE_SEARCH_GROUNDING !== 'false';
+  const model = useGrounding ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
+  console.log(`Model: ${model}${useGrounding ? ' (with Google Search grounding)' : ''}`);
+
+  let response;
+  try {
+    const config = {
+      responseMimeType: 'application/json',
+      ...(useGrounding && { tools: [{ type: 'google_search' }] }),
+    };
+    response = await ai.models.generateContent({
+      model,
+      contents: `${prompt}\n\nGenerate 3 blog posts for today (${today}). Output JSON only.`,
+      config,
+    });
+    if (useGrounding) console.log('[OK] Generated with Google Search grounding.');
+  } catch (err) {
+    if (useGrounding && (err.message?.includes('404') || err.message?.includes('not found') || err.message?.includes('grounding'))) {
+      console.warn('[FALLBACK] Grounding not available, retrying without web search (gemini-1.5-flash)...');
+      response = await ai.models.generateContent({
+        model: 'gemini-1.5-flash',
+        contents: `${prompt}\n\nGenerate 3 blog posts for today (${today}). Output JSON only.`,
+        config: { responseMimeType: 'application/json' },
+      });
+      console.log('[OK] Generated with gemini-1.5-flash (no search).');
+    } else {
+      throw err;
+    }
+  }
 
   const text = response.text;
   if (!text) {
@@ -186,7 +217,8 @@ async function main() {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
 
-  console.log(`Done. Added 3 new posts. Total: ${allPosts.length} posts in ${OUTPUT_PATH}`);
+  console.log(`[DONE] Added 3 new posts. Total: ${allPosts.length} posts in ${OUTPUT_PATH}`);
+  console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
 }
 
 main().catch((e) => {

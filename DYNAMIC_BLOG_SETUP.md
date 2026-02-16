@@ -77,12 +77,13 @@ git push
 
 ## How It Works
 
-1. **Daily at 6 AM IST** – GitHub Actions runs `generate-daily-blog.mjs`
-2. **Gemini** – Generates 3 astrology blog posts (Kundali, remedies, numerology, etc.)
-3. **Commit** – Writes to `public/blog/daily-posts.json` and pushes to `main`
-4. **Deploy** – Push triggers your main deploy workflow (GitHub Pages)
-5. **blog.html** – Fetches `/blog/daily-posts.json` and shows the 3 cards
-6. **article.html** – Full article view when user clicks "Read More"
+1. **Research + original writing** – The script asks Gemini to search the web for each topic (what famous astrologers and popular astrology sites have written), then write 3 **entirely original** articles in its own words so there is no plagiarism. When available, it uses **Google Search grounding** (gemini-2.0-flash); otherwise it uses gemini-1.5-flash without search.
+2. **Daily at 6 AM IST** – GitHub Actions runs `generate-daily-blog.mjs`
+3. **Gemini** – Generates 3 astrology blog posts (Kundali, remedies, numerology, etc.)
+4. **Commit** – Writes to `public/blog/daily-posts.json` and pushes to `main`
+5. **Deploy** – Push triggers your main deploy workflow (GitHub Pages)
+6. **blog.html** – Fetches `/blog/daily-posts.json` and shows the 3 cards
+7. **article.html** – Full article view when user clicks "Read More"
 
 ---
 
@@ -124,6 +125,51 @@ Extend the prompt to generate Hindi content and add a `lang` query param to the 
 
 ---
 
+## How to know if it's working
+
+### 1. Run locally and watch the output
+
+```bash
+API_KEY=your_gemini_api_key node scripts/generate-daily-blog.mjs
+```
+
+**Success looks like:**
+
+```
+Generating 3 blog posts for 2025-02-13: kundali, daily, panchang
+Found 3 existing posts
+Model: gemini-2.0-flash (with Google Search grounding)
+[OK] Generated with Google Search grounding.
+[DONE] Added 3 new posts. Total: 6 posts in .../public/blog/daily-posts.json
+New titles: Understanding Your Kundali | Today's Horoscope Guide | ...
+```
+
+- **`[OK] Generated with Google Search grounding`** → Web search was used (research + original writing).
+- **`[FALLBACK] ... retrying without web search`** then **`[OK] Generated with gemini-1.5-flash`** → Grounding wasn’t available; articles still generated without search.
+- **`[DONE] Added 3 new posts`** → Script worked; check `public/blog/daily-posts.json`.
+
+### 2. Check the output file
+
+- Open **`public/blog/daily-posts.json`**.
+- Confirm **`lastGenerated`** is today’s date and **`posts`** has 3 new entries at the top (with today’s date in `id` / `date`).
+- New posts have `title`, `excerpt`, `content` (HTML), and `serviceMode`.
+
+### 3. GitHub Actions (scheduled or manual)
+
+- Go to **Actions** → **Generate Daily Blog**.
+- Open the latest run → **generate** job → **Generate daily blog posts** step.
+- Same log lines as above: look for **Model: gemini-2.0-flash (with Google Search grounding)** and **`[DONE] Added 3 new posts`**.
+- Then check **Commit and push**: either “No changes to commit” (same day already run) or a commit with message `chore: update daily AI blog posts`.
+
+### 4. On the site / app
+
+- **Web:** Open your blog page (e.g. `https://www.cosmicjyoti.com/blog.html`) and the “Today’s AI Articles” (or “AI Articles”) section — you should see the 3 newest cards.
+- **In-app:** Open **Learn Astrology** → **AI Articles** — same 3 articles with “Read More” and “Try [tool]” links.
+
+If any step fails, see **Troubleshooting** below.
+
+---
+
 ## Troubleshooting
 
 | Issue | Solution |
@@ -132,6 +178,7 @@ Extend the prompt to generate Hindi content and add a `lang` query param to the 
 | 404 on daily-posts.json | Ensure `public/blog/daily-posts.json` exists and is committed |
 | Workflow fails | Check `API_KEY` secret is set; check Actions logs |
 | Article not found | Slug in URL must match `slug` in JSON; check `?id=slug` |
+| Disable web search | Set secret/env `USE_GOOGLE_SEARCH_GROUNDING=false` to use gemini-1.5-flash only |
 
 ---
 

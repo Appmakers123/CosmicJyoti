@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --prefix server",
+    "dev:all": "concurrently \"npm run dev:server\" \"npm run dev\"",
+    "server": "npm run dev --prefix server",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -40,6 +43,7 @@
     "@rollup/rollup-linux-x64-gnu": "4.53.5"
   },
   "devDependencies": {
+    "concurrently": "^9.1.2",
     "@capacitor/cli": "^6.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

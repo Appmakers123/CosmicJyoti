@@ -13,8 +13,15 @@ import { generateMatchmaking } from './services/matchmakingService.js';
 import { generateTarot } from './services/tarotService.js';
 import { generatePredictions } from './services/predictionService.js';
 import { generateChartBasedHealthAnalysis } from './services/healthService.js';
+import { runRishiAgent } from './agent/rishiAgent.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Load .env from server folder first, then from project root (so root .env or .env.local works)
 dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -358,7 +365,7 @@ app.post('/api/ashtakoota', async (req, res) => {
   }
 });
 
-// Ask Rishi (Kundali/Compatibility/Module AI) - Proxy for CORS
+// Ask Rishi (Kundali/Compatibility/Module AI) – uses Rishi agent with tools when available
 app.post('/api/ask-rishi', async (req, res) => {
   try {
     const { prompt, language = 'en', context, persona = 'general' } = req.body;
@@ -371,29 +378,40 @@ app.post('/api/ask-rishi', async (req, res) => {
       return res.status(503).json({ error: 'AI service not configured. API key missing.' });
     }
 
-    const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi' };
-    const langName = LANGUAGE_NAMES[language] || 'English';
-    const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
-    const PERSONA_PROMPTS = {
-      general: 'You are Rishi, the CosmicJyoti Sage—a holistic guide for life, spirituality, and cosmic wisdom.',
-      career: 'You are the Career Sage—specializing in career, business, job changes, success, and professional growth.',
-      love: 'You are the Love Guide—specializing in relationships, compatibility, marriage, romance, and emotional connections.',
-      health: 'You are the Health Advisor—specializing in Vedic health, doshas, wellness, and preventive care.',
-    };
-    const personaPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.general;
-    const systemInstruction = `${personaPrompt}
+    try {
+      const { text, sources } = await runRishiAgent({
+        prompt,
+        language,
+        context: context || '',
+        persona,
+        genAI,
+      });
+      return res.json({ text, sources: sources || [] });
+    } catch (agentError) {
+      console.warn('Rishi agent failed, falling back to simple model:', agentError?.message);
+      const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi' };
+      const langName = LANGUAGE_NAMES[language] || 'English';
+      const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
+      const PERSONA_PROMPTS = {
+        general: 'You are Rishi, the CosmicJyoti Sage—a holistic guide for life, spirituality, and cosmic wisdom.',
+        career: 'You are the Career Sage—specializing in career, business, job changes, success, and professional growth.',
+        love: 'You are the Love Guide—specializing in relationships, compatibility, marriage, romance, and emotional connections.',
+        health: 'You are the Health Advisor—specializing in Vedic health, doshas, wellness, and preventive care.',
+      };
+      const personaPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.general;
+      const systemInstruction = `${personaPrompt}
 
 You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like guidance.
 IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
 ${contextInfo}`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const fullPrompt = `${systemInstruction}\n\n---\n\n${context ? 'Context: ' + context + '\n\n' : ''}User: ${prompt}`;
-    const result = await model.generateContent(fullPrompt);
-    const response = result.response;
-    const text = response?.text?.() || 'The cosmic library is currently undergoing maintenance. Please try again soon.';
-
-    res.json({ text, sources: [] });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const fullPrompt = `${systemInstruction}\n\n---\n\n${context ? 'Context: ' + context + '\n\n' : ''}User: ${prompt}`;
+      const result = await model.generateContent(fullPrompt);
+      const response = result.response;
+      const text = response?.text?.() || 'The cosmic library is currently undergoing maintenance. Please try again soon.';
+      return res.json({ text, sources: [] });
+    }
   } catch (error) {
     console.error('Ask Rishi API error:', error);
     res.status(500).json({ error: error.message || 'Failed to get AI response' });

@@ -62,7 +62,7 @@ EXISTING HEALTH PREDICTION: ${healthPred}
 
 Respond ONLY with valid JSON. Language: ${getLanguageName(language)}.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const fullPrompt = HEALTH_SYSTEM_PROMPT + '\n\n' + chartContext + '\n\n' + prompt;
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;

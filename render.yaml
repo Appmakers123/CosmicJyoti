@@ -1,10 +1,12 @@
 # Render.com Blueprint - CosmicJyoti Backend API
 # Uses Dockerfile to deploy only server (no Vite/Rollup)
+# Deploy: connect repo at render.com → use this blueprint or add Web Service with server/Dockerfile
 services:
   - type: web
     name: cosmicjyoti-api
     runtime: docker
     dockerfilePath: server/Dockerfile
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production

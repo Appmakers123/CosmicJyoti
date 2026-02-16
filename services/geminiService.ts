@@ -2009,7 +2009,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
         // Try different TTS model names and API structures
         const attempts = [
             {
-                model: "gemini-2.0-flash-exp",
+                model: "gemini-2.0-flash",
                 config: {
                     responseModalities: [Modality.AUDIO],
                     speechConfig: {
@@ -2027,7 +2027,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
             }
             },
             {
-                model: "gemini-2.0-flash-exp",
+                model: "gemini-2.0-flash",
                 config: {
                     responseModalities: [Modality.AUDIO]
                 }
@@ -2195,7 +2195,7 @@ export const createChatSession = (language: Language, context?: string, persona:
     const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
     const personaPrompt = PERSONA_PROMPTS[persona];
     return ai.chats.create({
-        model: "gemini-2.0-flash-exp", 
+        model: "gemini-2.0-flash", 
         config: { 
             systemInstruction: `${personaPrompt}\n\n${COMPREHENSIVE_AI_PROMPT}${contextInfo}\n\nIMPORTANT: Always respond in ${languageName} language. Be warm, helpful, and provide practical remedies. Use a mentor-like, human tone.` 
         }
@@ -2207,20 +2207,23 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
     try {
         return await askRishiFromBackend(prompt, language, context, persona);
     } catch (backendErr: any) {
-        if (backendErr?.message?.includes('Backend not available') || backendErr?.message?.includes('Failed to fetch')) {
-            // Fall through to direct call (may fail with CORS in production)
+        const msg = backendErr?.message || '';
+        const isBackendUnreachable = msg.includes('Backend not available') || msg.includes('Failed to fetch') || msg.includes('NetworkError');
+        const isBackendError = msg.includes('Ask Rishi API error') || msg.includes('503') || msg.includes('500');
+        if (isBackendUnreachable || isBackendError) {
+            // Fall through to direct call (backend down or API key missing on server)
         } else {
             throw backendErr;
         }
     }
 
-    // 2. Fallback: direct Gemini call (works locally, may fail with CORS in production)
+    // 2. Fallback: direct Gemini call (works when backend is down or returns 503/500)
     try {
         const ai = getAI();
         const contextInfo = context ? `\n\nUser's Birth Chart Context: ${context}` : '';
         const personaPrompt = PERSONA_PROMPTS[persona];
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-2.0-flash',
             contents: `${context ? "Context: " + context + "\n" : ""}User: ${prompt}.`,
             config: { 
                 tools: [{ googleSearch: {} }],
@@ -2234,8 +2237,13 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
                 uri: chunk.web?.uri || "#"
             })) || []
         };
-    } catch (e) {
-        return { text: "The stars are silent. Even the internet cannot reach them right now.", sources: [] };
+    } catch (e: any) {
+        const msg = e?.message || String(e);
+        console.warn('[askRishiWithFallback] Direct Gemini fallback failed:', msg);
+        return {
+            text: "I couldn’t connect right now—please check your internet and try again in a moment. If you’re on a spotty connection, waiting a few seconds and asking again usually helps. 🙏",
+            sources: []
+        };
     }
 };
 

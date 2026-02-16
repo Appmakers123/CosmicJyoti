@@ -168,7 +168,7 @@ EXISTING HEALTH PREDICTION: ${healthPred}
 Respond ONLY with valid JSON. Language: ${getLanguageName(language)}.`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-2.0-flash',
     contents: chartContext + '\n\n' + prompt,
     config: {
       responseMimeType: 'application/json',
@@ -239,7 +239,7 @@ export const generateHealthAdvice = async (
     const contextInfo = `User Birth Details: Date: ${birthData.date}, Time: ${birthData.time}, City: ${birthData.city}. Approximate Sign: ${astrologyContext.sign}, Dominant Dosha: ${astrologyContext.dominantDosha}.`;
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       contents: `User Question: ${question}\n\n${contextInfo}`,
       config: {
         systemInstruction: `${MASTER_HEALTH_SYSTEM_PROMPT}\n\nIMPORTANT: Always respond in ${getLanguageName(language)} language. Provide detailed, practical health advice based on Vedic principles.`
@@ -269,7 +269,7 @@ export const generateDailyDoshaRemedies = async (
     const astrologyContext = calculateBasicAstrology(birthData);
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       contents: `Generate daily dosha remedies for user. Birth: ${birthData.date} ${birthData.time}, City: ${birthData.city}. Sign: ${astrologyContext.sign}, Dominant Dosha: ${astrologyContext.dominantDosha}. Return ONLY a valid JSON array of objects with dosha, description, and remedies (array of strings).`,
       config: {
         responseMimeType: "application/json",

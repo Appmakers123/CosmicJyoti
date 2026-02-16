@@ -57,7 +57,7 @@ export async function getDailyDoDonts(
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
     const ctx = context ? `Sign: ${context.sign || 'Unknown'}, Moon: ${context.moonSign || '-'}, Nakshatra: ${context.nakshatra || '-'}` : 'General';
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       contents: `Generate today's astrological Do's and Don'ts. Context: ${ctx}. Return JSON: {"dos":["item1","item2",...],"donts":["item1","item2",...]}. Max 5 each. Be concise, practical. Language: ${language === 'hi' ? 'Hindi' : 'English'}.`,
       config: { responseMimeType: 'application/json' },
     });
@@ -83,7 +83,7 @@ export async function getDailyLuckScore(
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
     const ctx = context ? `Sign: ${context.sign}, Moon: ${context.moonSign}` : 'General';
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
+      model: 'gemini-2.0-flash',
       contents: `Today's date: ${new Date().toISOString().slice(0, 10)}. Astrology context: ${ctx}. Return JSON: {"luckPercent":number 1-99,"energyLevel":"low"|"medium"|"high","emotionalStability":"low"|"medium"|"high","decisionReadiness":"low"|"medium"|"high","summary":"one short sentence"}. Language for summary: ${language === 'hi' ? 'Hindi' : 'English'}.`,
       config: { responseMimeType: 'application/json' },
     });

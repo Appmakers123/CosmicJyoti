@@ -79,6 +79,29 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack }) => {
     return `/blog/article.html?id=${encodeURIComponent(id)}`;
   };
 
+  const fullArticleUrl = (post: DailyPost) => {
+    if (typeof window === 'undefined') return '';
+    return `${window.location.origin}${articleUrl(post)}`;
+  };
+
+  const handleShareArticle = async (e: React.MouseEvent, post: DailyPost) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = fullArticleUrl(post);
+    const text = `${post.title} – CosmicJyoti\n${url}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.title, text: post.excerpt, url });
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+        }
+      }
+    } else {
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const serviceUrl = (post: DailyPost) => {
     const mode = post.serviceMode;
     return mode ? `/?mode=${encodeURIComponent(mode)}` : '/';
@@ -122,14 +145,27 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack }) => {
                 {language === 'hi' ? 'पढ़ें →' : 'Read More →'}
               </span>
             </a>
-            {post.serviceMode && (
-              <a
-                href={serviceUrl(post)}
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600/20 border border-amber-500/40 rounded-lg text-amber-300 text-xs font-medium hover:bg-amber-600/30 transition-colors"
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {post.serviceMode && (
+                <a
+                  href={serviceUrl(post)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600/20 border border-amber-500/40 rounded-lg text-amber-300 text-xs font-medium hover:bg-amber-600/30 transition-colors"
+                >
+                  {language === 'hi' ? 'आज़माएं' : 'Try'} {post.serviceLabel || post.topic}
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={(e) => handleShareArticle(e, post)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 text-xs font-medium hover:bg-slate-600/50 hover:text-slate-200 transition-colors"
+                aria-label={language === 'hi' ? 'शेयर करें' : 'Share'}
               >
-                {language === 'hi' ? 'आज़माएं' : 'Try'} {post.serviceLabel || post.topic}
-              </a>
-            )}
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                {language === 'hi' ? 'शेयर' : 'Share'}
+              </button>
+            </div>
           </div>
         ))}
       </div>

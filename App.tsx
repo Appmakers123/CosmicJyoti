@@ -63,6 +63,10 @@ import { useNetworkStatus } from './utils/useNetworkStatus';
 import OfflineBanner from './components/OfflineBanner';
 import AppDownloadModal from './components/AppDownloadModal';
 import AdWatchModal from './components/AdWatchModal';
+import AddToHomeScreenBanner from './components/AddToHomeScreenBanner';
+import CheckTodayOnboardingHint from './components/CheckTodayOnboardingHint';
+import StreakRewardToast from './components/StreakRewardToast';
+import InviteFriendBanner from './components/InviteFriendBanner';
 
 // Type-safe conditional import for Capacitor App plugin
 type CapacitorAppType = {
@@ -276,12 +280,21 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
   const [streakCount, setStreakCount] = useState(0);
+  const [showRemindToast, setShowRemindToast] = useState(false);
 
-  // Record visit and update streak when hub is shown
+  // Record visit and update streak when hub is shown; check "remind me tomorrow"
   useEffect(() => {
     if (mode === 'hub') {
       const updated = recordVisit();
       setStreakCount(updated);
+      const remind = localStorage.getItem('cosmicjyoti_remind_tomorrow');
+      const today = new Date().toISOString().slice(0, 10);
+      if (remind === today) {
+        localStorage.removeItem('cosmicjyoti_remind_tomorrow');
+        setShowRemindToast(true);
+        const t = setTimeout(() => setShowRemindToast(false), 5000);
+        return () => clearTimeout(t);
+      }
     }
   }, [mode]);
 
@@ -480,6 +493,7 @@ const App: React.FC = () => {
 
   const fetchPanchang = useCallback(async () => {
       setLoading(true);
+      setError(null);
       try {
           const profile = getGlobalProfile();
           const location = profile?.self?.location || "New Delhi, India";
@@ -489,6 +503,11 @@ const App: React.FC = () => {
           if (cached?.data) {
             setPanchangData(cached.data);
             setMode('panchang');
+            setLoading(false);
+            return;
+          }
+          if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            setErrorSafely(setError, new Error('Offline'), language, 'Panchang');
             setLoading(false);
             return;
           }
@@ -830,6 +849,20 @@ const App: React.FC = () => {
         }}
         refreshTrigger={chatRefreshKey}
       />
+      {!isCapacitor() && <AddToHomeScreenBanner language={language} />}
+      {mode === 'hub' && [3, 7, 30].includes(streakCount) && (
+        <StreakRewardToast language={language} streakCount={streakCount} onClose={() => {}} />
+      )}
+      {showRemindToast && (
+        <div className="fixed bottom-24 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm z-[54] p-4 rounded-xl bg-amber-500/20 border border-amber-400/50 shadow-xl backdrop-blur-md flex items-center justify-between gap-3 animate-fade-in-up">
+          <p className="text-sm text-amber-100">
+            {language === 'hi' ? 'आज का राशिफल और पंचांग तैयार है।' : "Today's horoscope & Panchang are ready."}
+          </p>
+          <button onClick={() => setShowRemindToast(false)} className="p-1 rounded text-slate-400 hover:text-amber-200" aria-label="Close">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+      )}
       <header 
         className="fixed top-0 left-0 right-0 w-full z-[60] py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-slate-900/95 border-b border-white/5 backdrop-blur-md"
         style={{ 
@@ -973,6 +1006,70 @@ const App: React.FC = () => {
             
             <ThoughtOfTheDay language={language} />
 
+            <CheckTodayOnboardingHint language={language} />
+
+            {/* Today – daily habit: Horoscope, Panchang, AI Articles */}
+            <section className="animate-fade-in-up rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-5 md:p-6">
+              <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <span>☀</span>
+                {language === 'hi' ? 'आज देखें' : 'Check today'}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  onClick={() => switchMode('daily')}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
+                >
+                  <span className="text-2xl">🌞</span>
+                  <div className="min-w-0">
+                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'राशिफल' : "Today's Horoscope"}</span>
+                    <span className="text-xs text-slate-500">{language === 'hi' ? 'दैनिक भविष्यवाणी' : 'Daily predictions'}</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => switchMode('panchang')}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
+                >
+                  <span className="text-2xl">📅</span>
+                  <div className="min-w-0">
+                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'पंचांग' : "Today's Panchang"}</span>
+                    <span className="text-xs text-slate-500">{language === 'hi' ? 'तिथि, मुहूर्त' : 'Tithi, Muhurat'}</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => switchMode('ai-blog')}
+                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
+                >
+                  <span className="text-2xl">📝</span>
+                  <div className="min-w-0">
+                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'आज के लेख' : "Today's Articles"}</span>
+                    <span className="text-xs text-slate-500">{language === 'hi' ? 'नए ज्योतिष लेख' : 'Fresh astrology reads'}</span>
+                  </div>
+                </button>
+              </div>
+              <div className="mt-4 pt-4 border-t border-slate-600/50">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const url = typeof window !== 'undefined' ? window.location.origin + '/' : 'https://www.cosmicjyoti.com/';
+                    const text = language === 'hi'
+                      ? `आज अपना राशिफल देखें – CosmicJyoti (मुफ्त कुंडली, पंचांग)। ${url}`
+                      : `Check your daily horoscope – CosmicJyoti (free Kundali & Panchang). ${url}`;
+                    if (navigator.share) {
+                      try { await navigator.share({ title: 'CosmicJyoti', text, url }); } catch (e) {
+                        if ((e as Error).name !== 'AbortError') window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      }
+                    } else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                  }}
+                  className="inline-flex items-center gap-2 text-slate-400 hover:text-amber-300 text-xs font-medium transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  {language === 'hi' ? "आज का राशिफल शेयर करें" : "Share today's horoscope"}
+                </button>
+              </div>
+            </section>
+
             {/* Today for you: streak + quick links */}
             <section className="animate-fade-in-up flex flex-wrap items-center justify-center gap-3 py-2">
               {streakCount > 0 && (
@@ -1086,6 +1183,8 @@ const App: React.FC = () => {
               );
             })}
             
+            <InviteFriendBanner language={language} karmaBalance={karmaBalance} onKarmaUpdate={() => setKarmaBalance(getKarma())} />
+
             {/* Search no results */}
             {searchQuery.trim() && !MODULE_CATEGORIES.some((cat) =>
               cat.modules.some((m) => {

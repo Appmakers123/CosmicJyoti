@@ -15,8 +15,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const OUTPUT_PATH = path.join(__dirname, '../public/blog/daily-posts.json');
+const BLOG_DIR = path.join(__dirname, '../public/blog');
+const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
 const MAX_POSTS = 100; // Keep last 100 posts to prevent unbounded growth
+const BASE_URL = 'https://www.cosmicjyoti.com';
 
 // All CosmicJyoti modules - rotate daily so every module gets blog coverage over time
 const BLOG_MODULES = [
@@ -213,12 +215,48 @@ async function main() {
     posts: allPosts,
   };
 
-  const dir = path.dirname(OUTPUT_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
+
+  // RSS feed (latest 30)
+  const rssItems = allPosts.slice(0, 30).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const pubDate = p.date ? new Date(p.date).toUTCString() : new Date().toUTCString();
+    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const desc = (p.excerpt || p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `    <item><title>${title}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${pubDate}</pubDate><description><![CDATA[${desc}]]></description></item>`;
+  }).join('\n');
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CosmicJyoti Blog</title>
+    <link>${BASE_URL}/blog.html</link>
+    <description>Daily Vedic astrology articles – Kundali, Horoscope, Panchang, and more.</description>
+    <language>en-in</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${BASE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+  </channel>
+</rss>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'feed.xml'), rss, 'utf8');
+
+  // Blog sitemap (latest 50 article URLs)
+  const blogUrls = allPosts.slice(0, 50).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const lastmod = p.date ? p.date : today;
+    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+  }).join('\n');
+  const sitemapBlog = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${blogUrls}
+</urlset>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-blog.xml'), sitemapBlog, 'utf8');
 
   console.log(`[DONE] Added 3 new posts. Total: ${allPosts.length} posts in ${OUTPUT_PATH}`);
   console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
+  console.log('Written blog/feed.xml and blog/sitemap-blog.xml');
 }
 
 main().catch((e) => {

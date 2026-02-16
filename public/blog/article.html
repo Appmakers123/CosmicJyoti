@@ -91,14 +91,36 @@
             var pubDate = post.date || data.lastGenerated || data.date;
             var serviceMode = post.serviceMode;
             var serviceLabel = post.serviceLabel || post.topic || 'Try this tool';
+            var articleId = post.articleId || post.id || (post.date && post.slug ? post.date + '-' + post.slug : post.slug);
+            var baseUrl = 'https://www.cosmicjyoti.com';
+            var articleUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
             var ctaHtml = '';
             if (serviceMode) {
                 ctaHtml = '<div class="mt-8 p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl"><p class="text-amber-200 font-semibold mb-3">Ready to explore?</p><a href="/?mode=' + esc(serviceMode) + '" class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all">Try ' + esc(serviceLabel) + ' →</a></div>';
             }
+            var related = (data.posts || []).filter(function(p) {
+                var aid = p.articleId || p.id || (p.date && p.slug ? p.date + '-' + p.slug : p.slug);
+                return aid !== articleId;
+            }).slice(0, 2);
+            var relatedHtml = '';
+            if (related.length > 0) {
+                relatedHtml = '<div class="mt-10 pt-8 border-t border-slate-700"><h3 class="text-amber-200 font-serif text-lg mb-4">More to read</h3><ul class="space-y-2">';
+                related.forEach(function(p) {
+                    var aid = p.articleId || p.id || (p.date && p.slug ? p.date + '-' + p.slug : p.slug);
+                    relatedHtml += '<li><a href="/blog/article.html?id=' + encodeURIComponent(aid) + '" class="text-amber-400 hover:text-amber-300 underline">' + esc(p.title) + '</a></li>';
+                });
+                relatedHtml += '</ul></div>';
+            }
+            var schema = { '@context': 'https://schema.org', '@type': 'Article', headline: post.title, description: post.excerpt || post.title, datePublished: pubDate || null, author: { '@type': 'Organization', name: 'CosmicJyoti' }, publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: baseUrl + '/app-logo.png' } }, mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl } };
+            var schemaEl = document.createElement('script');
+            schemaEl.type = 'application/ld+json';
+            schemaEl.textContent = JSON.stringify(schema);
+            document.head.appendChild(schemaEl);
             body.innerHTML = '<h1 class="gradient-text text-2xl sm:text-3xl mb-4">' + esc(post.title) + '</h1>' +
                 '<p class="text-slate-400 text-sm mb-6">Published: ' + (pubDate ? new Date(pubDate).toLocaleDateString('en-IN', { dateStyle: 'long' }) : '') + ' | ' + (post.readingTime || '5 min read') + '</p>' +
                 '<div class="article-body">' + post.content + '</div>' +
                 ctaHtml +
+                relatedHtml +
                 '<p class="mt-8"><a href="/" class="text-amber-400 hover:text-amber-300">← Back to Dashboard</a></p>';
         }).catch(function() {
             body.innerHTML = '<p class="text-slate-500">Unable to load article. <a href="/" class="text-amber-400">Back to Dashboard</a></p>';

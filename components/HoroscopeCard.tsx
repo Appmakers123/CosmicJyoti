@@ -62,6 +62,17 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
     alert(message);
   };
 
+  const handleRemindTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().slice(0, 10);
+    localStorage.setItem('cosmicjyoti_remind_tomorrow', dateStr);
+    const cal = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 8, 0);
+    const gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('CosmicJyoti – Daily horoscope') + '&dates=' + cal.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z/' + cal.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+    window.open(gcal, '_blank');
+    alert(language === 'hi' ? 'कल 8 बजे की याद दिला दी गई।' : 'Reminder set for tomorrow 8 AM.');
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4 animate-fade-in-up pb-12">
       <div className="bg-[#1e293b] border border-amber-500/30 rounded-3xl shadow-2xl relative overflow-hidden">
@@ -73,13 +84,18 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
         <div className="relative z-10 p-8 md:p-12">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
-            <SaveShareBar
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={handleRemindTomorrow} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 text-xs font-medium border border-slate-600 transition-colors">
+                <span>🔔</span> {language === 'hi' ? 'कल याद दिलाएं' : 'Remind me tomorrow'}
+              </button>
+              <SaveShareBar
               language={language}
               onSave={handleSave}
               isSaved={isSaved}
               shareContent={shareContent}
               shareTitle={personalizedName ? `Daily Forecast for ${personalizedName}` : `${sign.name} Horoscope`}
             />
+            </div>
           </div>
           <div className="flex flex-col md:flex-row items-center gap-8 mb-12 border-b border-slate-700/50 pb-8">
             <div className="w-32 h-32 text-amber-500 p-6 bg-slate-900/80 rounded-full border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.15)] flex-shrink-0">

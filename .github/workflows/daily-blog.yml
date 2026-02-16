@@ -31,10 +31,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/blog/daily-posts.json
+          git add public/blog/daily-posts.json public/blog/feed.xml public/blog/sitemap-blog.xml
           if git diff --staged --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "chore: update daily AI blog posts"
+            git commit -m "chore: update daily AI blog posts, RSS feed and blog sitemap"
             git push origin main
           fi

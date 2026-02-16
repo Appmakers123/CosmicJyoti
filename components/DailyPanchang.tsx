@@ -38,6 +38,17 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
     }
   };
 
+  const handleRemindTomorrow = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dateStr = tomorrow.toISOString().slice(0, 10);
+    localStorage.setItem('cosmicjyoti_remind_tomorrow', dateStr);
+    const cal = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 8, 0);
+    const gcal = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent('CosmicJyoti – Today\'s Panchang') + '&dates=' + cal.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z/' + cal.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+    window.open(gcal, '_blank');
+    alert(language === 'hi' ? 'कल 8 बजे की याद दिला दी गई।' : 'Reminder set for tomorrow 8 AM.');
+  };
+
   const DataRow = ({ label, value, subValue }: { label: string, value: string, subValue?: string }) => (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-3 border-b border-slate-700/50 last:border-0">
       <span className="text-slate-400 text-sm uppercase tracking-wider font-medium">{label}</span>
@@ -54,13 +65,18 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
         {onBack && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
-            <SaveShareBar
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={handleRemindTomorrow} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 text-xs font-medium border border-slate-600 transition-colors">
+                <span>🔔</span> {language === 'hi' ? 'कल याद दिलाएं' : 'Remind me tomorrow'}
+              </button>
+              <SaveShareBar
               language={language}
               onSave={formInput ? handleSave : undefined}
               isSaved={isSaved}
               shareContent={shareContent}
               shareTitle={`Panchang ${data.date}`}
             />
+            </div>
           </div>
         )}
         {/* Background Decorative */}

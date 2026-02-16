@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CosmicJyoti Blog</title>
+    <link>https://www.cosmicjyoti.com/blog.html</link>
+    <description>Daily Vedic astrology articles – Kundali, Horoscope, Panchang, and more.</description>
+    <language>en-in</language>
+    <lastBuildDate>Thu, 13 Feb 2026 00:00:00 GMT</lastBuildDate>
+    <atom:link href="https://www.cosmicjyoti.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
+  </channel>
+</rss>

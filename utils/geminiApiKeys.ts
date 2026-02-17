@@ -11,21 +11,18 @@ function parseKeyList(value: string): string[] {
   return value.split(',').map((k) => k.trim()).filter(Boolean);
 }
 
+// Literal process.env.KEY so Vite define inlines values at build (CI secrets). No runtime process dependency.
 function getKeys(): string[] {
-  const fromGeminiKeys =
-    (typeof process !== 'undefined' && (process as any).env?.GEMINI_API_KEYS) || '';
+  const fromGeminiKeys = process.env.GEMINI_API_KEYS || '';
   let parsed = parseKeyList(fromGeminiKeys);
   if (parsed.length > 0) return parsed;
-  const fromApiKeys =
-    (typeof process !== 'undefined' && (process as any).env?.API_KEYS) || '';
+  const fromApiKeys = process.env.API_KEYS || '';
   parsed = parseKeyList(fromApiKeys);
   if (parsed.length > 0) return parsed;
-  const singleGemini =
-    (typeof process !== 'undefined' && (process as any).env?.GEMINI_API_KEY) || '';
+  const singleGemini = process.env.GEMINI_API_KEY || '';
   parsed = parseKeyList(singleGemini);
   if (parsed.length > 0) return parsed;
-  const singleApi =
-    (typeof process !== 'undefined' && (process as any).env?.API_KEY) || '';
+  const singleApi = process.env.API_KEY || '';
   parsed = parseKeyList(singleApi);
   if (parsed.length > 0) return parsed;
   return [];

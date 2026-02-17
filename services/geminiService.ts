@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
-import { getNextGeminiKey } from "../utils/geminiApiKeys";
+import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { askRishiFromBackend } from "./backendService";
 
@@ -2215,7 +2215,13 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
         }
     }
 
-    // 2. Fallback: direct Gemini call (works when backend is down or returns 503/500)
+    // 2. Fallback: direct Gemini call only if we have a key (avoids GEMINI_API_KEY_NOT_CONFIGURED when backend not set)
+    if (!hasGeminiKeys()) {
+        return {
+            text: "Rishi needs either your backend URL (set VITE_API_BASE_URL to where your server/ backend runs, then redeploy) or a Gemini API key in .env. See DEPLOY.md.",
+            sources: []
+        };
+    }
     try {
         const ai = getAI();
         const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';

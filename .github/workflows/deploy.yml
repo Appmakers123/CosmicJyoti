@@ -36,6 +36,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
+          # Required for production: URL where your server/ backend is running. See DEPLOY.md.
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || '' }}
           API_KEY: ${{ secrets.API_KEY || '' }}
           API_KEYS: ${{ secrets.API_KEYS || '' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY || '' }}
@@ -44,7 +46,6 @@ jobs:
           PERPLEXITY_API_KEYS: ${{ secrets.PERPLEXITY_API_KEYS || secrets.PERPLEXITY_API_KEY || '' }}
           VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY || '' }}
           VITE_PROFILE_SUBMIT_URL: ${{ secrets.VITE_PROFILE_SUBMIT_URL || '' }}
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || '' }}
           # Use relative base so assets load at any path (e.g. .../CosmicJyoti/ or custom domain root).
           VITE_BASE_URL: ./
           VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY || '' }}

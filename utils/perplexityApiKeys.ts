@@ -11,13 +11,12 @@ function parseKeyList(value: string): string[] {
   return value.split(',').map((k) => k.trim()).filter(Boolean);
 }
 
+// Literal process.env.KEY so Vite define inlines values at build (CI secrets). No runtime process dependency.
 function getKeys(): string[] {
-  const envKeys =
-    (typeof process !== 'undefined' && process.env?.PERPLEXITY_API_KEYS) || '';
+  const envKeys = process.env.PERPLEXITY_API_KEYS || '';
   const parsed = parseKeyList(envKeys);
   if (parsed.length > 0) return parsed;
-  const single =
-    (typeof process !== 'undefined' && process.env?.PERPLEXITY_API_KEY) || '';
+  const single = process.env.PERPLEXITY_API_KEY || '';
   const fromSingle = parseKeyList(single);
   if (fromSingle.length > 0) return fromSingle;
   return [];

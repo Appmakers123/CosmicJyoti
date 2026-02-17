@@ -1,12 +1,12 @@
 # Deploy CosmicJyoti (Frontend + Backend)
 
-**Right now:** We’re **not** using Render. Backend and frontend run **locally** (see “Running locally” below). The “Deploy to production” section is for when you want to host the app later (e.g. Render + GitHub Pages).
+The app has a **backend** in the `server/` directory (Node/Express, Google Gen AI for Rishi, Kundali, etc.) and a **frontend** (Vite/React). You run the backend yourself—locally or on your own host—not via Render.
 
 ---
 
 ## Running locally (backend + frontend)
 
-The app has a **backend** (Node/Express in `server/`, with Google Gen AI for Rishi, Kundali, etc.) and a **frontend** (Vite/React). Both need to run for the full app to work.
+Backend lives in `server/`; run it together with the frontend for the full app.
 
 ### One-time setup
 
@@ -41,38 +41,21 @@ The frontend is configured to use `http://localhost:3001` in development, so Ris
 
 ## Deploy to production
 
-### 1. Deploy the backend (Render)
+### 1. Run the backend (`server/`)
 
-1. **Push your code** to GitHub (if not already).
+The backend is in **`server/`**. Run it wherever you host your Node apps:
 
-2. **Go to [Render](https://render.com)** and sign in (GitHub login is easiest).
+- **Locally:** `npm run server` or `cd server && npm run dev` (from project root).
+- **Your own host (VPS, Railway, Fly.io, etc.):** Deploy the `server/` directory (e.g. use `server/Dockerfile` or run `node index.js`). Set `API_KEY` or `GEMINI_API_KEY` in the environment.
+- **Optional – Render:** You can use `render.yaml` and `server/Dockerfile` if you want; we are not using Render by default.
 
-3. **New → Web Service**
-   - Connect your GitHub repo (`cosmicsutra` or your repo name).
-   - Render should detect the **Blueprint** from `render.yaml`:
-     - **Name:** `cosmicjyoti-api`
-     - **Dockerfile:** `server/Dockerfile`
-   - If you don’t use the blueprint, add a **Web Service** and set:
-     - **Build:** Docker, Dockerfile path: `server/Dockerfile`
-     - **Instance:** Free (or paid)
-
-4. **Environment variables** (required for Rishi / AI):
-   - `API_KEY` or `GEMINI_API_KEY` = your Gemini API key  
-   Get one: [Google AI Studio](https://aistudio.google.com/apikey)
-
-5. **Create Web Service.** Wait for the first deploy to finish.
-
-6. **Copy the backend URL**, e.g.:
-   - `https://cosmicjyoti-api.onrender.com`  
-   (Render gives you a URL like `https://<service-name>.onrender.com`.)
-
-**Note:** On the free tier, the service may sleep after ~15 minutes of no traffic. The first request after sleep can take 30–60 seconds (cold start).
+Ensure the backend is reachable at a URL (e.g. `https://your-backend.example.com` or `http://localhost:3001` for local dev). The frontend will call this URL when `VITE_API_BASE_URL` is set.
 
 ---
 
 ## 2. Deploy the frontend (GitHub Pages)
 
-The frontend must be built with your **backend URL** so it calls your API in production.
+The frontend must know **where your backend is running** so it can call your API.
 
 1. **GitHub repo → Settings → Secrets and variables → Actions.**
 
@@ -80,12 +63,14 @@ The frontend must be built with your **backend URL** so it calls your API in pro
 
    | Secret name             | Value                                      | Required for |
    |--------------------------|--------------------------------------------|--------------|
-   | `VITE_API_BASE_URL`      | Your Render backend URL (no trailing slash) | Backend calls (Rishi, Kundali, etc.) |
+   | `VITE_API_BASE_URL`      | URL where your `server/` backend is running (no trailing slash) | Backend calls (Rishi, Kundali, etc.) |
    | `API_KEY` or `GEMINI_API_KEY` | Your Gemini API key (for direct fallback)   | Optional; backend has its own key |
 
-   Example: `VITE_API_BASE_URL` = `https://cosmicjyoti-api.onrender.com`
+   Examples:
+   - Backend on your server: `VITE_API_BASE_URL` = `https://api.yourdomain.com`
+   - Backend on Render: `VITE_API_BASE_URL` = `https://cosmicjyoti-api.onrender.com`
 
-   **Important:** Use `https://` and no trailing slash.
+   **Important:** Use `https://` in production (no trailing slash).
 
 3. **Trigger deploy:**
    - Push to `main`, or
@@ -101,7 +86,7 @@ The frontend must be built with your **backend URL** so it calls your API in pro
 ## 3. Verify
 
 - **Backend:** Open `https://<your-backend-url>/health` → should return `{"status":"ok",...}`.
-- **Frontend:** Open your GitHub Pages URL. Use the chat (Rishi); it should call the backend and get responses (no “couldn’t connect” if backend is up).
+- **Frontend:** Open your GitHub Pages URL. Use the chat (Rishi); it should call the backend and get responses (no "couldn't connect" if backend is up).
 
 ---
 
@@ -109,8 +94,8 @@ The frontend must be built with your **backend URL** so it calls your API in pro
 
 | What        | Where        | URL / Config |
 |------------|--------------|--------------|
-| Backend API | Render       | e.g. `https://cosmicjyoti-api.onrender.com` |
+| Backend API | Your host (from `server/`) | e.g. `https://api.yourdomain.com` or localhost for dev |
 | Frontend   | GitHub Pages | e.g. `https://user.github.io/cosmicsutra/` |
-| Backend URL in frontend | GitHub Secret | `VITE_API_BASE_URL` = backend URL |
+| Backend URL in frontend | GitHub Secret | `VITE_API_BASE_URL` = URL where your backend runs |
 
-After you set `VITE_API_BASE_URL` and redeploy the frontend, the app will use your deployed backend for Rishi, Kundali, Panchang, and other APIs.
+After you set `VITE_API_BASE_URL` to your backend URL and redeploy the frontend, the app will use your `server/` backend for Rishi, Kundali, Panchang, and other APIs.

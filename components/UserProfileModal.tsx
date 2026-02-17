@@ -53,7 +53,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
     }
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!consentGiven) {
       alert(language === 'hi' 
         ? 'कृपया सहमति दें कि आप अपनी जानकारी साझा करने के लिए सहमत हैं।'
@@ -80,7 +80,10 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
       try {
         localStorage.setItem('cosmicjyoti_profile_consent', 'granted');
       } catch {}
-      submitProfileWithConsent(profileData, updatedUser.name, updatedUser.email).catch(() => {});
+      const submitted = await submitProfileWithConsent(profileData, updatedUser.name, updatedUser.email);
+      if (!submitted && import.meta.env.DEV) {
+        console.warn('[ProfileModal] Data was not sent to the sheet. Add VITE_PROFILE_SUBMIT_URL to .env.local and restart. See PROFILE_SHEET_SETUP.md');
+      }
       onProfileSaved?.();
       onClose();
     } catch (e) {

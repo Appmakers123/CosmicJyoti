@@ -1,20 +1,22 @@
 /**
- * Profile submission service - sends profile data to backend when user gives consent.
- * Backend (Google Apps Script / serverless) appends to Excel/Google Sheet.
- * Set VITE_PROFILE_SUBMIT_URL in .env to enable.
+ * Profile submission service - sends profile data to Google Apps Script when user gives consent.
+ * Script appends to your Google Sheet. Set VITE_PROFILE_SUBMIT_URL in .env.local (and GitHub Secrets for deploy).
  */
 
 import type { GlobalProfile } from '../types';
 
-const SUBMIT_URL = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_PROFILE_SUBMIT_URL) || (typeof process !== 'undefined' && (process as any).env?.VITE_PROFILE_SUBMIT_URL) || '';
+// Use literal so Vite inlines the value at build time (from .env.local or workflow secrets)
+const SUBMIT_URL = import.meta.env.VITE_PROFILE_SUBMIT_URL || '';
 
 export function isProfileSubmitEnabled(): boolean {
-  return !!SUBMIT_URL && SUBMIT_URL.startsWith('http');
+  return typeof SUBMIT_URL === 'string' && SUBMIT_URL.length > 0 && SUBMIT_URL.startsWith('http');
 }
 
 export async function submitProfileWithConsent(profile: GlobalProfile, accountName?: string, accountEmail?: string): Promise<boolean> {
   if (!isProfileSubmitEnabled()) {
-    console.warn('[ProfileSubmit] VITE_PROFILE_SUBMIT_URL not configured. Add it to .env.local and rebuild. See PROFILE_SHEET_SETUP.md');
+    if (import.meta.env.DEV) {
+      console.warn('[ProfileSubmit] Sheet not linked: add VITE_PROFILE_SUBMIT_URL to .env.local (see PROFILE_SHEET_SETUP.md) and restart dev server.');
+    }
     return false;
   }
 
@@ -39,24 +41,25 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
       } : null,
     };
 
-    // Use text/plain to avoid CORS preflight (Google Apps Script doesn't handle OPTIONS)
+    // Script has doOptions() for CORS preflight; application/json is the expected format
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(SUBMIT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      console.warn('[ProfileSubmit] Failed:', res.status);
+      const text = await res.text();
+      console.warn('[ProfileSubmit] Sheet returned', res.status, text || '');
       return false;
     }
     return true;
   } catch (e) {
-    console.warn('[ProfileSubmit] Error:', e);
+    console.warn('[ProfileSubmit] Request failed:', e);
     return false;
   }
 }

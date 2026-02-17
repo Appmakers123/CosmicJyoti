@@ -63,9 +63,10 @@ npm run dev
 ## Troubleshooting: No records in sheet
 
 1. **Consent checkbox** – User must check "I consent to sharing my information" before Save.
-2. **Rebuild after adding URL** – Run `npm run dev` or `npm run build` after adding `VITE_PROFILE_SUBMIT_URL` to `.env.local`.
-3. **Redeploy Google Apps Script** – If you updated `PROFILE_SHEET_Code.gs`, deploy again (Deploy → Manage deployments → Edit → Version: New version → Deploy).
-4. **Check browser console** – Open DevTools (F12) → Network tab, save profile, look for the POST request to script.google.com and any errors.
+2. **Correct Web App URL** – In `.env.local`, set `VITE_PROFILE_SUBMIT_URL` to your **actual** Web App URL (from Deploy → Web app). It must look like `https://script.google.com/macros/s/XXXXX/exec` — replace the placeholder if you copied from `.env.example`.
+3. **Restart after changing .env** – After adding or changing `VITE_PROFILE_SUBMIT_URL` in `.env.local`, **restart** the dev server (`npm run dev`) or run `npm run build` again. The URL is read at build/start time.
+4. **Redeploy Google Apps Script** – If you updated `PROFILE_SHEET_Code.gs`, deploy again (Deploy → Manage deployments → Edit → Version: New version → Deploy).
+5. **Check browser console** – Open DevTools (F12) → Console and Network. Save profile and look for `[ProfileSubmit]` messages or the POST to script.google.com. Any error there will explain why the sheet didn’t get the data.
 
 ---
 

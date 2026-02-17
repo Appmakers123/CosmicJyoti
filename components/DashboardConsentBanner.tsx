@@ -57,7 +57,6 @@ const DashboardConsentBanner: React.FC<DashboardConsentBannerProps> = ({
     try {
       localStorage.setItem(DISMISS_KEY, 'true');
     } catch (_) {}
-    setDismissed(true);
     setVisible(false);
   };
 

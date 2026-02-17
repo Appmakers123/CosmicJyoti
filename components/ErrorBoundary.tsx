@@ -43,6 +43,10 @@ class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError && this.state.error) {
       if (this.props.fallback) return this.props.fallback;
+      const err = this.state.error;
+      const isChunkLoad = err?.message?.includes('Loading chunk') || err?.name === 'ChunkLoadError';
+      const showDetail = typeof window !== 'undefined' && (window.location.search.includes('debug=1') || isChunkLoad);
+      const detailMsg = showDetail && err ? String(err.message || err) : null;
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-950 text-slate-200">
           <div className="max-w-md w-full text-center space-y-6">
@@ -51,8 +55,15 @@ class ErrorBoundary extends Component<Props, State> {
               Something went wrong
             </h1>
             <p className="text-slate-400 text-sm">
-              The cosmic alignment was briefly disrupted. Please try again.
+              {isChunkLoad
+                ? 'A script failed to load (often after a new deploy). Reload the page to get the latest version.'
+                : 'The cosmic alignment was briefly disrupted. Please try again.'}
             </p>
+            {detailMsg && (
+              <pre className="text-left text-xs text-slate-500 bg-slate-900 p-3 rounded overflow-auto max-h-24">
+                {detailMsg}
+              </pre>
+            )}
             <button
               onClick={this.handleRetry}
               className="w-full py-3 px-6 bg-amber-600 hover:bg-amber-500 text-slate-900 font-bold rounded-xl transition-all"

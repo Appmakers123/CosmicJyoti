@@ -24,9 +24,9 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       exclude: ['@capacitor/app', '@capacitor/browser'], // Exclude from pre-bundling in dev mode
     },
-    // IMPORTANT: This base URL must match your GitHub repository name.
-    // Updated to '/' since the website is hosted at the root (appmakers123.github.io)
-    base: '/', 
+    // Base URL: use VITE_BASE_URL if set (e.g. /cosmicsutra/ for GitHub Pages project site).
+    // Leave empty or '/' for root (user site or custom domain). CI can set process.env.VITE_BASE_URL.
+    base: (env.VITE_BASE_URL || (process as any).env?.VITE_BASE_URL || env.BASE_URL || '/').replace(/\/*$/, '/') || '/', 
     define: {
       // Gemini API keys (single or comma-separated for rotation)
       'process.env.API_KEY': JSON.stringify(env.API_KEY || env.GEMINI_API_KEY || ''),

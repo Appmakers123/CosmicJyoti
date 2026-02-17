@@ -1084,7 +1084,7 @@ const App: React.FC = () => {
                 <button
                   type="button"
                   onClick={async () => {
-                    const url = typeof window !== 'undefined' ? window.location.origin + '/' : 'https://www.cosmicjyoti.com/';
+                    const url = typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname || '/').replace(/\/?$/, '/')) : 'https://www.cosmicjyoti.com/';
                     const text = language === 'hi'
                       ? `आज अपना राशिफल देखें – CosmicJyoti (मुफ्त कुंडली, पंचांग)। ${url}`
                       : `Check your daily horoscope – CosmicJyoti (free Kundali & Panchang). ${url}`;

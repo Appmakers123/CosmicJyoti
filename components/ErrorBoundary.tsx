@@ -44,9 +44,8 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError && this.state.error) {
       if (this.props.fallback) return this.props.fallback;
       const err = this.state.error;
-      const isChunkLoad = err?.message?.includes('Loading chunk') || err?.name === 'ChunkLoadError';
-      const showDetail = typeof window !== 'undefined' && (window.location.search.includes('debug=1') || isChunkLoad);
-      const detailMsg = showDetail && err ? String(err.message || err) : null;
+      const isChunkLoad = err?.name === 'ChunkLoadError' || (typeof err?.message === 'string' && (err.message.includes('Loading chunk') || err.message.includes('dynamically imported module')));
+      const detailMsg = err ? String(err.message || err) : null;
       return (
         <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-slate-950 text-slate-200">
           <div className="max-w-md w-full text-center space-y-6">
@@ -60,7 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
                 : 'The cosmic alignment was briefly disrupted. Please try again.'}
             </p>
             {detailMsg && (
-              <pre className="text-left text-xs text-slate-500 bg-slate-900 p-3 rounded overflow-auto max-h-24">
+              <pre className="text-left text-xs text-slate-500 bg-slate-900 p-3 rounded overflow-auto max-h-28 w-full break-all whitespace-pre-wrap">
                 {detailMsg}
               </pre>
             )}

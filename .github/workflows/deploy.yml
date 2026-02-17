@@ -36,10 +36,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          API_KEY: ${{ secrets.API_KEY || secrets.GEMINI_API_KEY || '' }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY || '' }}
-          GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS || secrets.API_KEYS || '' }}
-          API_KEYS: ${{ secrets.API_KEYS || secrets.GEMINI_API_KEYS || '' }}
+          API_KEY: ${{ secrets.API_KEY || '' }}
           GEMINI_FALLBACK_KEY: ${{ secrets.GEMINI_FALLBACK_KEY || '' }}
           PERPLEXITY_API_KEYS: ${{ secrets.PERPLEXITY_API_KEYS || secrets.PERPLEXITY_API_KEY || '' }}
           VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY || '' }}

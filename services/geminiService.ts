@@ -2,22 +2,16 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
-import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
+import { getNextGeminiKey } from "../utils/geminiApiKeys";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { askRishiFromBackend } from "./backendService";
 
-/** Returns Gemini client or null when no key is configured. */
-const getAI = (): GoogleGenAI | null => {
+const getAI = () => {
   const apiKey = getNextGeminiKey();
-  if (!apiKey) return null;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY_NOT_CONFIGURED");
+  }
   return new GoogleGenAI({ apiKey });
-};
-
-/** Use when caller requires AI (throws so callers can catch and show defaults). */
-const getAIOrThrow = (): GoogleGenAI => {
-  const ai = getAI();
-  if (!ai) throw new Error("GEMINI_API_KEY_NOT_CONFIGURED");
-  return ai;
 };
 
 // Language name mapping for AI prompts
@@ -207,7 +201,7 @@ const parseJSONFromResponse = <T>(text: string, fallback: T): T => {
 const generateInterpretativeReading = async (prompt: string, systemInstruction: string, model: string = "gemini-3-flash-preview", language: Language = 'en') => {
     const languageName = getLanguageName(language);
     return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: model,
             contents: `${prompt} IMPORTANT: Respond in ${languageName} language.`,
@@ -273,16 +267,6 @@ export const generateHoroscope = async (signName: string, language: Language = '
     };
   } catch (error: any) {
     console.warn('Backend horoscope failed, using Gemini fallback:', error?.message);
-    if (!hasGeminiKeys()) {
-      const isHi = language === 'hi';
-      return {
-        horoscope: isHi ? 'राशिफल लोड करने के लिए API कुंजी सेट करें।' : 'Set an API key to load horoscope, or use the backend.',
-        luckyNumber: 7,
-        luckyColor: 'Gold',
-        mood: 'Balanced',
-        compatibility: '',
-      };
-    }
     return await generateHoroscopeDirect(signName, language);
   }
 };
@@ -290,7 +274,7 @@ export const generateHoroscope = async (signName: string, language: Language = '
   async function generateHoroscopeDirect(signName: string, language: Language = 'en'): Promise<HoroscopeResponse> {
       const today = new Date().toDateString();
       return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
       const languageName = getLanguageName(language);
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview", 
@@ -1343,7 +1327,7 @@ async function generateKundaliDirect(formData: KundaliFormData, language: Langua
             console.warn("Dasha calculation failed, using defaults:", e);
             // Fallback: try AI if mathematical calculation fails
     try {
-        const ai = getAIOrThrow();
+        const ai = getAI();
                 const dashaPrompt = `Calculate Vimshottari Dasha for birth date: ${formData.date}, time: ${formData.time}, Moon nakshatra: ${moonNakshatra}. Provide current Mahadasha and Antardasha.`;
                 const dashaResponse = await ai.models.generateContent({
                     model: "gemini-3-flash-preview",
@@ -1394,7 +1378,7 @@ async function generateKundaliDirect(formData: KundaliFormData, language: Langua
         };
         
         try {
-            const aiInstance = getAIOrThrow();
+            const aiInstance = getAI();
             
             // Build detailed planetary positions summary with all details
             const planetarySummary = planetaryPositions.map(p => {
@@ -1761,7 +1745,7 @@ CRITICAL OUTPUT RULES:
         console.error("Kundali generation error:", error);
         // Fallback to Gemini if API fails
         return await (async () => {
-                const aiInstance = getAIOrThrow();
+                const aiInstance = getAI();
                 const response = await aiInstance.models.generateContent({
           model: "gemini-3-pro-preview", 
                     contents: `Calculate Vedic Kundali for ${formData.name}, ${formData.date}, ${formData.time}, ${formData.location}. Language: ${language}.`,
@@ -1966,7 +1950,7 @@ function getDefaultMuhurats(language: Language): MuhuratItem[] {
 
 async function generateMuhuratPlannerDirect(location: string, language: Language): Promise<MuhuratItem[]> {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
             console.log("Calling Gemini API for Muhurat Planner...", { location, language });
         
         const requestParams = {
@@ -2019,7 +2003,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
     return (async () => {
     try {
             console.log("Generating mantra audio for:", mantraText.substring(0, 50));
-            const ai = getAIOrThrow();
+            const ai = getAI();
         
         // Try different TTS model names and API structures
         const attempts = [
@@ -2151,7 +2135,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
 
 export const generateMysticReading = async (base64Image: string, features: string[], mode: 'face' | 'object', language: Language): Promise<string> => {
     return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: { 
@@ -2169,7 +2153,7 @@ export const generateMysticReading = async (base64Image: string, features: strin
 
 export const generateCosmicArt = async (prompt: string, language: Language): Promise<string> => {
     return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: { parts: [{ text: `Mystical Cosmic Vedic artwork representing: ${prompt}. Cinematic, detailed, spiritual.` }] }
@@ -2186,7 +2170,7 @@ export const generateCosmicArt = async (prompt: string, language: Language): Pro
 
 export const generateStoryImage = async (target: string, story: string): Promise<string> => {
     return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash-image',
             contents: { parts: [{ text: `Historical Vedic illustration of ${target}. Intricate temple art style.` }] }
@@ -2205,7 +2189,7 @@ export const generateStoryImage = async (target: string, story: string): Promise
  * Chat and Fallback Services - with mentor tone and persona support
  */
 export const createChatSession = (language: Language, context?: string, persona: AstrologerPersona = 'general') => {
-    const ai = getAIOrThrow();
+    const ai = getAI();
     const languageName = getLanguageName(language);
     const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';
     const personaPrompt = PERSONA_PROMPTS[persona];
@@ -2233,7 +2217,7 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
 
     // 2. Fallback: direct Gemini call (works when backend is down or returns 503/500)
     try {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';
         const personaPrompt = PERSONA_PROMPTS[persona];
         const response = await ai.models.generateContent({
@@ -2263,7 +2247,7 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
 // New Service: Astro Riddles
 export const generateAstroRiddles = async (language: Language): Promise<any[]> => {
     return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: "gemini-3-flash-preview",
             contents: `Create 3 mysterious riddles about Vedic signs or planets. Language: ${language}.`,
@@ -2305,7 +2289,7 @@ export const generateMatchMaking = async (boy: MatchMakingInput, girl: MatchMaki
 
 async function generateMatchMakingDirect(boy: MatchMakingInput, girl: MatchMakingInput, language: Language): Promise<MatchMakingResponse> {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
     const response = await ai.models.generateContent({
         model: "gemini-3-pro-preview",
         contents: `Guna Milan for Boy: ${JSON.stringify(boy)}, Girl: ${JSON.stringify(girl)}. Language: ${language}.`,
@@ -2331,7 +2315,7 @@ export const generateCompatibilityReport = async (boy: MatchMakingInput, girl: M
 
 export const generateNumerologyReport = async (name: string, lp: number, destiny: number, soulUrge: number, personality: number, birthday: number, language: Language): Promise<NumerologyResponse> => {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Interpret Numerology: ${name}, LifePath ${lp}. Language: ${language}.`,
@@ -2357,7 +2341,7 @@ return (async () => {
 
 export const generateAstroQuiz = async (language: Language): Promise<any[]> => {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Create 5 Vedic Astrology quiz questions. Language: ${language}.`,
@@ -2412,7 +2396,7 @@ export const generatePersonalTransits = async (kundali: KundaliResponse, languag
 
 async function generatePersonalTransitsDirect(kundali: KundaliResponse, language: Language): Promise<TransitResponse> {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
             const ascendantSignId = kundali.basicDetails.ascendantSignId || 1;
             const ascendant = kundali.basicDetails.ascendant || "Aries";
             
@@ -2609,7 +2593,7 @@ export const generateGenericTransits = async (location: string, rashi: string, l
     // 3) Fallback to Gemini
     try {
         return await (async () => {
-            const ai = getAIOrThrow();
+            const ai = getAI();
             if (!ai) {
                 throw new Error("AI service not available");
             }
@@ -2792,7 +2776,7 @@ Language: ${language}.`;
 
 export const getAstroDetails = async (person: MatchMakingInput): Promise<{sign: string, nakshatra: string}> => {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Identify Moon Sign and Nakshatra for: ${JSON.stringify(person)}.`,
@@ -2809,7 +2793,7 @@ return (async () => {
 
 export const generateTripleCompatibility = async (personA: any, personB: any, language: Language): Promise<any> => {
 return (async () => {
-        const ai = getAIOrThrow();
+        const ai = getAI();
     const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
         contents: `Triple compatibility between: ${JSON.stringify(personA)} and ${JSON.stringify(personB)}. Language: ${language}.`,

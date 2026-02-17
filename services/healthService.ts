@@ -3,7 +3,6 @@ import { Language, KundaliFormData, KundaliResponse } from "../types";
 import { getNextGeminiKey } from "../utils/geminiApiKeys";
 import { generateKundali } from "./geminiService";
 import { generateChartBasedHealthAnalysisFromBackend } from "./backendService";
-import { hasGeminiKeys } from "../utils/geminiApiKeys";
 
 // Master System Prompt for Vedic Health Advisor
 const MASTER_HEALTH_SYSTEM_PROMPT = `You are CosmicHealth AI, an expert Vedic astrology-based health advisor with deep knowledge of:
@@ -113,10 +112,6 @@ export const generateChartBasedHealthAnalysis = async (
   } catch (backendErr: any) {
     // Fall through to direct call on any backend failure (not available, network, 5xx, etc.)
     console.warn('Cosmic Health backend unavailable, trying direct:', backendErr?.message);
-  }
-
-  if (!hasGeminiKeys()) {
-    return getDefaultChartHealthAnalysis(language);
   }
 
   try {

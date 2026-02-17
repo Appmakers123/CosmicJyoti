@@ -44,6 +44,12 @@ export async function openExternalLink(
       return;
     }
 
+    const trimmed = url.trim().toLowerCase();
+    if (trimmed.startsWith('javascript:') || trimmed.startsWith('data:')) {
+      console.warn('Blocked unsafe URL scheme:', url.slice(0, 20) + '...');
+      return;
+    }
+
     // Normalize URL
     let validUrl: string;
     try {

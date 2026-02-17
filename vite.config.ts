@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
   // In CI there are no .env files; workflow sets process.env. Fallback so secrets are used in build.
   const p = (process as any).env || {};
   const get = (key: string) => (env[key] ?? p[key] ?? '') as string;
+  // Never log API key presence in production; only in dev when explicitly requested
   if (mode === 'development' && process.env.DEBUG_VITE_ENV === '1') {
     console.log('Loading environment variables. Gemini API_KEY present:', !!(get('API_KEY') || get('GEMINI_API_KEY')));
   }

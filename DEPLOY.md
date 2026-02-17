@@ -51,6 +51,8 @@ The backend is in **`server/`**. Run it wherever you host your Node apps:
 
 Ensure the backend is reachable at a URL (e.g. `https://your-backend.example.com` or `http://localhost:3001` for local dev). The frontend will call this URL when `VITE_API_BASE_URL` is set.
 
+For production, set `CORS_ORIGIN` to your frontend origin(s), comma-separated (e.g. `https://yourusername.github.io,https://yourdomain.com`). See SECURITY.md and `.env.example`.
+
 ---
 
 ## 2. Deploy the frontend (GitHub Pages)

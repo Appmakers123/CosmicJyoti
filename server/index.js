@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import NodeCache from 'node-cache';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -25,10 +27,39 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const isProduction = process.env.NODE_ENV === 'production';
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// --- Security middleware (apply before routes) ---
+app.use(helmet({
+  contentSecurityPolicy: false, // CSP is better set at reverse-proxy or static host; avoid breaking inline scripts if any
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
+
+// CORS: allowlist from env (comma-separated). Dev: http://localhost:5173; production: add your frontend origins.
+const corsOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()).filter(Boolean)
+  : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000'];
+app.use(cors({
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // same-origin or tools like Postman
+    if (corsOrigins.includes(origin)) return cb(null, true);
+    if (!isProduction && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:'))) return cb(null, true);
+    cb(null, false); // reject: do not set Access-Control-Allow-Origin
+  },
+  credentials: true,
+}));
+
+// Rate limit: 100 requests per 15 minutes per IP (adjust as needed)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use(limiter);
+
+// Body size limit to prevent large payload attacks
+app.use(express.json({ limit: '500kb' }));
 
 // Cache configuration - 1 hour TTL for most data, 24 hours for static calculations
 const cache = new NodeCache({ 
@@ -373,16 +404,24 @@ app.post('/api/ask-rishi', async (req, res) => {
     if (!prompt || typeof prompt !== 'string') {
       return res.status(400).json({ error: 'Missing required field: prompt' });
     }
+    const trimmedPrompt = prompt.trim();
+    if (trimmedPrompt.length > 10000) {
+      return res.status(400).json({ error: 'Prompt too long (max 10000 characters)' });
+    }
+    if (trimmedPrompt.length === 0) {
+      return res.status(400).json({ error: 'Prompt cannot be empty' });
+    }
 
     if (!genAI) {
       return res.status(503).json({ error: 'AI service not configured. API key missing.' });
     }
 
+    const safeContext = typeof context === 'string' ? context.slice(0, 5000) : '';
     try {
       const { text, sources } = await runRishiAgent({
-        prompt,
+        prompt: trimmedPrompt,
         language,
-        context: context || '',
+        context: safeContext,
         persona,
         genAI,
       });
@@ -391,7 +430,7 @@ app.post('/api/ask-rishi', async (req, res) => {
       console.warn('Rishi agent failed, falling back to simple model:', agentError?.message);
       const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi' };
       const langName = LANGUAGE_NAMES[language] || 'English';
-      const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';
+      const contextInfo = safeContext ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${safeContext}` : '';
       const PERSONA_PROMPTS = {
         general: 'You are Rishi, the CosmicJyoti Sage—a holistic guide for life, spirituality, and cosmic wisdom.',
         career: 'You are the Career Sage—specializing in career, business, job changes, success, and professional growth.',
@@ -406,7 +445,7 @@ IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
 ${contextInfo}`;
 
       const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const fullPrompt = `${systemInstruction}\n\n---\n\n${context ? 'Module context: ' + context + '\n\n' : ''}User: ${prompt}`;
+      const fullPrompt = `${systemInstruction}\n\n---\n\n${safeContext ? 'Module context: ' + safeContext + '\n\n' : ''}User: ${trimmedPrompt}`;
       const result = await model.generateContent(fullPrompt);
       const response = result.response;
       const text = response?.text?.() || 'The cosmic library is currently undergoing maintenance. Please try again soon.';
@@ -437,10 +476,17 @@ app.post('/api/tarot', async (req, res) => {
   }
 });
 
-// Clear cache endpoint (for admin use)
+// Clear cache endpoint (for admin use). Set CACHE_CLEAR_SECRET in env to require ?secret= or body.secret.
 app.post('/api/cache/clear', (req, res) => {
   try {
-    const { key } = req.body;
+    const requiredSecret = process.env.CACHE_CLEAR_SECRET;
+    if (requiredSecret) {
+      const provided = req.query.secret || req.body?.secret;
+      if (provided !== requiredSecret) {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+    }
+    const { key } = req.body || {};
     if (key) {
       cache.del(key);
       res.json({ message: `Cache cleared for key: ${key}` });

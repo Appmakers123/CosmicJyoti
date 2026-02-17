@@ -30,8 +30,8 @@
     <meta name="twitter:image:alt" content="CosmicJyoti – Vedic Astrology &amp; AI Horoscope" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="CosmicJyoti" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="/app-logo.png" type="image/png" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" href="app-logo.png" type="image/png" />
     <link rel="canonical" href="https://www.cosmicjyoti.com/" />
     <title>CosmicJyoti – Free Kundali, Horoscope, Marriage Match &amp; Vedic AI Astrology</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -231,7 +231,7 @@
       }
     </style>
 <!-- AdSense loaded dynamically in App.tsx only on web (not in app) - AdMob used in app -->
-<link rel="stylesheet" href="/index.css">
+<link rel="stylesheet" href="index.css">
 <!-- JSON-LD: WebSite + WebApplication for search engines -->
 <script type="application/ld+json">
 {
@@ -269,10 +269,10 @@
 </script>
 </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="flex min-h-screen items-center justify-center bg-slate-950 text-amber-300 font-serif" id="root-fallback">Loading CosmicJyoti…</div></div>
     <div id="cookie-consent-banner" role="dialog" aria-label="Cookie consent" class="cookie-consent-banner">
       <div class="cookie-consent-inner">
-        <p class="cookie-consent-text">We use cookies and similar technologies to improve your experience, analyze traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies. <a href="/privacy-policy.html" class="cookie-consent-link">Privacy Policy</a> | <a href="/privacy-policy.html#cookies" class="cookie-consent-link">Cookie Policy</a></p>
+        <p class="cookie-consent-text">We use cookies and similar technologies to improve your experience, analyze traffic, and personalize content. By clicking "Accept All", you consent to our use of cookies. <a href="privacy-policy.html" class="cookie-consent-link">Privacy Policy</a> | <a href="privacy-policy.html#cookies" class="cookie-consent-link">Cookie Policy</a></p>
         <div class="cookie-consent-buttons">
           <button id="cookie-consent-accept" type="button" class="cookie-consent-accept">Accept All</button>
           <button id="cookie-consent-essential" type="button" class="cookie-consent-essential">Essential Only</button>
@@ -305,7 +305,7 @@
         else showBanner();
         acceptBtn.addEventListener('click', function() { grantConsent(); });
         if (essentialBtn) essentialBtn.addEventListener('click', function() { essentialOnly(); });
-        if (settingsBtn) settingsBtn.addEventListener('click', function() { window.location.href = '/privacy-policy.html#cookies'; hideBanner(); });
+        if (settingsBtn) settingsBtn.addEventListener('click', function() { window.location.href = 'privacy-policy.html#cookies'; hideBanner(); });
       })();
     </script>
     <script type="module" src="/index.tsx"></script>

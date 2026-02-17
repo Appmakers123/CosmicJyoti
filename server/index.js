@@ -1,7 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import NodeCache from 'node-cache';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -28,65 +26,9 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// --- Security middleware ---
-app.use(helmet({
-  contentSecurityPolicy: false, // CSP is complex with dynamic scripts; enable later with nonces if needed
-  crossOriginResourcePolicy: { policy: 'cross-origin' },
-}));
-// Limit request body size to prevent payload attacks (100KB for JSON)
-app.use(express.json({ limit: '100kb' }));
-// Rate limit: 100 requests per 15 minutes per IP (stricter for API)
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many requests; please try again later.' },
-});
-app.use('/api/', apiLimiter);
-// CORS: allow same-origin and configured origins (e.g. your frontend domain)
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // same-origin or server-to-server
-    if (allowedOrigins.length === 0) return callback(null, true); // no list = allow all (dev)
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    callback(null, false); // deny unknown origin
-  },
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
-// Sanitize string inputs: trim and enforce max length to reduce injection/DoS risk
-const MAX_STRING = 500;
-const MAX_PROMPT = 4000;
-function sanitizeStr(s, max = MAX_STRING) {
-  if (s == null) return '';
-  const t = String(s).trim();
-  return t.length > max ? t.slice(0, max) : t;
-}
-function sanitizeBody(body) {
-  if (!body || typeof body !== 'object') return body;
-  const out = { ...body };
-  for (const k of Object.keys(out)) {
-    if (typeof out[k] === 'string') out[k] = sanitizeStr(out[k], k === 'prompt' || k === 'context' ? MAX_PROMPT : MAX_STRING);
-    else if (out[k] && typeof out[k] === 'object' && !Array.isArray(out[k]) && (out[k].date != null || out[k].time != null || out[k].location != null)) {
-      const o = { ...out[k] };
-      if (o.date != null) o.date = sanitizeStr(o.date);
-      if (o.time != null) o.time = sanitizeStr(o.time);
-      if (o.location != null) o.location = sanitizeStr(o.location);
-      out[k] = o;
-    }
-  }
-  return out;
-}
-app.use((req, res, next) => {
-  if (req.body && typeof req.body === 'object') req.body = sanitizeBody(req.body);
-  next();
-});
+// Middleware
+app.use(cors());
+app.use(express.json());
 
 // Cache configuration - 1 hour TTL for most data, 24 hours for static calculations
 const cache = new NodeCache({ 
@@ -495,17 +437,13 @@ app.post('/api/tarot', async (req, res) => {
   }
 });
 
-// Clear cache endpoint (for admin use) — requires CACHE_CLEAR_SECRET in production
-const CACHE_CLEAR_SECRET = process.env.CACHE_CLEAR_SECRET;
+// Clear cache endpoint (for admin use)
 app.post('/api/cache/clear', (req, res) => {
   try {
-    if (CACHE_CLEAR_SECRET && req.body?.secret !== CACHE_CLEAR_SECRET) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-    const { key } = req.body || {};
+    const { key } = req.body;
     if (key) {
       cache.del(key);
-      res.json({ message: 'Cache entry cleared' });
+      res.json({ message: `Cache cleared for key: ${key}` });
     } else {
       cache.flushAll();
       res.json({ message: 'All cache cleared' });
@@ -515,11 +453,8 @@ app.post('/api/cache/clear', (req, res) => {
   }
 });
 
-// Get cache stats — same secret recommended if set
+// Get cache stats
 app.get('/api/cache/stats', (req, res) => {
-  if (CACHE_CLEAR_SECRET && req.query?.secret !== CACHE_CLEAR_SECRET) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
   res.json(cache.getStats());
 });
 

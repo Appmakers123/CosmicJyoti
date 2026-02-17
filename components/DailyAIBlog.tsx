@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Language } from '../types';
 import { BackButton } from './common';
 import AdBanner from './AdBanner';
-import { sanitizeHtml } from '../utils/htmlSanitizer';
 
 const POSTS_PER_PAGE = 9;
 
@@ -262,7 +261,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
         {post.content ? (
           <div
             className="article-body prose prose-invert max-w-none text-slate-300 space-y-4 [&_h2]:text-amber-200 [&_h2]:text-lg [&_h2]:mt-6 [&_h3]:text-amber-100 [&_h3]:text-base [&_h3]:mt-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_li]:mb-1"
-            dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
+            dangerouslySetInnerHTML={{ __html: post.content }}
           />
         ) : (
           <p className="text-slate-400">{post.excerpt}</p>

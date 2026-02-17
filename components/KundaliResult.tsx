@@ -11,7 +11,6 @@ import SouthIndianChart from './SouthIndianChart';
 import NorthIndianChart from './NorthIndianChart';
 import { BackButton, InfoCard, PredictionCard, TabButton, SaveShareBar } from './common';
 import { saveReport, getReportByForm } from '../utils/reportStorageService';
-import { sanitizeSvg } from '../utils/htmlSanitizer';
 
 interface KundaliResultProps {
   data: KundaliResponse;
@@ -172,7 +171,7 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
                         >
                             <div 
                                 className="w-full h-full"
-                                dangerouslySetInnerHTML={{ __html: sanitizeSvg(data.charts.d1ChartSvg) }}
+                                dangerouslySetInnerHTML={{ __html: data.charts.d1ChartSvg }}
                             />
                         </div>
                     ) : (
@@ -208,7 +207,7 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
                         >
                             <div 
                                 className="w-full h-full"
-                                dangerouslySetInnerHTML={{ __html: sanitizeSvg(data.charts.d9ChartSvg) }}
+                                dangerouslySetInnerHTML={{ __html: data.charts.d9ChartSvg }}
                             />
                         </div>
                  ) : (

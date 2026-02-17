@@ -11,21 +11,6 @@ interface NorthIndianChartProps {
 }
 
 const NorthIndianChart: React.FC<NorthIndianChartProps> = ({ planets = [], ascendantSignId, language, importantPoints = [] }) => {
-  // Debug logging
-  React.useEffect(() => {
-    console.log("NorthIndianChart received:", {
-      planetsCount: planets?.length || 0,
-      planets: planets,
-      ascendantSignId: ascendantSignId,
-      importantPointsCount: importantPoints?.length || 0
-    });
-    
-    // Warn if no planets but we're expecting them
-    if ((!planets || planets.length === 0) && ascendantSignId) {
-      console.warn("NorthIndianChart: No planets provided but ascendantSignId is set:", ascendantSignId);
-    }
-  }, [planets, ascendantSignId, importantPoints]);
-
   // Ensure we have valid ascendantSignId
   const validAscendantSignId = (ascendantSignId >= 1 && ascendantSignId <= 12) ? ascendantSignId : 1;
   
@@ -60,12 +45,6 @@ const NorthIndianChart: React.FC<NorthIndianChartProps> = ({ planets = [], ascen
                !pointName.includes('गुलिका');
       })
       .filter(p => p.house === houseNum);
-    
-    // Debug log if no planets found but we have planets
-    if (planetsInHouse.length === 0 && planets && planets.length > 0 && houseNum === 1) {
-      console.log(`House ${houseNum} (signId ${signId}) has no planets. Available planets:`, 
-        planets.map(p => `${p.planet} (signId: ${p.signId}, house: ${p.house})`));
-    }
     
     return { signId, planets: planetsInHouse, points: pointsInHouse };
   };

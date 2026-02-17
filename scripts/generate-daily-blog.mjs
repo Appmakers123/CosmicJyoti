@@ -1,183 +1,279 @@
 #!/usr/bin/env node
 /**
- * Generate 3 daily AI blog posts using Gemini (no backend required).
- * - Researches each topic via web (what famous astrologers/sites have written), then writes
- *   entirely original articles in its own words to avoid plagiarism.
- * - Uses Google Search grounding when available (gemini-2.0-flash); else gemini-1.5-flash.
- * - Each article is tied to a CosmicJyoti module for SEO. Appends to existing posts (max 100).
- * Run: API_KEY=xxx node scripts/generate-daily-blog.mjs
- * Optional: USE_GOOGLE_SEARCH_GROUNDING=false to disable web search (e.g. if model not supported).
- * Used by GitHub Actions daily workflow.
+ * Generate 2 daily AI blog posts per time slot using Perplexity API only.
+ *
+ * Time slots (run script with slot argument; schedule via cron or GitHub Actions):
+ * - 6am  (morning): Horoscope + Compatibility
+ * - 12pm (noon):    Career, Love, and other dashboard modules (2 rotating)
+ * - 6pm  (evening): Planetary position and its effect (2 articles)
+ * - 9pm  (night):   Events and muhurat for the next day (2 articles)
+ *
+ * Usage:
+ *   node scripts/generate-daily-blog.mjs [slot]
+ *   slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)
+ *
+ * Requires PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local.
+ * Keys are loaded from project root .env and .env.local.
  */
-import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, '..');
+
+function loadEnvFile(filePath) {
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    raw.split(/\r?\n/).forEach((line) => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const eq = trimmed.indexOf('=');
+        if (eq > 0) {
+          const key = trimmed.slice(0, eq).trim();
+          let value = trimmed.slice(eq + 1).trim();
+          if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))
+            value = value.slice(1, -1);
+          else {
+            const hashIdx = value.indexOf(' #');
+            if (hashIdx !== -1) value = value.slice(0, hashIdx).trim();
+          }
+          if (!process.env[key]) process.env[key] = value;
+        }
+      }
+    });
+  } catch (_) {}
+}
+
+loadEnvFile(path.join(ROOT_DIR, '.env'));
+loadEnvFile(path.join(ROOT_DIR, '.env.local'));
+
+const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
+
+function getPerplexityKeys() {
+  const keys = process.env.PERPLEXITY_API_KEYS || process.env.PERPLEXITY_API_KEY || '';
+  const list = keys.split(',').map((k) => k.trim()).filter(Boolean);
+  return list;
+}
+
+let perplexityKeyIndex = 0;
+
+function getNextPerplexityKey() {
+  const list = getPerplexityKeys();
+  if (!list.length) return null;
+  const key = list[perplexityKeyIndex % list.length];
+  perplexityKeyIndex += 1;
+  return key;
+}
+
+async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
+  const keys = getPerplexityKeys();
+  if (!keys.length) return null;
+  const systemContent = `You are an expert Vedic astrologer and content writer. Output ONLY valid JSON, no other text or markdown.`;
+  const userContent = `${prompt}\n\nOutput a single JSON object with a "posts" array of exactly ${postCount} articles. No code fences, no explanation.`;
+  const body = JSON.stringify({
+    model: 'sonar',
+    messages: [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userContent },
+    ],
+    max_tokens: 8192,
+    temperature: 0.4,
+  });
+  const startIndex = perplexityKeyIndex % keys.length;
+  perplexityKeyIndex += 1;
+  let lastError = null;
+  for (let j = 0; j < keys.length; j++) {
+    const key = keys[(startIndex + j) % keys.length];
+    try {
+      const res = await fetch(PERPLEXITY_API_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        body,
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        const isRetryable = res.status === 429 || res.status >= 500;
+        if (isRetryable && j < keys.length - 1) {
+          console.warn(`Perplexity key returned ${res.status}, trying next key...`);
+          lastError = new Error(`Perplexity API ${res.status}: ${err}`);
+          continue;
+        }
+        throw new Error(`Perplexity API ${res.status}: ${err}`);
+      }
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content?.trim() || '';
+      if (!text) throw new Error('Empty response from Perplexity');
+      return text;
+    } catch (e) {
+      lastError = e;
+      if (j < keys.length - 1) {
+        console.warn(`Perplexity key failed: ${e?.message || e}. Trying next key...`);
+        continue;
+      }
+      throw lastError;
+    }
+  }
+  throw lastError || new Error('No Perplexity keys available');
+}
+
 const BLOG_DIR = path.join(__dirname, '../public/blog');
 const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
-const MAX_POSTS = 100; // Keep last 100 posts to prevent unbounded growth
+const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
 
-// All CosmicJyoti modules - rotate daily so every module gets blog coverage over time
-const BLOG_MODULES = [
-  { mode: 'kundali', topic: 'Birth Chart / Kundali', keywords: 'Kundali, birth chart, Vedic astrology, planetary positions', label: 'Birth Chart' },
-  { mode: 'daily', topic: 'Horoscope / Daily Predictions', keywords: 'Horoscope, daily predictions, zodiac, rashi', label: 'Horoscope' },
-  { mode: 'panchang', topic: 'Panchang / Muhurat', keywords: 'Panchang, muhurat, auspicious time, tithi, nakshatra', label: 'Panchang' },
-  { mode: 'compatibility', topic: 'Compatibility / Match Making', keywords: 'Kundali milan, compatibility, match making, ashtakoota', label: 'Compatibility' },
+// Dashboard modules for 12pm slot (career, love, other) – rotate daily
+const NOON_MODULES = [
+  { mode: 'kundali', topic: 'Birth Chart / Kundali', keywords: 'Kundali, birth chart, Vedic astrology', label: 'Birth Chart' },
+  { mode: 'panchang', topic: 'Panchang / Muhurat', keywords: 'Panchang, muhurat, auspicious time', label: 'Panchang' },
   { mode: 'tarot', topic: 'Tarot Reading', keywords: 'Tarot, card reading, divination', label: 'Tarot' },
+  { mode: 'numerology', topic: 'Numerology & Career', keywords: 'Numerology, life path, career, destiny number', label: 'Numerology' },
   { mode: 'palm-reading', topic: 'Palmistry', keywords: 'Palmistry, hand reading, hast rekha', label: 'Palmistry' },
-  { mode: 'numerology', topic: 'Numerology', keywords: 'Numerology, life path, destiny number', label: 'Numerology' },
   { mode: 'dreams', topic: 'Dream Interpretation', keywords: 'Dream interpretation, swapna shastra', label: 'Dreams' },
   { mode: 'mantra', topic: 'Mantra', keywords: 'Mantra, chanting, planetary mantras', label: 'Mantra' },
   { mode: 'gemstones', topic: 'Gemstones', keywords: 'Gemstones, ratna, planetary remedies', label: 'Gemstones' },
   { mode: 'vastu', topic: 'Vastu', keywords: 'Vastu, vastu shastra, home energy', label: 'Vastu' },
-  { mode: 'rudraksh', topic: 'Rudraksh', keywords: 'Rudraksh, rudraksha, sacred beads', label: 'Rudraksh' },
-  { mode: 'yantra', topic: 'Yantra', keywords: 'Yantra, sacred geometry, Sri Yantra', label: 'Yantra' },
   { mode: 'cosmic-health', topic: 'Cosmic Health', keywords: 'Vedic wellness, health astrology', label: 'Cosmic Health' },
-  { mode: 'learning', topic: 'Learning Astrology', keywords: 'Learn astrology, astrology basics', label: 'Learning Center' },
-  { mode: 'kundali-basics', topic: 'Kundali Basics', keywords: 'Chart reading, houses, planets', label: 'Kundali Basics' },
-  { mode: 'planets-houses', topic: 'Planets & Houses', keywords: 'Planetary houses, graha bhava', label: 'Planets & Houses' },
-  { mode: 'zodiac-signs', topic: 'Zodiac Signs', keywords: 'Rashi, 12 signs, zodiac', label: 'Zodiac Signs' },
-  { mode: 'nakshatra-library', topic: 'Nakshatra', keywords: 'Nakshatra, 27 lunar mansions', label: 'Nakshatra' },
-  { mode: 'palmistry-guide', topic: 'Palmistry Guide', keywords: 'Palm lines, hand reading guide', label: 'Palmistry Guide' },
-  { mode: 'numerology-guide', topic: 'Numerology Guide', keywords: 'Number meanings, life path guide', label: 'Numerology Guide' },
-  { mode: 'star-legends', topic: 'Star Legends', keywords: 'Cosmic stories, nakshatra legends', label: 'Star Legends' },
-  { mode: 'games', topic: 'Astro Games', keywords: 'Astrology games, learn through play', label: 'Astro Games' },
 ];
 
-function getModulesForDate(dateStr) {
+function getNoonModulesForDate(dateStr) {
   const d = new Date(dateStr);
   const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
-  const start = dayOfYear % BLOG_MODULES.length;
+  const start = dayOfYear % NOON_MODULES.length;
   return [
-    BLOG_MODULES[start % BLOG_MODULES.length],
-    BLOG_MODULES[(start + 1) % BLOG_MODULES.length],
-    BLOG_MODULES[(start + 2) % BLOG_MODULES.length],
+    NOON_MODULES[start % NOON_MODULES.length],
+    NOON_MODULES[(start + 1) % NOON_MODULES.length],
   ];
 }
 
-const PROMPT_TEMPLATE = (modules) => `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
+const BASE_INSTRUCTIONS = `
+RESEARCH (use web search): Use the internet to find current, authoritative Vedic astrology content on the topic. Then write entirely in your own words—no plagiarism. Output must be 100% original.
 
-RESEARCH FIRST (use web search): For each of the 3 topics below, search the internet to find what famous astrologers, well-known astrology websites, and authoritative Vedic astrology sources have written about these topics. Look at popular articles, expert opinions, and trending angles so your articles feel current and informed.
+Each article: 700–1200 words, 4–5 H2 sections, H3 subsections where relevant. Use HTML: <h2>, <h3>, <p>, <ul><li>, <ol><li>, <strong>, <em>. End with a CTA inviting readers to try the relevant tool at cosmicjyoti.com.
+`;
 
-ORIGINAL WRITING ONLY (no plagiarism): Do NOT copy any sentences or paragraphs from search results. Use the research only for ideas and factual accuracy. Write each article entirely in your own words: your own structure, your own examples, your own explanations. The output must be 100% original and plagiarism-free. Paraphrasing is not enough – create fresh content.
+function buildPrompt6am(today) {
+  return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
+${BASE_INSTRUCTIONS}
+Generate exactly 2 blog articles for today (${today}):
 
-Generate exactly 3 unique, in-depth blog articles. Each article MUST be about the specified module topic below. This drives SEO and awareness for CosmicJyoti's tools - articles must resonate with and redirect readers to the corresponding service.
+1. Horoscope / Daily Predictions (serviceMode: "daily") – Daily horoscope insights, zodiac-wise predictions for the day, what each rashi can expect. Keywords: Horoscope, daily predictions, zodiac, rashi.
 
-CRITICAL: Each article must be SUBSTANTIAL and INFORMATIVE. Do NOT write short or shallow content.
-- 900-1400 words per article (aim for comprehensive coverage)
-- At least 4-5 H2 sections and 2-3 H3 subsections per H2 where relevant
-- Include detailed explanations, step-by-step guidance, or multiple examples
-- Add practical tips, remedies, or actionable advice readers can use
-- Cover the topic thoroughly: background, how it works, significance, practical application, common questions
-- SEO-friendly with clear structure and keywords
-- Written in English, warm and accessible
-- Use proper HTML: <h2> for main sections, <h3> for subsections, <p> for paragraphs, <ul><li>, <ol><li>, <strong>, <em>
-- Wrap each paragraph in <p> tags. Keep HTML valid and well-structured.
+2. Compatibility / Match Making (serviceMode: "compatibility") – Relationship compatibility, Kundali Milan, Ashtakoota, or love/couple guidance. Keywords: Kundali milan, compatibility, match making, ashtakoota.
 
-IMPORTANT: End each article with a clear call-to-action paragraph that invites readers to try the CosmicJyoti tool.
-Example: "Ready to explore your own [topic]? Try our free [tool name] at cosmicjyoti.com – get personalized insights in minutes."
-
-Modules to write about (one article per module, in this exact order):
-1. ${modules[0].topic} (serviceMode: ${modules[0].mode}) - Keywords: ${modules[0].keywords}
-2. ${modules[1].topic} (serviceMode: ${modules[1].mode}) - Keywords: ${modules[1].keywords}
-3. ${modules[2].topic} (serviceMode: ${modules[2].mode}) - Keywords: ${modules[2].keywords}
-
-Output ONLY valid JSON in this exact format, no other text:
+Output ONLY valid JSON in this exact format:
 {
   "posts": [
-    {
-      "id": "1",
-      "title": "Article Title",
-      "slug": "article-url-slug",
-      "excerpt": "2-3 sentence summary for the card",
-      "content": "Full HTML content with <h2>, <h3>, <p>, <ul>, <li> tags. Must end with CTA to try the tool.",
-      "readingTime": "6 min",
-      "topic": "Topic Name",
-      "serviceMode": "${modules[0].mode}"
-    },
-    {
-      "id": "2",
-      "title": "Article Title",
-      "slug": "article-url-slug",
-      "excerpt": "2-3 sentence summary for the card",
-      "content": "Full HTML content...",
-      "readingTime": "6 min",
-      "topic": "Topic Name",
-      "serviceMode": "${modules[1].mode}"
-    },
-    {
-      "id": "3",
-      "title": "Article Title",
-      "slug": "article-url-slug",
-      "excerpt": "2-3 sentence summary for the card",
-      "content": "Full HTML content...",
-      "readingTime": "6 min",
-      "topic": "Topic Name",
-      "serviceMode": "${modules[2].mode}"
-    }
+    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "2-3 sentence summary", "content": "Full HTML content...", "readingTime": "6 min", "topic": "Horoscope / Daily Predictions", "serviceMode": "daily" },
+    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "2-3 sentence summary", "content": "Full HTML content...", "readingTime": "6 min", "topic": "Compatibility / Match Making", "serviceMode": "compatibility" }
   ]
 }`;
+}
 
-async function main() {
-  const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    console.error('Error: API_KEY or GEMINI_API_KEY required');
+function buildPrompt12pm(today, modules) {
+  return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
+${BASE_INSTRUCTIONS}
+Generate exactly 2 blog articles for today (${today}) about these dashboard modules (career, love, life guidance):
+
+1. ${modules[0].topic} (serviceMode: "${modules[0].mode}") – Keywords: ${modules[0].keywords}
+2. ${modules[1].topic} (serviceMode: "${modules[1].mode}") – Keywords: ${modules[1].keywords}
+
+Output ONLY valid JSON:
+{
+  "posts": [
+    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "${modules[0].topic}", "serviceMode": "${modules[0].mode}" },
+    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "${modules[1].topic}", "serviceMode": "${modules[1].mode}" }
+  ]
+}`;
+}
+
+function buildPrompt6pm(today) {
+  return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
+${BASE_INSTRUCTIONS}
+Generate exactly 2 blog articles for today (${today}) about planetary positions and their effects:
+
+1. Today's planetary positions and transits – Current positions of key planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu), major transits, and what they mean in Vedic terms. serviceMode: "planets-houses".
+
+2. Planetary effects on you today – How today's planetary positions affect the 12 zodiac signs / rashis; remedies and tips to align with favorable energies. serviceMode: "daily".
+
+Output ONLY valid JSON:
+{
+  "posts": [
+    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Planetary Positions Today", "serviceMode": "planets-houses" },
+    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Planetary Effects Today", "serviceMode": "daily" }
+  ]
+}`;
+}
+
+function buildPrompt9pm(today, tomorrow) {
+  return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
+${BASE_INSTRUCTIONS}
+Generate exactly 2 blog articles about the NEXT day (${tomorrow}):
+
+1. Auspicious events and muhurat for tomorrow – Best times for important activities on ${tomorrow}, muhurat, tithi, nakshatra, and what to do or avoid. serviceMode: "panchang".
+
+2. Key astrological events tomorrow – Festivals, eclipses, special yogas, or notable planetary events on ${tomorrow}; what to expect and how to make the most of the day. serviceMode: "panchang".
+
+Output ONLY valid JSON:
+{
+  "posts": [
+    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Auspicious Events Tomorrow", "serviceMode": "panchang" },
+    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Astrological Events Tomorrow", "serviceMode": "panchang" }
+  ]
+}`;
+}
+
+const SLOT_ALIASES = {
+  '6am': '6am', morning: '6am',
+  '12pm': '12pm', noon: '12pm',
+  '6pm': '6pm', evening: '6pm',
+  '9pm': '9pm', night: '9pm',
+};
+
+function parseSlot() {
+  const arg = (process.argv[2] || '').toLowerCase().trim();
+  const slot = SLOT_ALIASES[arg];
+  if (slot) return slot;
+  if (!arg) {
+    console.error('Usage: node scripts/generate-daily-blog.mjs <slot>');
+    console.error('  slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)');
     process.exit(1);
   }
+  console.error(`Unknown slot: ${arg}. Use 6am, 12pm, 6pm, or 9pm.`);
+  process.exit(1);
+}
 
+async function main() {
+  if (!getPerplexityKeys().length) {
+    console.error('Error: Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local');
+    process.exit(1);
+  }
+  const keyCount = getPerplexityKeys().length;
+  if (keyCount > 1) console.log(`Using ${keyCount} Perplexity API key(s) in rotation.`);
+
+  const slot = parseSlot();
   const today = new Date().toISOString().split('T')[0];
-  const modulesForToday = getModulesForDate(today);
-  console.log(`Generating 3 blog posts for ${today}: ${modulesForToday.map(m => m.mode).join(', ')}`);
+  const tomorrowDate = new Date();
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = tomorrowDate.toISOString().split('T')[0];
 
-  // Read existing posts (if any)
-  let existingPosts = [];
+  let prompt;
+  if (slot === '6am') prompt = buildPrompt6am(today);
+  else if (slot === '12pm') prompt = buildPrompt12pm(today, getNoonModulesForDate(today));
+  else if (slot === '6pm') prompt = buildPrompt6pm(today);
+  else prompt = buildPrompt9pm(today, tomorrow);
+
+  console.log(`Generating 2 blog posts for slot ${slot} (${today})...`);
+
+  let text;
   try {
-    const raw = fs.readFileSync(OUTPUT_PATH, 'utf8');
-    const existing = JSON.parse(raw);
-    existingPosts = Array.isArray(existing.posts) ? existing.posts : [];
-    console.log(`Found ${existingPosts.length} existing posts`);
-  } catch (e) {
-    // File doesn't exist or invalid - start fresh
-  }
-
-  const ai = new GoogleGenAI({ apiKey });
-  const prompt = PROMPT_TEMPLATE(modulesForToday);
-  const useGrounding = process.env.USE_GOOGLE_SEARCH_GROUNDING !== 'false';
-  const model = useGrounding ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
-  console.log(`Model: ${model}${useGrounding ? ' (with Google Search grounding)' : ''}`);
-
-  let response;
-  try {
-    const config = {
-      responseMimeType: 'application/json',
-      ...(useGrounding && { tools: [{ type: 'google_search' }] }),
-    };
-    response = await ai.models.generateContent({
-      model,
-      contents: `${prompt}\n\nGenerate 3 blog posts for today (${today}). Output JSON only.`,
-      config,
-    });
-    if (useGrounding) console.log('[OK] Generated with Google Search grounding.');
+    text = await generateWithPerplexity(prompt, today, 2);
+    if (!text) throw new Error('Empty response from Perplexity');
   } catch (err) {
-    if (useGrounding && (err.message?.includes('404') || err.message?.includes('not found') || err.message?.includes('grounding'))) {
-      console.warn('[FALLBACK] Grounding not available, retrying without web search (gemini-1.5-flash)...');
-      response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: `${prompt}\n\nGenerate 3 blog posts for today (${today}). Output JSON only.`,
-        config: { responseMimeType: 'application/json' },
-      });
-      console.log('[OK] Generated with gemini-1.5-flash (no search).');
-    } else {
-      throw err;
-    }
-  }
-
-  const text = response.text;
-  if (!text) {
-    console.error('No response from Gemini');
+    console.error('Perplexity failed:', err?.message || err);
     process.exit(1);
   }
 
@@ -189,23 +285,35 @@ async function main() {
     parsed = JSON.parse(cleaned);
   }
 
-  const newPosts = (parsed.posts || []).slice(0, 3).map((p, i) => {
-    const slug = p.slug || `article-${today.replace(/-/g, '')}-${i + 1}`;
-    const articleId = `${today}-${slug}`;
-    const moduleForPost = modulesForToday[i];
+  const rawPosts = (parsed.posts || []).slice(0, 2);
+  const dateForSlot = slot === '9pm' ? tomorrow : today;
+
+  const newPosts = rawPosts.map((p, i) => {
+    const slug = p.slug || `article-${dateForSlot.replace(/-/g, '')}-${slot}-${i + 1}`;
+    const articleId = `${dateForSlot}-${slug}`;
     return {
       ...p,
       id: articleId,
       slug,
       articleId,
-      date: today,
+      date: dateForSlot,
+      timeSlot: slot,
       readingTime: p.readingTime || '6 min',
-      serviceMode: p.serviceMode || moduleForPost?.mode,
-      serviceLabel: p.serviceLabel || moduleForPost?.label || p.topic,
+      serviceMode: p.serviceMode,
+      serviceLabel: p.serviceLabel || p.topic,
     };
   });
 
-  // Prepend new posts (newest first), then existing, cap at MAX_POSTS
+  let existingPosts = [];
+  try {
+    const raw = fs.readFileSync(OUTPUT_PATH, 'utf8');
+    const existing = JSON.parse(raw);
+    existingPosts = Array.isArray(existing.posts) ? existing.posts : [];
+    console.log(`Found ${existingPosts.length} existing posts (appending 2, max ${MAX_POSTS})`);
+  } catch (e) {
+    console.log('No existing daily-posts.json; starting fresh.');
+  }
+
   const allPosts = [...newPosts, ...existingPosts].slice(0, MAX_POSTS);
 
   const data = {
@@ -218,7 +326,7 @@ async function main() {
   if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
 
-  // RSS feed (latest 30)
+  // RSS (latest 30)
   const rssItems = allPosts.slice(0, 30).map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
     const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
@@ -241,11 +349,10 @@ ${rssItems}
 </rss>`;
   fs.writeFileSync(path.join(BLOG_DIR, 'feed.xml'), rss, 'utf8');
 
-  // Blog sitemap (latest 50 article URLs)
   const blogUrls = allPosts.slice(0, 50).map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
     const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
-    const lastmod = p.date ? p.date : today;
+    const lastmod = p.date || today;
     return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
   }).join('\n');
   const sitemapBlog = `<?xml version="1.0" encoding="UTF-8"?>
@@ -254,9 +361,8 @@ ${blogUrls}
 </urlset>`;
   fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-blog.xml'), sitemapBlog, 'utf8');
 
-  console.log(`[DONE] Added 3 new posts. Total: ${allPosts.length} posts in ${OUTPUT_PATH}`);
+  console.log(`[DONE] Appended 2 posts (slot: ${slot}). Total: ${allPosts.length}.`);
   console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
-  console.log('Written blog/feed.xml and blog/sitemap-blog.xml');
 }
 
 main().catch((e) => {

@@ -16,7 +16,9 @@ const capacitorPluginsPlugin = () => ({
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, (process as any).cwd(), '');
-  console.log('Loading environment variables. Gemini API_KEY present:', !!env.API_KEY);
+  if (mode === 'development' && process.env.DEBUG_VITE_ENV === '1') {
+    console.log('Loading environment variables. Gemini API_KEY present:', !!env.API_KEY);
+  }
   return {
     plugins: [react(), capacitorPluginsPlugin()],
     optimizeDeps: {
@@ -26,9 +28,12 @@ export default defineConfig(({ mode }) => {
     // Updated to '/' since the website is hosted at the root (appmakers123.github.io)
     base: '/', 
     define: {
-      // Gemini API key (single key only - used by Google GenAI SDK)
+      // Gemini API keys (single or comma-separated for rotation)
       'process.env.API_KEY': JSON.stringify(env.API_KEY || env.GEMINI_API_KEY || ''),
+      'process.env.API_KEYS': JSON.stringify(env.API_KEYS || env.GEMINI_API_KEYS || ''),
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY || env.API_KEY || ''),
+      'process.env.GEMINI_API_KEYS': JSON.stringify(env.GEMINI_API_KEYS || env.API_KEYS || ''),
+      // Perplexity API keys (comma-separated for rotation)
       'process.env.PERPLEXITY_API_KEY': JSON.stringify(env.PERPLEXITY_API_KEY || ''),
       'process.env.PERPLEXITY_API_KEYS': JSON.stringify(env.PERPLEXITY_API_KEYS || env.PERPLEXITY_API_KEY || ''),
       // Google Maps API key for geocoding

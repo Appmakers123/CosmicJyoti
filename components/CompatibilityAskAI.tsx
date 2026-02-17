@@ -34,7 +34,7 @@ const CompatibilityAskAI: React.FC<CompatibilityAskAIProps> = ({ result, languag
     setMessages(prev => [...prev, { role: 'user', text: question }]);
     setIsLoading(true);
     try {
-      const aiResult = await askRishiWithFallback(question, language, contextStr);
+      const aiResult = await askRishiWithFallback(question, language, contextStr, 'love');
       setMessages(prev => [...prev, { role: 'model', text: aiResult.text || '' }]);
       if (isCapacitor()) admobService.showInterstitialDelayed(3500);
     } catch (error) {

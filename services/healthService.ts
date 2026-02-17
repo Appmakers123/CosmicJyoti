@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Language, KundaliFormData, KundaliResponse } from "../types";
+import { getNextGeminiKey } from "../utils/geminiApiKeys";
 import { generateKundali } from "./geminiService";
 import { generateChartBasedHealthAnalysisFromBackend } from "./backendService";
 
@@ -48,14 +49,12 @@ const MASTER_HEALTH_SYSTEM_PROMPT = `You are CosmicHealth AI, an expert Vedic as
 - Include preventive measures
 - End with a reminder to consult medical professionals for serious issues`;
 
-// Gemini API key (single key only - no fallback)
-const GEMINI_API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
-
 const getAI = () => {
-  if (!GEMINI_API_KEY) {
+  const apiKey = getNextGeminiKey();
+  if (!apiKey) {
     throw new Error("GEMINI_API_KEY_NOT_CONFIGURED");
   }
-  return new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  return new GoogleGenAI({ apiKey });
 };
 
 const getLanguageName = (lang: Language): string => {
@@ -308,6 +307,19 @@ export const generateDailyDoshaRemedies = async (
     return getDefaultRemedies(language);
   }
 };
+
+/**
+ * Default analysis when backend/AI fails — exported for UI fallback
+ */
+export function getDefaultChartHealthAnalysis(language: Language): ChartHealthAnalysis {
+  return {
+    healthIssues: [],
+    chartSummary: language === 'hi'
+      ? 'चार्ट विश्लेषण उपलब्ध नहीं। नीचे सामान्य वैदिक स्वास्थ्य उपाय दिए गए हैं।'
+      : 'Chart analysis unavailable. General Vedic health remedies are shown below.',
+    remedies: getDefaultRemedies(language),
+  };
+}
 
 /**
  * Default remedies fallback

@@ -204,9 +204,10 @@ export async function generateTransits(location, referenceRashi, currentDate = n
 
 /**
  * Generate transits for generic mode (no birth chart)
+ * Signature matches server call: (location, rashi, currentDate, language)
  */
-export async function generateGenericTransits(location, rashi, language = 'en') {
-  return await generateTransits(location, rashi, null, language);
+export async function generateGenericTransits(location, rashi, currentDate = null, language = 'en') {
+  return await generateTransits(location, rashi, currentDate, language);
 }
 
 /**

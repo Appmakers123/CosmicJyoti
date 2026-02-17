@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../utils/translations';
 import { Language } from '../types';
 import { getGlobalProfile } from '../utils/profileStorageService';
-import { generateChartBasedHealthAnalysis, HealthRemedy, ChartHealthAnalysis } from '../services/healthService';
+import { generateChartBasedHealthAnalysis, getDefaultChartHealthAnalysis, HealthRemedy, ChartHealthAnalysis } from '../services/healthService';
 import Logo from './Logo';
 import AdBanner from './AdBanner';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
@@ -48,6 +48,7 @@ const CosmicHealthAI: React.FC<CosmicHealthAIProps> = ({ language }) => {
   const [birthData, setBirthData] = useState<BirthData>({ date: '', time: '12:00', city: '' });
   const [loading, setLoading] = useState(false);
   const [healthAnalysis, setHealthAnalysis] = useState<ChartHealthAnalysis | null>(null);
+  const [analysisErrorFallback, setAnalysisErrorFallback] = useState(false);
   const [selectedModel, setSelectedModel] = useState<'cloud' | 'nano'>('cloud');
   const [showMandala, setShowMandala] = useState(true);
 
@@ -92,18 +93,22 @@ const CosmicHealthAI: React.FC<CosmicHealthAIProps> = ({ language }) => {
     const cacheInput = { date: birthData.date, time: birthData.time, city: birthData.city, lang: language };
     const cached = getCachedAI<ChartHealthAnalysis>('cosmicHealth', cacheInput);
     if (cached) {
+      setAnalysisErrorFallback(false);
       setHealthAnalysis(cached);
       setStep('remedies');
       return;
     }
     setLoading(true);
+    setAnalysisErrorFallback(false);
     try {
       const analysis = await generateChartBasedHealthAnalysis(birthData, language);
       setCachedAI('cosmicHealth', cacheInput, analysis);
       setHealthAnalysis(analysis);
       setStep('remedies');
-    } catch (error) {
-      alert(language === 'hi' ? 'स्वास्थ्य विश्लेषण लोड करने में त्रुटि' : 'Error loading health analysis');
+    } catch {
+      setHealthAnalysis(getDefaultChartHealthAnalysis(language));
+      setAnalysisErrorFallback(true);
+      setStep('remedies');
     } finally {
       setLoading(false);
     }
@@ -285,6 +290,13 @@ const CosmicHealthAI: React.FC<CosmicHealthAIProps> = ({ language }) => {
               <button onClick={handleNotifySub} className="px-4 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all">
                 {language === 'hi' ? 'सदस्यता लें' : 'Subscribe'}
               </button>
+            </div>
+          )}
+          {analysisErrorFallback && (
+            <div className="mb-4 bg-amber-900/30 border border-amber-500/50 rounded-xl p-3 text-amber-200 text-sm">
+              {language === 'hi'
+                ? 'विश्लेषण लोड नहीं हो सका; सामान्य वैदिक उपाय दिखाए जा रहे हैं। पुनः प्रयास करने के लिए ⚙️ से जन्म विवरण बदलें।'
+                : 'Analysis could not be loaded; showing general Vedic remedies. Use ⚙️ to change birth details and try again.'}
             </div>
           )}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">

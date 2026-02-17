@@ -11,13 +11,17 @@ import { canSendMessage, getRemainingMessages, incrementChatUsage, getMessageLim
 interface ChatWidgetProps {
   language: Language;
   context?: KundaliResponse | null;
-  onUseKarma: () => boolean;
-  hasKarma: boolean;
-  onOpenStore: () => void;
+  onUseKarma?: () => boolean;
+  hasKarma?: boolean;
+  onOpenStore?: () => void;
   isPremium?: boolean;
   onUpgrade?: () => void;
   onWatchAdForChat?: () => void;
-  refreshTrigger?: number; // Increment to refresh remaining messages (e.g. after watching ad)
+  refreshTrigger?: number;
+  /** When 'inline', no floating button; panel is rendered in document flow (e.g. inside a module page) */
+  embedMode?: 'float' | 'inline';
+  /** Optional topic for context-aware welcome/chips (e.g. 'vastu') */
+  topic?: 'vastu' | 'general';
 }
 
 interface Message {
@@ -33,9 +37,14 @@ const QUICK_CHIPS: Record<Language, string[]> = {
   hi: ["तारे मेरे करियर के बारे में क्या कहते हैं?", "संबंधों पर मार्गदर्शन चाहिए", "तनाव के उपाय — उपाय", "मेरा आध्यात्मिक पथ क्या है?"],
 };
 
-const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = false, onUpgrade, onWatchAdForChat, refreshTrigger = 0 }) => {
+const QUICK_CHIPS_VASTU: Record<Language, string[]> = {
+  en: ["Best direction for main entrance?", "Where to place kitchen as per Vastu?", "Bedroom Vastu tips", "Pooja room placement"],
+  hi: ["मुख्य द्वार के लिए सर्वोत्तम दिशा?", "वास्तु के अनुसार रसोई कहाँ?", "बेडरूम वास्तु टिप्स", "पूजा कक्ष का स्थान"],
+};
+
+const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = false, onUpgrade, onWatchAdForChat, refreshTrigger = 0, embedMode = 'float', topic = 'general' }) => {
   const t = useTranslation(language);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(embedMode === 'inline');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -69,20 +78,21 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
     if (context) {
         contextStr = `User: ${context.basicDetails.name}, Asc: ${context.basicDetails.ascendant}, Rashi: ${context.basicDetails.moonSign}. Current Dasha: ${context.dasha.currentMahadasha}.`;
     }
+    if (topic === 'vastu') {
+      contextStr = (contextStr ? contextStr + ' ' : '') + 'User is in Vastu Shastra module. Answer as a Vastu expert.';
+    }
     
     contextStringRef.current = contextStr;
     chatSessionRef.current = createChatSession(language, contextStr, persona);
     
-    // Get translations directly to avoid dependency on t object
-    const initialMessage = context ? t.chartLoadedMessage : t.chatWelcome;
+    const initialMessage = context ? t.chartLoadedMessage : (topic === 'vastu' ? (language === 'hi' ? 'नमस्ते! वास्तु शास्त्र और पवित्र स्थान के बारे में पूछें।' : 'Ask me about Vastu Shastra — directions, rooms, entrance, kitchen, pooja room.') : t.chatWelcome);
 
     setMessages([{ role: 'model', text: initialMessage }]);
     
-    // Update refs to track current state
     lastLanguageRef.current = language;
     lastContextIdRef.current = contextId;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [language, context, persona]);
+  }, [language, context, persona, topic]);
 
   useEffect(() => {
     if (isOpen) {
@@ -419,9 +429,13 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
     }
   };
 
+  const isInline = embedMode === 'inline';
+  const chips = topic === 'vastu' ? (QUICK_CHIPS_VASTU[language] || QUICK_CHIPS_VASTU['en']) : (QUICK_CHIPS[language] || QUICK_CHIPS['en']);
+
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-[60]">
+      {!isInline && (
+        <div className="fixed bottom-6 right-6 z-[60]">
           <button
             onClick={() => setIsOpen(!isOpen)}
             className={`group relative flex items-center justify-center rounded-full transition-all duration-500 shadow-2xl ${
@@ -437,9 +451,10 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
               </>
             )}
           </button>
-      </div>
+        </div>
+      )}
 
-      <div className={`fixed bottom-24 right-6 z-[60] w-[90vw] md:w-[420px] h-[600px] max-h-[80vh] bg-slate-900 border border-slate-700/50 rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col transition-all duration-500 origin-bottom-right ${isOpen ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-10 pointer-events-none'}`}>
+      <div className={`${isInline ? 'relative w-full max-w-2xl mx-auto rounded-[2rem]' : 'fixed bottom-24 right-6 z-[60] w-[90vw] md:w-[420px]'} h-[600px] max-h-[80vh] bg-slate-900 border border-slate-700/50 rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col transition-all duration-500 ${isInline ? '' : 'origin-bottom-right'} ${!isInline && !isOpen ? 'opacity-0 scale-95 translate-y-10 pointer-events-none' : ''}`}>
           
           {/* Persona Selector - Multiple AI Astrologers */}
           <div className="px-4 py-2 bg-slate-800/50 border-b border-slate-700/50 flex gap-1 overflow-x-auto custom-scrollbar">
@@ -541,7 +556,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
              {/* Suggestion Chips - Only show when chat is essentially starting */}
              {messages.length <= 1 && !isLoading && (
                 <div className="pt-4 flex flex-wrap gap-2 animate-fade-in">
-                  {(QUICK_CHIPS[language] || QUICK_CHIPS['en']).map(chip => (
+                  {chips.map(chip => (
                     <button 
                       key={chip}
                       onClick={() => handleSend(chip)}

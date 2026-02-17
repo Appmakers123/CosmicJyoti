@@ -171,6 +171,8 @@ export async function generateKundaliFromBackend(
   }
 }
 
+const COSMIC_HEALTH_TIMEOUT_MS = 15000;
+
 /**
  * Generate Cosmic Health analysis using backend API
  */
@@ -182,28 +184,34 @@ export async function generateChartBasedHealthAnalysisFromBackend(
     throw new Error('Backend not available, using direct API calls');
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), COSMIC_HEALTH_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/cosmic-health`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         date: birthData.date,
         time: birthData.time,
         city: birthData.city,
         language,
       }),
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Cosmic Health API error: ${response.status} - ${errorText}`);
     }
-
     return await response.json();
   } catch (error: any) {
-    console.error('Backend Cosmic Health API error:', error);
+    clearTimeout(timeoutId);
+    if (error?.name === 'AbortError') {
+      throw new Error('Cosmic Health request timed out');
+    }
+    devWarn('[BackendService] Cosmic Health backend failed:', error?.message);
     throw error;
   }
 }
@@ -248,6 +256,9 @@ export async function generateMuhuratFromBackend(
   }
 }
 
+/** Timeout in ms for transits backend call - then fallback to Perplexity/Gemini */
+const TRANSITS_BACKEND_TIMEOUT_MS = 8000;
+
 /**
  * Generate Generic Transits (without birth chart) using backend API
  */
@@ -262,6 +273,9 @@ export async function generateGenericTransitsFromBackend(
     throw new Error('Backend not available, using direct API calls');
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TRANSITS_BACKEND_TIMEOUT_MS);
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/transits/generic`, {
       method: 'POST',
@@ -274,7 +288,10 @@ export async function generateGenericTransitsFromBackend(
         currentDate: currentDate || new Date().toISOString().split('T')[0],
         language,
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       throw new Error(`Generic Transits API error: ${response.status}`);
@@ -282,7 +299,17 @@ export async function generateGenericTransitsFromBackend(
 
     return await response.json();
   } catch (error: any) {
-    console.error('Backend Generic Transits API error:', error);
+    clearTimeout(timeoutId);
+    const isAbort = error?.name === 'AbortError';
+    const isConnectionError = isAbort || !error?.message || error?.message === 'Failed to fetch' || error?.code === 'ERR_CONNECTION_REFUSED' || error?.code === 'ECONNREFUSED' || error?.code === 'ETIMEDOUT';
+    if (isConnectionError) {
+      devWarn('[BackendService] Transits backend unreachable or slow, using fallback.');
+    } else {
+      console.error('Backend Generic Transits API error:', error);
+    }
+    if (isAbort) {
+      throw new Error('Backend transits request timed out');
+    }
     throw error;
   }
 }

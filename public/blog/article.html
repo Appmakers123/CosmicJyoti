@@ -4,7 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Article – CosmicJyoti | Vedic Astrology</title>
+    <meta name="description" content="Vedic astrology article – Kundali, Horoscope, Panchang, Compatibility and more. CosmicJyoti blog.">
     <link rel="canonical" href="https://www.cosmicjyoti.com/blog/article.html">
+    <meta property="og:title" content="Article – CosmicJyoti | Vedic Astrology">
+    <meta property="og:description" content="Vedic astrology article – Kundali, Horoscope, Panchang, Compatibility and more.">
+    <meta property="og:url" content="https://www.cosmicjyoti.com/blog/article.html">
     <meta property="og:image" content="https://www.cosmicjyoti.com/app-logo.png">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -87,7 +91,23 @@
                 return;
             }
             function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+            var desc = (post.excerpt || post.title || '').replace(/"/g, '&quot;').slice(0, 160);
             document.title = post.title + ' – CosmicJyoti | Vedic Astrology';
+            var canonicalUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
+            var metaDesc = document.querySelector('meta[name="description"]');
+            if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = 'description'; document.head.appendChild(metaDesc); }
+            metaDesc.content = desc;
+            var linkCanon = document.querySelector('link[rel="canonical"]');
+            if (linkCanon) linkCanon.href = canonicalUrl; else { linkCanon = document.createElement('link'); linkCanon.rel = 'canonical'; linkCanon.href = canonicalUrl; document.head.appendChild(linkCanon); }
+            var ogTitle = document.querySelector('meta[property="og:title"]');
+            if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
+            ogTitle.content = post.title + ' – CosmicJyoti';
+            var ogDesc = document.querySelector('meta[property="og:description"]');
+            if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property', 'og:description'); document.head.appendChild(ogDesc); }
+            ogDesc.content = desc;
+            var ogUrl = document.querySelector('meta[property="og:url"]');
+            if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
+            ogUrl.content = canonicalUrl;
             var pubDate = post.date || data.lastGenerated || data.date;
             var serviceMode = post.serviceMode;
             var serviceLabel = post.serviceLabel || post.topic || 'Try this tool';
@@ -95,8 +115,10 @@
             var baseUrl = 'https://www.cosmicjyoti.com';
             var articleUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
             var ctaHtml = '';
+            var appMode = serviceMode;
+            var tryHref = (window.location.origin || baseUrl) + '/?mode=' + encodeURIComponent(appMode || 'hub');
             if (serviceMode) {
-                ctaHtml = '<div class="mt-8 p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl"><p class="text-amber-200 font-semibold mb-3">Ready to explore?</p><a href="/?mode=' + esc(serviceMode) + '" class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all">Try ' + esc(serviceLabel) + ' →</a></div>';
+                ctaHtml = '<div class="mt-8 p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl"><p class="text-amber-200 font-semibold mb-3">Ready to explore?</p><a href="' + tryHref + '" class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all">Try ' + esc(serviceLabel) + ' →</a></div>';
             }
             var related = (data.posts || []).filter(function(p) {
                 var aid = p.articleId || p.id || (p.date && p.slug ? p.date + '-' + p.slug : p.slug);

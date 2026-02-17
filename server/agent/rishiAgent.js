@@ -98,7 +98,7 @@ export async function runRishiAgent({ prompt, language = 'en', context = '', per
 You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like guidance.
 Always respond in ${langName}.
 When the user asks about today's Panchang or auspicious time, use get_today_panchang. When they ask about horoscope or rashifal for a sign, use get_horoscope_for_sign. Use tools when relevant, then summarize in a helpful way.
-${context ? `User's birth chart context: ${context}` : ''}`;
+${context ? `Module context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : ''}`;
 
   const model = genAI.getGenerativeModel({
     model: 'gemini-2.0-flash',

@@ -9,6 +9,39 @@ import SouthIndianChart from './SouthIndianChart';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
 
+const SIGN_NAME_TO_ID: Record<string, number> = {
+  Aries: 1, Taurus: 2, Gemini: 3, Cancer: 4, Leo: 5, Virgo: 6,
+  Libra: 7, Scorpio: 8, Sagittarius: 9, Capricorn: 10, Aquarius: 11, Pisces: 12
+};
+
+/** Normalize transit positions so chart components get numeric signId/house and correct sign name */
+function normalizeTransitPositionsForChart(
+  positions: any[] | undefined,
+  referenceSignId: number
+): PlanetaryPosition[] {
+  if (!positions || !Array.isArray(positions) || positions.length === 0) return [];
+  return positions.map((p: any) => {
+    let signId = typeof p.signId === 'number' ? p.signId : parseInt(String(p.signId), 10);
+    if (!Number.isFinite(signId) || signId < 1 || signId > 12) {
+      signId = (p.sign && SIGN_NAME_TO_ID[p.sign]) || 1;
+    }
+    let house = typeof p.house === 'number' ? p.house : parseInt(String(p.house), 10);
+    if (!Number.isFinite(house) || house < 1 || house > 12) {
+      house = ((signId - referenceSignId + 12) % 12) + 1;
+    }
+    const signNames = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+    return {
+      planet: p.planet || 'Unknown',
+      sign: p.sign || signNames[signId - 1] || 'Aries',
+      signId,
+      house,
+      degree: p.degree,
+      nakshatra: p.nakshatra,
+      isRetrograde: p.isRetrograde === true || p.isRetrograde === 'true'
+    };
+  });
+}
+
 interface Props {
   language: Language;
   kundali: KundaliResponse | null;
@@ -85,11 +118,17 @@ const PersonalTransits: React.FC<Props> = ({ language, kundali, onOpenKundali })
     return () => { cancelled = true; };
   }, []);
 
-  // Determine the reference Sign ID for the chart layout
+  // Reference sign ID (1–12) for chart: House 1 = this sign
   const activeAscendantId = useMemo(() => {
     const found = ZODIAC_SIGNS.find(z => z.name === rashi);
     return found ? ZODIAC_SIGNS.indexOf(found) + 1 : 1;
   }, [rashi]);
+
+  // Normalized positions for North/South Indian chart (numeric signId & house)
+  const chartPositions = useMemo(() => {
+    if (!data?.currentPositions?.length) return [];
+    return normalizeTransitPositionsForChart(data.currentPositions, activeAscendantId);
+  }, [data?.currentPositions, activeAscendantId]);
 
   return (
     <div className="w-full max-w-7xl mx-auto animate-fade-in-up pb-20 px-4">
@@ -199,16 +238,16 @@ const PersonalTransits: React.FC<Props> = ({ language, kundali, onOpenKundali })
                         {`${rashi} ${t.referenceSkyMap}`}
                     </h3>
                     <div className="w-full max-w-[500px] shadow-[0_30px_100px_rgba(0,0,0,0.5),0_0_50px_rgba(37,99,235,0.1)] rounded-[3rem] overflow-hidden border-[10px] border-slate-950 relative group">
-                        <div className="absolute inset-0 bg-blue-500/5 animate-pulse pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-blue-500/5 pointer-events-none rounded-[1.5rem]" />
                         {chartStyle === 'north' ? (
                             <NorthIndianChart 
-                                planets={data.currentPositions || []} 
+                                planets={chartPositions} 
                                 ascendantSignId={activeAscendantId} 
                                 language={language} 
                             />
                         ) : (
                             <SouthIndianChart 
-                                planets={data.currentPositions || []} 
+                                planets={chartPositions} 
                                 ascendantSignId={activeAscendantId} 
                                 language={language} 
                             />

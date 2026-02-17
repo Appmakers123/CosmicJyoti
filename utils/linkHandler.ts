@@ -43,19 +43,26 @@ export async function openExternalLink(
       console.warn('Invalid URL provided:', url);
       return;
     }
+    const trimmed = url.trim();
+    // Block dangerous schemes to prevent XSS / phishing
+    const lower = trimmed.toLowerCase();
+    if (lower.startsWith('javascript:') || lower.startsWith('data:') || lower.startsWith('vbscript:')) {
+      console.warn('Blocked unsafe URL scheme');
+      return;
+    }
 
     // Normalize URL
     let validUrl: string;
     try {
       // Handle relative URLs
-      if (url.startsWith('/')) {
-        validUrl = window.location.origin + url;
-      } else if (url.startsWith('http://') || url.startsWith('https://')) {
-        validUrl = url;
-      } else if (url.startsWith('mailto:') || url.startsWith('tel:') || url.startsWith('whatsapp://')) {
-        validUrl = url;
+      if (trimmed.startsWith('/')) {
+        validUrl = window.location.origin + trimmed;
+      } else if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        validUrl = trimmed;
+      } else if (trimmed.startsWith('mailto:') || trimmed.startsWith('tel:') || trimmed.startsWith('whatsapp://')) {
+        validUrl = trimmed;
       } else {
-        validUrl = 'https://' + url;
+        validUrl = 'https://' + trimmed;
       }
     } catch {
       console.warn('Could not parse URL:', url);

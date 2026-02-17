@@ -3,8 +3,7 @@
  */
 
 import { Language } from '../types';
-
-const GEMINI_API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
+import { getNextGeminiKey } from '../utils/geminiApiKeys';
 
 export interface DailyDoDont {
   dos: string[];
@@ -46,54 +45,118 @@ const getDefaultLuckScore = (language: Language): DailyLuckScore => {
   };
 };
 
+const DODONTS_CACHE_KEY_PREFIX = 'cosmicjyoti_dodonts_';
+
+function getDoDontsCacheKey(date: string, language: Language, context?: { sign?: string; moonSign?: string; nakshatra?: string }): string {
+  const hasContext = context && (context.sign || context.moonSign || context.nakshatra);
+  const ctx = hasContext ? [context.sign ?? '', context.moonSign ?? '', context.nakshatra ?? ''].join('|') : 'general';
+  return `${DODONTS_CACHE_KEY_PREFIX}${date}_${language}_${ctx}`;
+}
+
 export async function getDailyDoDonts(
   language: Language,
   context?: { sign?: string; moonSign?: string; nakshatra?: string }
 ): Promise<DailyDoDont> {
-  if (!GEMINI_API_KEY) return getDefaultDoDonts(language, context?.sign);
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = getDoDontsCacheKey(today, language, context);
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached) as DailyDoDont;
+      if (parsed?.dos?.length && parsed?.donts?.length) return parsed;
+    }
+  } catch (_) {}
+
+  const geminiKey = getNextGeminiKey();
+  if (!geminiKey) return getDefaultDoDonts(language, context?.sign);
 
   try {
     const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    const ctx = context ? `Sign: ${context.sign || 'Unknown'}, Moon: ${context.moonSign || '-'}, Nakshatra: ${context.nakshatra || '-'}` : 'General';
+    const ai = new GoogleGenAI({ apiKey: geminiKey });
+    const ctx = context ? `Rashi/Moon Sign: ${context.moonSign || context.sign || 'Unknown'}, Sun Sign: ${context.sign || context.moonSign || '-'}, Nakshatra: ${context.nakshatra || '-'}` : 'General (no birth details)';
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: `Generate today's astrological Do's and Don'ts. Context: ${ctx}. Return JSON: {"dos":["item1","item2",...],"donts":["item1","item2",...]}. Max 5 each. Be concise, practical. Language: ${language === 'hi' ? 'Hindi' : 'English'}.`,
+      contents: `Today's date is ${today}. Generate astrological Do's and Don'ts for this day only. User context: ${ctx}. Return JSON: {"dos":["item1","item2",...],"donts":["item1","item2",...]}. Max 5 each. Be concise, practical. Language: ${language === 'hi' ? 'Hindi' : 'English'}.`,
       config: { responseMimeType: 'application/json' },
     });
     const text = response.text;
     if (text) {
       const parsed = JSON.parse(text);
-      if (parsed.dos?.length && parsed.donts?.length) return parsed;
+      if (parsed.dos?.length && parsed.donts?.length) {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(parsed));
+        } catch (_) {}
+        return parsed;
+      }
     }
   } catch (e) {
     console.warn('[DailyInsights] DoDonts API failed:', e);
   }
-  return getDefaultDoDonts(language, context?.sign);
+  const fallback = getDefaultDoDonts(language, context?.sign);
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(fallback));
+  } catch (_) {}
+  return fallback;
+}
+
+const LUCKSCORE_CACHE_KEY_PREFIX = 'cosmicjyoti_luckscore_';
+
+function getLuckScoreCacheKey(date: string, language: Language, context?: { sign?: string; moonSign?: string; nakshatra?: string }): string {
+  const hasContext = context && (context.sign || context.moonSign || context.nakshatra);
+  const ctx = hasContext ? [context.sign ?? '', context.moonSign ?? '', context.nakshatra ?? ''].join('|') : 'general';
+  return `${LUCKSCORE_CACHE_KEY_PREFIX}${date}_${language}_${ctx}`;
 }
 
 export async function getDailyLuckScore(
   language: Language,
-  context?: { sign?: string; moonSign?: string }
+  context?: { sign?: string; moonSign?: string; nakshatra?: string }
 ): Promise<DailyLuckScore> {
-  if (!GEMINI_API_KEY) return getDefaultLuckScore(language);
+  const today = new Date().toISOString().slice(0, 10);
+  const cacheKey = getLuckScoreCacheKey(today, language, context);
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const parsed = JSON.parse(cached) as DailyLuckScore;
+      if (typeof parsed?.luckPercent === 'number') return parsed;
+    }
+  } catch (_) {}
+
+  const luckKey = getNextGeminiKey();
+  if (!luckKey) {
+    const fallback = getDefaultLuckScore(language);
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify(fallback));
+    } catch (_) {}
+    return fallback;
+  }
 
   try {
     const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    const ctx = context ? `Sign: ${context.sign}, Moon: ${context.moonSign}` : 'General';
+    const ai = new GoogleGenAI({ apiKey: luckKey });
+    const ctx = context
+      ? `Rashi/Moon Sign: ${context.moonSign || context.sign || 'Unknown'}, Sun Sign: ${context.sign || context.moonSign || '-'}, Nakshatra: ${context.nakshatra || '-'}`
+      : 'General (no birth details)';
     const response = await ai.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: `Today's date: ${new Date().toISOString().slice(0, 10)}. Astrology context: ${ctx}. Return JSON: {"luckPercent":number 1-99,"energyLevel":"low"|"medium"|"high","emotionalStability":"low"|"medium"|"high","decisionReadiness":"low"|"medium"|"high","summary":"one short sentence"}. Language for summary: ${language === 'hi' ? 'Hindi' : 'English'}.`,
+      contents: `Today's date is ${today}. Astrology context: ${ctx}. Return JSON: {"luckPercent":number 1-99,"energyLevel":"low"|"medium"|"high","emotionalStability":"low"|"medium"|"high","decisionReadiness":"low"|"medium"|"high","summary":"one short sentence"}. Language for summary: ${language === 'hi' ? 'Hindi' : 'English'}.`,
       config: { responseMimeType: 'application/json' },
     });
     const text = response.text;
     if (text) {
       const parsed = JSON.parse(text);
-      if (typeof parsed.luckPercent === 'number') return parsed;
+      if (typeof parsed.luckPercent === 'number') {
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify(parsed));
+        } catch (_) {}
+        return parsed;
+      }
     }
   } catch (e) {
     console.warn('[DailyInsights] LuckScore API failed:', e);
   }
-  return getDefaultLuckScore(language);
+  const fallback = getDefaultLuckScore(language);
+  try {
+    localStorage.setItem(cacheKey, JSON.stringify(fallback));
+  } catch (_) {}
+  return fallback;
 }

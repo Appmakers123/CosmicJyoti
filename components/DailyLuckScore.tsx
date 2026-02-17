@@ -8,6 +8,7 @@ interface DailyLuckScoreProps {
   language: Language;
   sign?: string;
   moonSign?: string;
+  nakshatra?: string;
   onViewHoroscope?: () => void;
 }
 
@@ -15,6 +16,7 @@ const DailyLuckScore: React.FC<DailyLuckScoreProps> = ({
   language,
   sign,
   moonSign,
+  nakshatra,
   onViewHoroscope,
 }) => {
   const [data, setData] = useState<DailyLuckScoreData | null>(null);
@@ -22,12 +24,14 @@ const DailyLuckScore: React.FC<DailyLuckScoreProps> = ({
 
   useEffect(() => {
     const profile = getGlobalProfile();
+    const astro = profile?.astroDetails;
     const ctx = {
-      sign: sign || (profile?.self?.location ? 'From profile' : undefined),
-      moonSign: moonSign || undefined,
+      sign: sign || astro?.sunSign || astro?.moonSign || undefined,
+      moonSign: moonSign || astro?.moonSign || undefined,
+      nakshatra: nakshatra || astro?.nakshatra || undefined,
     };
     getDailyLuckScore(language, ctx).then(setData).finally(() => setLoading(false));
-  }, [language, sign, moonSign]);
+  }, [language, sign, moonSign, nakshatra]);
 
   if (loading) {
     return (

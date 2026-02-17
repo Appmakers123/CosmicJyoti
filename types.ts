@@ -55,10 +55,20 @@ export interface KundaliFormData {
   language?: string;
 }
 
+/** Astro details from Kundali result – used for personalizing Do's & Don'ts, etc. */
+export interface ProfileAstroDetails {
+  moonSign?: string;
+  sunSign?: string;
+  nakshatra?: string;
+  ascendant?: string;
+}
+
 /** Global profile for auto-filling forms across all modules */
 export interface GlobalProfile {
   self: KundaliFormData;
   partner?: KundaliFormData;
+  /** Filled when user has generated Kundali; used for personalized Do's & Don'ts */
+  astroDetails?: ProfileAstroDetails;
   updatedAt?: string;
 }
 

@@ -24,10 +24,11 @@ const DailyDoDonts: React.FC<DailyDoDontsProps> = ({
 
   useEffect(() => {
     const profile = getGlobalProfile();
+    const astro = profile?.astroDetails;
     const ctx = {
-      sign: sign || profile?.self?.location ? 'From profile' : undefined,
-      moonSign: moonSign || undefined,
-      nakshatra: nakshatra || undefined,
+      sign: sign || astro?.sunSign || astro?.moonSign || undefined,
+      moonSign: moonSign || astro?.moonSign || undefined,
+      nakshatra: nakshatra || astro?.nakshatra || undefined,
     };
     getDailyDoDonts(language, ctx).then(setData).finally(() => setLoading(false));
   }, [language, sign, moonSign, nakshatra]);

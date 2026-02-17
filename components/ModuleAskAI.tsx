@@ -4,11 +4,15 @@ import { askRishiWithFallback } from '../services/geminiService';
 import RichText from './RichText';
 import DownloadAppForAICta from './common/DownloadAppForAICta';
 
+import type { AstrologerPersona } from '../services/geminiService';
+
 interface ModuleAskAIProps {
   contextStr: string;
   language: Language;
   moduleName: string;
   accentColor?: 'amber' | 'pink' | 'purple' | 'indigo';
+  /** Persona for Rishi (e.g. 'love' for compatibility, 'general' for tarot/horoscope) */
+  persona?: AstrologerPersona;
 }
 
 interface QAMessage {
@@ -17,7 +21,7 @@ interface QAMessage {
   showDownloadCta?: boolean;
 }
 
-const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleName, accentColor = 'amber' }) => {
+const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleName, accentColor = 'amber', persona = 'general' }) => {
   const [messages, setMessages] = useState<QAMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +31,7 @@ const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleN
     setMessages(prev => [...prev, { role: 'user', text: question }]);
     setIsLoading(true);
     try {
-      const result = await askRishiWithFallback(question, language, contextStr);
+      const result = await askRishiWithFallback(question, language, contextStr, persona);
       setMessages(prev => [...prev, { role: 'model', text: result.text || '' }]);
     } catch (error) {
       const errMsg = language === 'hi'

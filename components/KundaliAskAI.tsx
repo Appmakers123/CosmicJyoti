@@ -28,7 +28,7 @@ const KundaliAskAI: React.FC<KundaliAskAIProps> = ({ data, name, language }) => 
     setMessages(prev => [...prev, { role: 'user', text: question }]);
     setIsLoading(true);
     try {
-      const result = await askRishiWithFallback(question, language, contextStr);
+      const result = await askRishiWithFallback(question, language, contextStr, 'general');
       setMessages(prev => [...prev, { role: 'model', text: result.text || '' }]);
     } catch (error) {
       const errMsg = language === 'hi'

@@ -30,14 +30,14 @@ import YantraLab from './components/YantraLab';
 import CosmicHealthAI from './components/CosmicHealthAI';
 import BookAppointment from './components/BookAppointment';
 import MuhuratLab from './components/MuhuratLab';
-import PersonalTransits from './components/PersonalTransits';
 import MatchMaking from './components/MatchMaking';
 import NotificationToggle from './components/NotificationToggle';
 import UserProfileModal from './components/UserProfileModal';
 import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
+import DashboardConsentBanner from './components/DashboardConsentBanner';
 import DailyDoDonts from './components/DailyDoDonts';
-import DailyAIBlog from './components/DailyAIBlog';
+const DailyAIBlog = React.lazy(() => import('./components/DailyAIBlog'));
 import DailyLuckScore from './components/DailyLuckScore';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
@@ -147,7 +147,6 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     icon: '🎲',
     color: 'from-pink-500/20 to-rose-500/10',
     modules: [
-      { mode: 'transits', labelEn: 'Transits (Gochara)', labelHi: 'गोचर', icon: '🪐', descEn: 'Planetary transits', descHi: 'ग्रह गोचर', isPremium: false },
       { mode: 'games', labelEn: 'Astro Games', labelHi: 'पहेलियाँ', icon: '🎲', descEn: 'Play & learn', descHi: 'खेलें और सीखें', isPremium: false },
     ],
   },
@@ -192,6 +191,21 @@ const App: React.FC = () => {
   useEffect(() => {
     (window as any).__cosmicjyoti_current_mode = mode;
   }, [mode]);
+
+  // Open correct module when user arrives via ?mode= (e.g. from blog "Try" button)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const urlMode = params.get('mode');
+    if (!urlMode) return;
+    const validModes: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog'];
+    const normalized = urlMode.toLowerCase().trim() as AppViewMode;
+    if (validModes.includes(normalized)) {
+      setMode(normalized);
+      // Clean URL so back button doesn't re-apply
+      window.history.replaceState({ mode: normalized }, '', window.location.pathname || '/');
+    }
+  }, []);
 
   
   // Sync karma balance from storage
@@ -281,6 +295,7 @@ const App: React.FC = () => {
   const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
   const [streakCount, setStreakCount] = useState(0);
   const [showRemindToast, setShowRemindToast] = useState(false);
+  const [profileVersion, setProfileVersion] = useState(0);
 
   // Record visit and update streak when hub is shown; check "remind me tomorrow"
   useEffect(() => {
@@ -462,11 +477,24 @@ const App: React.FC = () => {
       if (saveToProfile) {
         saveReport('kundali', data, formInput, `Kundali for ${formData.name}`);
         loadSavedKundaliCharts();
+        const b = data.basicDetails;
+        const nakshatraStr = typeof b?.nakshatra === 'string' ? b.nakshatra : (b?.nakshatra as { name?: string })?.name;
+        const existing = getGlobalProfile();
         const profileData = {
           self: { ...formData, language },
-          partner: undefined,
+          partner: existing?.partner,
+          astroDetails: {
+            moonSign: b?.moonSign,
+            sunSign: b?.sunSign,
+            nakshatra: nakshatraStr || b?.nakshatra,
+            ascendant: b?.ascendant,
+          },
         };
         saveGlobalProfile(profileData);
+        setProfileVersion((v) => v + 1);
+        try {
+          localStorage.removeItem('cosmicjyoti_dashboard_cta_dismissed');
+        } catch (_) {}
         if (options?.consentToShare) {
           try { localStorage.setItem('cosmicjyoti_profile_consent', 'granted'); } catch {}
         }
@@ -1006,6 +1034,12 @@ const App: React.FC = () => {
             
             <ThoughtOfTheDay language={language} />
 
+            <DashboardConsentBanner
+              language={language}
+              onAddBirthDetails={() => switchMode('kundali')}
+              profileVersion={profileVersion}
+            />
+
             <CheckTodayOnboardingHint language={language} />
 
             {/* Today – daily habit: Horoscope, Panchang, AI Articles */}
@@ -1079,11 +1113,37 @@ const App: React.FC = () => {
                 </div>
               )}
               <div className="flex flex-wrap justify-center gap-2">
-                <button onClick={() => switchMode('transits')} className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  {language === 'hi' ? 'गोचर देखें' : 'View Transits'}
+                <button onClick={() => switchMode('daily')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>🌞</span>
+                  <span>{language === 'hi' ? 'राशिफल' : 'Horoscope'}</span>
                 </button>
-                <button onClick={() => switchMode('muhurat')} className="px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  {language === 'hi' ? 'मुहूर्त' : 'Muhurat'}
+                <button onClick={() => switchMode('kundali')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>🧭</span>
+                  <span>{language === 'hi' ? 'कुंडली' : 'Kundali'}</span>
+                </button>
+                <button onClick={() => switchMode('panchang')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>📅</span>
+                  <span>{language === 'hi' ? 'पंचांग' : 'Panchang'}</span>
+                </button>
+                <button onClick={() => switchMode('muhurat')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>🕐</span>
+                  <span>{language === 'hi' ? 'मुहूर्त' : 'Muhurat'}</span>
+                </button>
+                <button onClick={() => switchMode('compatibility')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>❤️</span>
+                  <span>{language === 'hi' ? 'मिलान' : 'Compatibility'}</span>
+                </button>
+                <button onClick={() => switchMode('matchmaking')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>💒</span>
+                  <span>{language === 'hi' ? 'गुण मिलान' : 'Guna Milan'}</span>
+                </button>
+                <button onClick={() => switchMode('games')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>🎲</span>
+                  <span>{language === 'hi' ? 'पहेलियाँ' : 'Games'}</span>
+                </button>
+                <button onClick={() => switchMode('ai-blog')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
+                  <span>📝</span>
+                  <span>{language === 'hi' ? 'AI लेख' : 'AI Articles'}</span>
                 </button>
               </div>
             </section>
@@ -1248,7 +1308,16 @@ const App: React.FC = () => {
         {mode === 'rudraksh' && <RudrakshLab language={language} />}
         {mode === 'yantra' && <YantraLab language={language} />}
         {mode === 'dreams' && <DreamInterpreter language={language} />}
-        {mode === 'vastu' && <VastuLab language={language} />}
+        {mode === 'vastu' && (
+          <VastuLab
+            language={language}
+            onUseKarma={() => karmaBalance > 0}
+            hasKarma={karmaBalance > 0}
+            onOpenStore={() => setShowKarmaStore(true)}
+            onWatchAdForChat={() => { setAdWatchPurpose('chat'); setShowAdWatchModal(true); }}
+            chatRefreshTrigger={chatRefreshKey}
+          />
+        )}
         {mode === 'gemstones' && <GemstoneLab language={language} />}
         {mode === 'cosmic-health' && <CosmicHealthAI language={language} />}
         {mode === 'palm-reading' && <PalmReading language={language} />}
@@ -1262,10 +1331,13 @@ const App: React.FC = () => {
         {mode === 'palmistry-guide' && <PalmistryGuide language={language} />}
         {mode === 'numerology-guide' && <NumerologyGuide language={language} />}
         {mode === 'star-legends' && <StarLegends language={language} />}
-        {mode === 'ai-blog' && <DailyAIBlog language={language} onBack={() => setMode('hub')} />}
+        {mode === 'ai-blog' && (
+          <React.Suspense fallback={<div className="flex items-center justify-center p-8"><div className="w-8 h-8 border-2 border-amber-500/50 border-t-amber-400 rounded-full animate-spin" /></div>}>
+            <DailyAIBlog language={language} onBack={() => setMode('hub')} onTryModule={(m) => setMode(m as AppViewMode)} />
+          </React.Suspense>
+        )}
         {mode === 'compatibility' && <CompatibilityTab language={language}  />}
         {mode === 'muhurat' && <MuhuratLab language={language} onBack={() => setMode('hub')} />}
-        {mode === 'transits' && <PersonalTransits language={language} kundali={null} onOpenKundali={() => setMode('kundali')} />}
         {mode === 'matchmaking' && <MatchMaking language={language} />}
         {mode === 'games' && <AstroGames language={language} />}
         {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}

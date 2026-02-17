@@ -5,7 +5,6 @@ import { getGlobalProfile } from '../utils/profileStorageService';
 import {
   isValidTime,
   isValidLocationFormat,
-  getDatePresets,
   loadKundaliDraft,
   saveKundaliDraft,
   clearKundaliDraft,
@@ -70,7 +69,6 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
   const [showNameSuggestions, setShowNameSuggestions] = useState(false);
   const [saveToProfile, setSaveToProfile] = useState(true);
-  const [consentToShare, setConsentToShare] = useState(false);
   const [use24Hour, setUse24Hour] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [timeError, setTimeError] = useState<string | null>(null);
@@ -683,7 +681,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       time: dataToSubmit.time
     });
     
-    onSubmit(dataToSubmit, { saveToProfile, consentToShare });
+    onSubmit(dataToSubmit, { saveToProfile, consentToShare: saveToProfile });
   };
 
   const filteredCities = COMMON_CITIES.filter(city => 
@@ -693,53 +691,80 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 animate-fade-in flex flex-col md:flex-row gap-8 items-stretch">
-      
-      {/* Saved Charts Section - Only visible if there are charts */}
-      {savedCharts.length > 0 && (
-          <div className="w-full md:w-1/3 space-y-4 shrink-0">
-              <h3 className="text-xl font-serif text-amber-200 pl-2">Saved Profiles</h3>
-              <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                  {savedCharts.map((chart) => (
-                      <div key={chart.id} className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 hover:border-amber-500/50 transition-all">
-                          <div className="flex justify-between items-start mb-2">
-                              <div>
-                                  <h4 className="font-bold text-slate-200">{t.vedicHoroscopeFor} {chart.name}</h4>
-                                  <p className="text-xs text-slate-500">{chart.date} • {chart.location}</p>
-                              </div>
-                              <button 
-                                onClick={() => onDeleteChart && chart.id && onDeleteChart(chart.id)}
-                                className="text-slate-600 hover:text-red-400 p-1"
-                              >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                              </button>
-                          </div>
-                          <div className="flex gap-2 mt-3">
-                              <button 
-                                onClick={() => onLoadChart && onLoadChart(chart)}
-                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-xs py-2 rounded text-slate-200 transition-colors"
-                              >
-                                  View Chart
-                              </button>
-                              <button 
-                                onClick={() => onGetDaily && onGetDaily(chart)}
-                                className="flex-1 bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-600/30 text-xs py-2 rounded transition-colors"
-                              >
-                                  Daily Forecast
-                              </button>
-                          </div>
+    <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pb-12 animate-fade-in">
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 items-stretch">
+        {/* Saved Charts Section - Only visible if there are charts */}
+        {savedCharts.length > 0 && (
+          <div className="w-full lg:w-80 shrink-0">
+            <div className="sticky top-24">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-amber-500/90 mb-3 flex items-center gap-2">
+                <span className="w-1 h-4 bg-amber-500 rounded-full" />
+                {language === 'hi' ? 'सहेजे प्रोफ़ाइल' : 'Saved Profiles'}
+              </h3>
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1 custom-scrollbar">
+                {savedCharts.map((chart) => (
+                  <div key={chart.id} className="bg-slate-800/80 border border-slate-600/80 rounded-xl p-4 hover:border-amber-500/40 transition-all shadow-lg">
+                    <div className="flex justify-between items-start gap-2 mb-3">
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-slate-100 truncate">{chart.name}</h4>
+                        <p className="text-xs text-slate-500 mt-0.5">{chart.date} · {chart.location?.split(',')[0] || chart.location}</p>
                       </div>
-                  ))}
+                      <button
+                        type="button"
+                        onClick={() => onDeleteChart && chart.id && onDeleteChart(chart.id)}
+                        className="shrink-0 p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        aria-label={language === 'hi' ? 'हटाएं' : 'Delete'}
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onLoadChart && onLoadChart(chart)}
+                        className="flex-1 py-2.5 rounded-lg bg-slate-700/80 hover:bg-slate-600 text-slate-200 text-sm font-medium transition-colors"
+                      >
+                        {language === 'hi' ? 'चार्ट देखें' : 'View Chart'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onGetDaily && onGetDaily(chart)}
+                        className="flex-1 py-2.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-sm font-medium transition-colors"
+                      >
+                        {language === 'hi' ? 'राशिफल' : 'Forecast'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
+            </div>
           </div>
-      )}
+        )}
 
-      {/* Main Form */}
-      <div className={`w-full min-w-0 ${savedCharts.length > 0 ? 'md:w-2/3' : 'md:w-full max-w-xl md:mx-auto'}`}>
-        <div className="bg-slate-800/60 backdrop-blur-md border border-amber-500/20 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-            {/* Loading overlay to prevent perceived freeze */}
+        {/* Main Form */}
+        <div className={`flex-1 min-w-0 ${savedCharts.length > 0 ? '' : 'max-w-xl mx-auto'}`}>
+          <div className="relative bg-slate-800/70 backdrop-blur-md border border-slate-600/80 rounded-2xl shadow-xl overflow-hidden">
+            {/* Header */}
+            <div className="relative px-6 sm:px-8 pt-8 pb-6 border-b border-slate-700/80">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none" />
+              <div className="relative text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 mb-4">
+                  <span className="text-2xl" aria-hidden="true">🧭</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-amber-100 mb-2">{t.formTitle}</h2>
+                <p className="text-slate-400 text-sm max-w-md mx-auto">{t.formSubtitle}</p>
+                <div className="mt-4 mx-auto max-w-lg p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left">
+                  <p className="text-emerald-200/90 text-xs sm:text-sm flex items-start gap-3">
+                    <span className="shrink-0 text-lg" aria-hidden="true">💡</span>
+                    <span>{t.saveDetailsHint || (language === 'hi' ? 'आपकी जानकारी स्वतः सहेजी जाती है। प्रोफ़ाइल में सेव करें—दोबारा लिखने की ज़रूरत नहीं।' : 'Your details are auto-saved. Save to profile to use across Kundali, Compatibility & more.')}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Loading overlay */}
             {isLoading && (
-              <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-2xl" aria-live="polite">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/90 backdrop-blur-sm rounded-2xl" aria-live="polite">
                 <div className="flex flex-col items-center gap-4">
                   <svg className="w-12 h-12 animate-spin text-amber-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
@@ -749,19 +774,8 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                 </div>
               </div>
             )}
-            {/* Background Mandala Effect */}
-            <div className="absolute -right-20 -top-20 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="text-center mb-6 sm:mb-8">
-              <h2 className="text-2xl sm:text-3xl font-serif text-amber-100 mb-2">{t.formTitle}</h2>
-              <p className="text-slate-400 text-sm">{t.formSubtitle}</p>
-              <div className="mt-4 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left">
-                <p className="text-emerald-200/90 text-xs sm:text-sm flex items-start gap-2">
-                  <span className="shrink-0 mt-0.5" aria-hidden="true">💡</span>
-                  <span>{t.saveDetailsHint || (language === 'hi' ? 'आपकी जानकारी स्वतः सहेजी जाती है। प्रोफ़ाइल में सेव करें—दोबारा लिखने की ज़रूरत नहीं।' : 'Your details are auto-saved. Save to profile to use across Kundali, Compatibility & more.')}</span>
-                </p>
-              </div>
-            </div>
+            <div className="relative px-6 sm:px-8 py-6 sm:py-8">
 
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
             <div className="space-y-2 relative">
@@ -832,21 +846,9 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                 </div>
             </div>
 
-            {/* Date of Birth - calendar with presets */}
+            {/* Date of Birth & Time */}
             <div className="space-y-2">
                 <label className="block text-xs uppercase tracking-wider text-amber-500/80 font-bold">{t.dob} / {t.tob}</label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {getDatePresets().map(({ key, value }) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => { setFormData(prev => ({ ...prev, date: value })); saveDraftOnBlur(); }}
-                      className="px-3 py-1.5 text-xs rounded-lg bg-slate-700/80 hover:bg-amber-500/20 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 transition-all"
-                    >
-                      {key === 'today' ? t.datePresetToday : key === '1yr' ? t.datePreset1yr : key === '5yr' ? t.datePreset5yr : key === '10yr' ? t.datePreset10yr : t.datePreset20yr}
-                    </button>
-                  ))}
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                     <input
                         type="date"
@@ -1005,39 +1007,23 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                   {language === 'hi' ? 'मेरे प्रोफ़ाइल में सेव करें' : 'Save to my profile'}
                 </span>
                 <span className="text-slate-500 text-xs mt-0.5 block">
-                  {t.saveDetailsHintShort || (language === 'hi' ? 'एक बार सेव करें, हर जगह उपयोग करें।' : 'Save once, use everywhere.')}
+                  {language === 'hi' ? 'एक बार सेव करें, हर जगह उपयोग करें। आपकी जानकारी सुरक्षित रूप से सहेजी जाएगी।' : 'Save once, use everywhere. Your details will be saved securely.'}
                 </span>
               </div>
             </label>
-            {saveToProfile && (
-              <label className="flex items-center gap-3 mt-3 cursor-pointer group p-4 rounded-xl bg-slate-800/40 border border-slate-600/50 hover:border-slate-500/60 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={consentToShare}
-                  onChange={(e) => setConsentToShare(e.target.checked)}
-                  className="w-5 h-5 rounded border-amber-500/50 bg-slate-800 text-amber-500 focus:ring-amber-500/50"
-                />
-                <div>
-                  <span className="text-slate-300 text-sm font-medium group-hover:text-slate-200 transition-colors block">
-                    {language === 'hi' ? 'मैं अपनी जानकारी साझा करने के लिए सहमत हूं' : 'I consent to save my details to our records'}
-                  </span>
-                  <span className="text-slate-500 text-xs mt-0.5 block">
-                    {language === 'hi' ? 'आपकी जानकारी सुरक्षित रूप से सहेजी जाएगी।' : 'Your details will be saved securely.'}
-                  </span>
-                </div>
-              </label>
-            )}
             <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-serif font-bold py-4 rounded-xl shadow-lg hover:shadow-orange-500/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
+                className="w-full mt-6 py-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-base shadow-lg hover:shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.99]"
             >
                 {isLoading ? t.loadingButton : t.submitButton}
             </button>
             </form>
+            </div>
+          </div>
         </div>
       </div>
-      <AdBanner variant="display" className="mt-8 w-full max-w-xl" />
+      <AdBanner variant="display" className="mt-8 w-full max-w-xl mx-auto" />
     </div>
   );
 };

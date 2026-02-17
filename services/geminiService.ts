@@ -2151,6 +2151,28 @@ export const generateMysticReading = async (base64Image: string, features: strin
     )();
 };
 
+/** Face Reading (Samudrik Shastra) — analyze a face image and return personality/life insights. */
+export const generateFaceReading = async (base64Image: string, mimeType: 'image/jpeg' | 'image/png' | 'image/webp', language: Language): Promise<string> => {
+    const ai = getAI();
+    const langName = getLanguageName(language);
+    const prompt = language === 'hi'
+        ? `इस चेहरे की वैदिक समुद्रिक शास्त्र (Face Reading) के अनुसार विश्लेषण करें। चेहरे का आकार, माथा, आँखें, नाक, होंठ, कान, और समग्र अभिव्यक्ति देखें। व्यक्तित्व, स्वभाव, संभावित जीवन प्रवृत्तियाँ और सकारात्मक सलाह दें। उत्तर केवल ${langName} में दें।`
+        : `Analyze this face using Vedic Samudrik Shastra (face reading). Consider face shape, forehead, eyes, nose, lips, ears, and overall expression. Provide insights on personality, temperament, potential life tendencies, and positive guidance. Respond only in ${langName}.`;
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: {
+            parts: [
+                { inlineData: { mimeType, data: base64Image } },
+                { text: prompt }
+            ]
+        },
+        config: {
+            systemInstruction: MASTER_MENTOR_PROMPT + ' Act as an expert in Samudrik Shastra (Vedic face reading). Be respectful, positive, and insightful. Do not make medical or definitive predictions—frame insights as traditional wisdom and self-reflection.'
+        }
+    });
+    return response.text || '';
+};
+
 export const generateCosmicArt = async (prompt: string, language: Language): Promise<string> => {
     return (async () => {
         const ai = getAI();

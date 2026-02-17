@@ -18,6 +18,7 @@ interface FreeUsage {
   dream: number;
   tarot: number;
   palm: number;
+  face: number;
   numerology: number;
   cosmicHealth: number;
   games: number;
@@ -30,6 +31,7 @@ const FREE_LIMITS: Record<Exclude<keyof FreeUsage, 'date'>, number> = {
   dream: 1,
   tarot: 1,
   palm: 1,
+  face: 1,
   numerology: 1,
   cosmicHealth: 1,
   games: 1,
@@ -57,6 +59,7 @@ function initUsage(): FreeUsage {
     dream: 0,
     tarot: 0,
     palm: 0,
+    face: 0,
     numerology: 0,
     cosmicHealth: 0,
     games: 0,

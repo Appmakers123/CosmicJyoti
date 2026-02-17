@@ -21,6 +21,7 @@ import TarotReading from './components/TarotReading';
 import AstroGames from './components/AstroGames';
 import ChatWidget from './components/ChatWidget'; 
 import PalmReading from './components/PalmReading';
+import FaceReading from './components/FaceReading';
 import VastuLab from './components/VastuLab';
 import GemstoneLab from './components/GemstoneLab';
 import DreamInterpreter from './components/DreamInterpreter';
@@ -103,6 +104,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     modules: [
       { mode: 'tarot', labelEn: 'Tarot', labelHi: 'टैरो', icon: '🃏', descEn: 'Card readings', descHi: 'कार्ड पाठ', isPremium: true },
       { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'Hand reading', descHi: 'हाथ पढ़ना', isPremium: true },
+      { mode: 'face-reading', labelEn: 'Face Reading', labelHi: 'चेहरा पढ़ना', icon: '👤', descEn: 'Samudrik Shastra', descHi: 'समुद्रिक शास्त्र', isPremium: true },
       { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false },
       { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true },
     ],
@@ -198,7 +200,7 @@ const App: React.FC = () => {
     const params = new URLSearchParams(window.location.search);
     const urlMode = params.get('mode');
     if (!urlMode) return;
-    const validModes: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog'];
+    const validModes: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog'];
     const normalized = urlMode.toLowerCase().trim() as AppViewMode;
     if (validModes.includes(normalized)) {
       setMode(normalized);
@@ -649,7 +651,7 @@ const App: React.FC = () => {
     }
     const history = modeHistoryRef.current;
     if (mode !== 'hub' && history.length > 0) {
-      const isLeavingFreeModule = !['tarot', 'palm-reading', 'numerology', 'cosmic-health', 'games', 'dreams'].includes(mode);
+      const isLeavingFreeModule = !['tarot', 'palm-reading', 'face-reading', 'numerology', 'cosmic-health', 'games', 'dreams'].includes(mode);
       if (isCapacitor() && isLeavingFreeModule) {
         admobService.showInterstitial()
           .then(() => performBackNavigation())
@@ -724,7 +726,7 @@ const App: React.FC = () => {
 
   const handleFeatureClick = (target: string) => {
     const mode = target as AppViewMode;
-    if (['tarot', 'palm-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode)) {
+    if (['tarot', 'palm-reading', 'face-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode)) {
       setAdWatchPurpose('premium');
       setAdWatchFeature(mode);
       setShowAdWatchModal(true);
@@ -792,7 +794,7 @@ const App: React.FC = () => {
         currentMode={mode}
         onNavigate={(m) => {
           setHamburgerOpen(false);
-          if (['tarot', 'palm-reading', 'numerology'].includes(m) && !isFeatureUnlocked(m)) {
+          if (['tarot', 'palm-reading', 'face-reading', 'numerology'].includes(m) && !isFeatureUnlocked(m)) {
             setAdWatchPurpose('premium');
             setAdWatchFeature(m);
             setShowAdWatchModal(true);
@@ -1316,6 +1318,7 @@ const App: React.FC = () => {
         {mode === 'gemstones' && <GemstoneLab language={language} />}
         {mode === 'cosmic-health' && <CosmicHealthAI language={language} />}
         {mode === 'palm-reading' && <PalmReading language={language} />}
+        {mode === 'face-reading' && <FaceReading language={language} />}
         {mode === 'tarot' && <TarotReading language={language}  />}
         {mode === 'numerology' && <Numerology language={language} />}
         {mode === 'learning' && <LearningCenter language={language} />}

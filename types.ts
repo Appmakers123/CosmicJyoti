@@ -3,7 +3,7 @@ import React from 'react';
 
 export type Language = 'en' | 'hi';
 
-export type ViewMode = 'daily' | 'kundali' | 'panchang' | 'numerology' | 'learning' | 'transits' | 'tarot' | 'compatibility' | 'games' | 'palm-reading' | 'muhurat' | 'mantra' | 'rudraksh' | 'planets-houses' | 'zodiac-signs' | 'nakshatra-library' | 'kundali-basics' | 'palmistry-guide' | 'numerology-guide' | 'astro-lab' | 'star-legends' | 'matchmaking';
+export type ViewMode = 'daily' | 'kundali' | 'panchang' | 'numerology' | 'learning' | 'transits' | 'tarot' | 'compatibility' | 'games' | 'palm-reading' | 'face-reading' | 'muhurat' | 'mantra' | 'rudraksh' | 'planets-houses' | 'zodiac-signs' | 'nakshatra-library' | 'kundali-basics' | 'palmistry-guide' | 'numerology-guide' | 'astro-lab' | 'star-legends' | 'matchmaking';
 
 export type AppViewMode = ViewMode | 'hub' | 'vastu' | 'gemstones' | 'dreams' | 'cosmic-health' | 'yantra' | 'appointment' | 'ai-blog';
 

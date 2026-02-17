@@ -37,6 +37,7 @@ const SERVICE_MODE_TO_APP: Record<string, string> = {
   muhurat: 'muhurat',
   tarot: 'tarot',
   'palm-reading': 'palm-reading',
+  'face-reading': 'face-reading',
   numerology: 'numerology',
   dreams: 'dreams',
   mantra: 'mantra',

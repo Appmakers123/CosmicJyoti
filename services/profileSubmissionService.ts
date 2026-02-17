@@ -12,12 +12,13 @@ export function isProfileSubmitEnabled(): boolean {
   return typeof SUBMIT_URL === 'string' && SUBMIT_URL.length > 0 && SUBMIT_URL.startsWith('http');
 }
 
-export async function submitProfileWithConsent(profile: GlobalProfile, accountName?: string, accountEmail?: string): Promise<boolean> {
+export type ProfileSubmitResult = { ok: true } | { ok: false; error: string };
+
+export async function submitProfileWithConsent(profile: GlobalProfile, accountName?: string, accountEmail?: string): Promise<ProfileSubmitResult> {
   if (!isProfileSubmitEnabled()) {
-    if (import.meta.env.DEV) {
-      console.warn('[ProfileSubmit] Sheet not linked: add VITE_PROFILE_SUBMIT_URL to .env.local (see PROFILE_SHEET_SETUP.md) and restart dev server.');
-    }
-    return false;
+    const msg = 'Sheet URL not set. Add VITE_PROFILE_SUBMIT_URL to .env.local and restart the dev server (npm run dev).';
+    if (import.meta.env.DEV) console.warn('[ProfileSubmit]', msg);
+    return { ok: false, error: msg };
   }
 
   if (import.meta.env.DEV) {
@@ -45,7 +46,6 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
       } : null,
     };
 
-    // Use text/plain to avoid CORS preflight (Google Apps Script often doesn't run doOptions for OPTIONS)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(SUBMIT_URL, {
@@ -58,15 +58,22 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
 
     if (!res.ok) {
       const text = await res.text();
-      console.warn('[ProfileSubmit] Sheet returned', res.status, text || '');
-      return false;
+      const err = `Sheet returned ${res.status}${text ? ': ' + text.slice(0, 100) : ''}`;
+      console.warn('[ProfileSubmit]', err);
+      return { ok: false, error: err };
     }
     if (import.meta.env.DEV) {
       console.log('[ProfileSubmit] Success – row added to sheet.');
     }
-    return true;
-  } catch (e) {
-    console.warn('[ProfileSubmit] Request failed:', e);
-    return false;
+    return { ok: true };
+  } catch (e: any) {
+    const errMsg = e?.message || String(e);
+    const isCors = /cors|network|failed to fetch/i.test(errMsg);
+    const isAbort = /abort/i.test(errMsg);
+    let error = 'Request failed: ' + (errMsg || 'Unknown error');
+    if (isCors) error = 'Network or CORS error. Ensure the Web App is deployed with "Who has access: Anyone".';
+    if (isAbort) error = 'Request timed out. Try again.';
+    console.warn('[ProfileSubmit]', error);
+    return { ok: false, error };
   }
 }

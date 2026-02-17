@@ -62,11 +62,12 @@ npm run dev
 
 ## Troubleshooting: No records in sheet
 
-1. **Consent checkbox** – User must check "I consent to sharing my information" before Save.
-2. **Correct Web App URL** – In `.env.local`, set `VITE_PROFILE_SUBMIT_URL` to your **actual** Web App URL (from Deploy → Web app). It must look like `https://script.google.com/macros/s/XXXXX/exec` — replace the placeholder if you copied from `.env.example`.
-3. **Restart after changing .env** – After adding or changing `VITE_PROFILE_SUBMIT_URL` in `.env.local`, **restart** the dev server (`npm run dev`) or run `npm run build` again. The URL is read at build/start time.
-4. **Redeploy Google Apps Script** – If you updated `PROFILE_SHEET_Code.gs`, deploy again (Deploy → Manage deployments → Edit → Version: New version → Deploy).
-5. **Check browser console** – Open DevTools (F12) → Console and Network. Save profile and look for `[ProfileSubmit]` messages or the POST to script.google.com. Any error there will explain why the sheet didn’t get the data.
+1. **Consent checkbox** – User must check **"I consent to sharing my information"** before clicking Save. If it’s unchecked, data is only saved locally and not sent to the sheet.
+2. **Restart dev server** – After adding or changing `VITE_PROFILE_SUBMIT_URL` in `.env.local`, **stop** the dev server (Ctrl+C) and run `npm run dev` again. Vite reads env only at startup.
+3. **Correct Web App URL** – Use the **exec** URL from Google Apps Script: Deploy → Manage deployments → copy the URL that ends with `/exec`. It must start with `https://script.google.com/macros/s/...`.
+4. **Web app access** – In the script deployment, set **"Who has access"** to **Anyone** (so unauthenticated browser requests are allowed). If it’s "Only myself" or "Anyone with Google account", the POST may get 302/403.
+5. **Sheet permissions** – The script uses `SHEET_ID` in the code. Ensure that Google account owns (or has edit access to) that spreadsheet.
+6. **Browser console** – Open DevTools (F12) → Console and Network. Save profile and look for `[ProfileSubmit]` logs and the POST to `script.google.com`. Red errors or a failed request will show the cause.
 
 ---
 

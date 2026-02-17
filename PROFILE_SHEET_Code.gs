@@ -30,6 +30,11 @@ function doOptions() {
 
 function doPost(e) {
   try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'No POST body received' }))
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeaders({ 'Access-Control-Allow-Origin': '*' });
+    }
     const data = JSON.parse(e.postData.contents);
     const ss = SpreadsheetApp.openById(SHEET_ID);
     let sheet = ss.getSheets()[0];

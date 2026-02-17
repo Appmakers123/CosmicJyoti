@@ -20,6 +20,10 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
     return false;
   }
 
+  if (import.meta.env.DEV) {
+    console.log('[ProfileSubmit] Sending to sheet...', { hasSelf: !!profile?.self, hasPartner: !!profile?.partner });
+  }
+
   try {
     const payload = {
       timestamp: new Date().toISOString(),
@@ -41,12 +45,12 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
       } : null,
     };
 
-    // Script has doOptions() for CORS preflight; application/json is the expected format
+    // Use text/plain to avoid CORS preflight (Google Apps Script often doesn't run doOptions for OPTIONS)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(SUBMIT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
@@ -56,6 +60,9 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
       const text = await res.text();
       console.warn('[ProfileSubmit] Sheet returned', res.status, text || '');
       return false;
+    }
+    if (import.meta.env.DEV) {
+      console.log('[ProfileSubmit] Success – row added to sheet.');
     }
     return true;
   } catch (e) {

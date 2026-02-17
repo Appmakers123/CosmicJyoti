@@ -465,13 +465,8 @@ const App: React.FC = () => {
     setKundaliFormData(formData);
     setLoading(true);
     try {
-      const timeoutMs = 10000;
-      const data = await Promise.race([
-        generateKundali(formData, language),
-        new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(language === 'hi' ? 'कुंडली जनरेशन समय सीमा से अधिक हो गया' : 'Kundali generation timed out after 10 seconds')), timeoutMs)
-        ),
-      ]);
+      // Wait for response with no timeout – let the request complete
+      const data = await generateKundali(formData, language);
       setKundaliData(data);
       setMode('kundali');
       if (saveToProfile) {

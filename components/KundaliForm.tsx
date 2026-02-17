@@ -367,12 +367,8 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
       const encodedLocation = encodeURIComponent(location.substring(0, 200)); // Limit length
       const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedLocation}&key=${GOOGLE_API_KEY}`;
       
-      // Add timeout to fetch
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-      
-      const response = await fetch(geocodeUrl, { signal: controller.signal });
-      clearTimeout(timeoutId);
+      // Wait for geocode response (no timeout)
+      const response = await fetch(geocodeUrl);
       
       if (response.ok) {
         const data = await response.json();
@@ -620,7 +616,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
         setIsDetecting(false);
     }, { 
       enableHighAccuracy: true, 
-      timeout: 10000, 
+      timeout: 30000, 
       maximumAge: 60000 
     });
   };

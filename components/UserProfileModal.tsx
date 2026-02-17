@@ -81,8 +81,11 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
         localStorage.setItem('cosmicjyoti_profile_consent', 'granted');
       } catch {}
       const submitted = await submitProfileWithConsent(profileData, updatedUser.name, updatedUser.email);
-      if (!submitted && import.meta.env.DEV) {
-        console.warn('[ProfileModal] Data was not sent to the sheet. Add VITE_PROFILE_SUBMIT_URL to .env.local and restart. See PROFILE_SHEET_SETUP.md');
+      if (!submitted) {
+        const msg = language === 'hi'
+          ? 'प्रोफ़ाइल सहेजी गई, लेकिन शीट तक नहीं भेजी जा सकी। कंसोल (F12) देखें।'
+          : 'Profile saved locally, but could not send to the sheet. Check the browser console (F12) for details.';
+        alert(msg);
       }
       onProfileSaved?.();
       onClose();

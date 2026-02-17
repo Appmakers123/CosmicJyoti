@@ -46,7 +46,7 @@ export async function submitProfileWithConsent(profile: GlobalProfile, accountNa
     const timeoutId = setTimeout(() => controller.abort(), 15000);
     const res = await fetch(SUBMIT_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });

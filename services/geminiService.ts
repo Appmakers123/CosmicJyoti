@@ -241,6 +241,35 @@ export const generateAstroStory = async (target: string, type: string, language:
 export const generateTarotReading = async (cards: string[], language: Language): Promise<string> => 
     generateInterpretativeReading(`Interpret this 3-card Tarot spread: ${cards.join(", ")} representing Past, Present, and Future.`, "Act as a Mystic Tarot Reader.", "gemini-3-flash-preview", language);
 
+/** Varshphal (Yearly Horoscope) — one-year forecast from birth details. */
+export const generateVarshphal = async (name: string, dob: string, year: number, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        `Give a Varshphal (Vedic yearly horoscope) for the year ${year} for a person named ${name}, birth date ${dob}. Cover: overall year theme, career/business, health, relationships, finance, and key months. Keep it uplifting and practical.`,
+        "Act as a Vedic astrologer expert in Varshphal (annual prediction).",
+        "gemini-3-flash-preview",
+        language
+    );
+
+/** Baby or business name suggestions by numerology / nakshatra. */
+export const generateNameSuggestions = async (type: 'baby' | 'business', preferences: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        type === 'baby'
+            ? `Suggest 10-15 meaningful baby names (with optional meaning) based on: ${preferences}. Mix Indian and universal names; consider numerology-friendly letters if mentioned.`
+            : `Suggest 10-15 business or brand names based on: ${preferences}. Consider numerology, memorability, and positive vibe.`,
+        type === 'baby' ? "Act as a naming expert blending Vedic and modern naming." : "Act as a brand naming expert with knowledge of Ank Jyotish.",
+        "gemini-3-flash-preview",
+        language
+    );
+
+/** Quick Upay (remedies) by planet or life problem. */
+export const generateUpayRemedies = async (planetOrProblem: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        `Give short, practical Vedic remedies (Upay) for: ${planetOrProblem}. Include: mantra, gemstone, charity, day, color, and one simple daily practice. Keep each remedy 1-2 lines.`,
+        "Act as a Vedic remedy expert. Be concise and actionable.",
+        "gemini-3-flash-preview",
+        language
+    );
+
 /**
  * Structured Data Services
  */

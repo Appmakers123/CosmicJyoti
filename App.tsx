@@ -22,6 +22,11 @@ import AstroGames from './components/AstroGames';
 import ChatWidget from './components/ChatWidget'; 
 import PalmReading from './components/PalmReading';
 import FaceReading from './components/FaceReading';
+import Varshphal from './components/Varshphal';
+import NameSuggestions from './components/NameSuggestions';
+import UpayRemedies from './components/UpayRemedies';
+import Disha from './components/Disha';
+import BirthstoneByDob from './components/BirthstoneByDob';
 import VastuLab from './components/VastuLab';
 import GemstoneLab from './components/GemstoneLab';
 import DreamInterpreter from './components/DreamInterpreter';
@@ -38,7 +43,7 @@ import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
 import DashboardConsentBanner from './components/DashboardConsentBanner';
 import DailyDoDonts from './components/DailyDoDonts';
-const DailyAIBlog = React.lazy(() => import('./components/DailyAIBlog'));
+import DailyAIBlog from './components/DailyAIBlog';
 import DailyLuckScore from './components/DailyLuckScore';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
@@ -54,6 +59,7 @@ import { getExternalLinkProps, openExternalLink } from './utils/linkHandler';
 import { isCapacitor } from './utils/linkHandler';
 import admobService from './services/admobService';
 import { addBonusMessages } from './utils/chatLimitService';
+import { canUseAI, incrementAIUsage, canGetChartWithAd, recordChartAdBonus } from './utils/freeUsageLimits';
 import { addKarma, getKarma } from './utils/karmaService';
 import { unlockFeature, isFeatureUnlocked } from './utils/adUnlockService';
 import { getReportByForm, saveReport, listReports, getReport, deleteReport } from './utils/reportStorageService';
@@ -93,6 +99,8 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'panchang', labelEn: 'Panchang', labelHi: 'पंचांग', icon: '📅', descEn: 'Celestial almanac', descHi: 'दैनिक पंचांग', isPremium: false },
       { mode: 'muhurat', labelEn: 'Muhurat', labelHi: 'मुहूर्त', icon: '🕐', descEn: 'Auspicious timing', descHi: 'शुभ समय', isPremium: false },
       { mode: 'compatibility', labelEn: 'Compatibility', labelHi: 'कुंडली मिलान', icon: '❤️', descEn: 'Match & harmony', descHi: 'मिलान और सामंजस्य', isPremium: false },
+      { mode: 'varshphal', labelEn: 'Varshphal', labelHi: 'वार्षिक फल', icon: '📆', descEn: 'Yearly horoscope', descHi: 'साल भर का भविष्य', isPremium: false },
+      { mode: 'disha', labelEn: 'Disha', labelHi: 'दिशा शूल', icon: '🧭', descEn: 'Lucky direction today', descHi: 'आज की शुभ दिशा', isPremium: false },
     ],
   },
   {
@@ -107,6 +115,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'face-reading', labelEn: 'Face Reading', labelHi: 'चेहरा पढ़ना', icon: '👤', descEn: 'Samudrik Shastra', descHi: 'समुद्रिक शास्त्र', isPremium: true },
       { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false },
       { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true },
+      { mode: 'name-suggestions', labelEn: 'Name Suggestions', labelHi: 'नाम सुझाव', icon: '✏️', descEn: 'Baby & business names', descHi: 'बच्चा और व्यवसाय नाम', isPremium: false },
     ],
   },
   {
@@ -122,6 +131,8 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'rudraksh', labelEn: 'Rudraksh', labelHi: 'रुद्राक्ष', icon: '📿', descEn: 'Sacred beads', descHi: 'पवित्र माला', isPremium: false },
       { mode: 'yantra', labelEn: 'Yantra', labelHi: 'यंत्र', icon: '🔺', descEn: 'Sacred geometry', descHi: 'पवित्र ज्यामिति', isPremium: false },
       { mode: 'cosmic-health', labelEn: 'Cosmic Health', labelHi: 'कॉस्मिक हेल्थ', icon: '🏥', descEn: 'Vedic wellness', descHi: 'वैदिक स्वास्थ्य', isPremium: false },
+      { mode: 'upay', labelEn: 'Upay Remedies', labelHi: 'उपाय', icon: '🪔', descEn: 'Quick Vedic remedies', descHi: 'ज्योतिषीय उपाय', isPremium: false },
+      { mode: 'birthstone', labelEn: 'Birthstone by DOB', labelHi: 'राशि रत्न', icon: '💎', descEn: 'Your rashi gemstone', descHi: 'जन्म तिथि से रत्न', isPremium: false },
     ],
   },
   {
@@ -164,6 +175,8 @@ const MODULE_CATEGORIES: CategoryDef[] = [
   },
 ];
 
+const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone'];
+
 const App: React.FC = () => {
   const isOnline = useNetworkStatus();
   const [mode, setMode] = useState<AppViewMode>('hub');
@@ -183,8 +196,9 @@ const App: React.FC = () => {
   const [showKarmaStore, setShowKarmaStore] = useState(false);
   const [karmaBalance, setKarmaBalance] = useState(0);
   const [showAdWatchModal, setShowAdWatchModal] = useState(false);
-  const [adWatchPurpose, setAdWatchPurpose] = useState<'karma' | 'chat' | 'premium' | null>(null);
+  const [adWatchPurpose, setAdWatchPurpose] = useState<'karma' | 'chat' | 'premium' | 'chart-ad' | null>(null);
   const [adWatchFeature, setAdWatchFeature] = useState<string | null>(null);
+  const [pendingKundaliAfterAd, setPendingKundaliAfterAd] = useState<KundaliFormData | null>(null);
   
   // AdMob interstitial ad tracking
   const lastAdShownTime = React.useRef<number>(0);
@@ -194,17 +208,17 @@ const App: React.FC = () => {
     (window as any).__cosmicjyoti_current_mode = mode;
   }, [mode]);
 
-  // Open correct module when user arrives via ?mode= (e.g. from blog "Try" button)
+  // Open correct module when user arrives via ?mode= (e.g. from blog "Try" button or share link)
+  const appliedUrlModeRef = React.useRef(false);
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || appliedUrlModeRef.current) return;
     const params = new URLSearchParams(window.location.search);
     const urlMode = params.get('mode');
     if (!urlMode) return;
-    const validModes: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog'];
     const normalized = urlMode.toLowerCase().trim() as AppViewMode;
-    if (validModes.includes(normalized)) {
-      setMode(normalized);
-      // Clean URL so back button doesn't re-apply
+    if (VALID_APP_MODES.includes(normalized)) {
+      appliedUrlModeRef.current = true;
+      switchMode(normalized);
       window.history.replaceState({ mode: normalized }, '', window.location.pathname || '/');
     }
   }, []);
@@ -464,13 +478,24 @@ const App: React.FC = () => {
         return;
       }
     }
+    if (!canUseAI('chart')) {
+      if (canGetChartWithAd()) {
+        setPendingKundaliAfterAd(formData);
+        setAdWatchPurpose('chart-ad');
+        setAdWatchFeature(null);
+        setShowAdWatchModal(true);
+        return;
+      }
+      setError(language === 'hi' ? 'आज का कुंडली लिमिट पूरा। कल फिर कोशिश करें।' : 'Daily Kundali limit reached. Try again tomorrow.');
+      return;
+    }
     setKundaliFormData(formData);
     setLoading(true);
     try {
-      // Wait for response with no timeout – let the request complete
       const data = await generateKundali(formData, language);
       setKundaliData(data);
       setMode('kundali');
+      incrementAIUsage('chart');
       if (saveToProfile) {
         saveReport('kundali', data, formInput, `Kundali for ${formData.name}`);
         loadSavedKundaliCharts();
@@ -833,16 +858,22 @@ const App: React.FC = () => {
       )}
       <AdWatchModal
         isOpen={showAdWatchModal}
-        onClose={() => { setShowAdWatchModal(false); setAdWatchPurpose(null); setAdWatchFeature(null); }}
+        onClose={() => { setShowAdWatchModal(false); setAdWatchPurpose(null); setAdWatchFeature(null); setPendingKundaliAfterAd(null); }}
         onSuccess={() => {
           if (adWatchPurpose === 'karma') {
             addKarma(2);
             setKarmaBalance(getKarma());
             if (isCapacitor()) showInterstitialDelayed(1500);
           } else if (adWatchPurpose === 'chat') {
-            addBonusMessages(5);
+            addBonusMessages(1);
             setChatRefreshKey(k => k + 1);
             if (isCapacitor()) showInterstitialDelayed(2000);
+          } else if (adWatchPurpose === 'chart-ad') {
+            recordChartAdBonus();
+            const toGenerate = pendingKundaliAfterAd;
+            setPendingKundaliAfterAd(null);
+            if (toGenerate) handleGenerateKundali(toGenerate);
+            if (isCapacitor()) showInterstitialDelayed(1500);
           } else if (adWatchPurpose === 'premium' && adWatchFeature) {
             unlockFeature(adWatchFeature);
             switchMode(adWatchFeature as AppViewMode);
@@ -856,10 +887,12 @@ const App: React.FC = () => {
         rewardDescription={adWatchPurpose === 'karma' 
           ? (language === 'hi' ? '+2 कर्मा अर्जित करें' : 'Earn +2 Karma')
           : adWatchPurpose === 'chat'
-            ? (language === 'hi' ? '+5 अतिरिक्त संदेश' : '+5 bonus messages')
-            : adWatchPurpose === 'premium'
-              ? (language === 'hi' ? '5 मिनट के लिए प्रीमियम सुविधा अनलॉक' : 'Unlock premium feature for 5 minutes')
-              : undefined}
+            ? (language === 'hi' ? '+1 अतिरिक्त संदेश' : '+1 bonus message')
+            : adWatchPurpose === 'chart-ad'
+              ? (language === 'hi' ? 'आज एक और कुंडली' : 'One more Kundali today')
+              : adWatchPurpose === 'premium'
+                ? (language === 'hi' ? '5 मिनट के लिए प्रीमियम सुविधा अनलॉक' : 'Unlock premium feature for 5 minutes')
+                : undefined}
       />
       <ChatWidget 
         language={language} 
@@ -1331,7 +1364,7 @@ const App: React.FC = () => {
         {mode === 'star-legends' && <StarLegends language={language} />}
         {mode === 'ai-blog' && (
           <React.Suspense fallback={<div className="flex items-center justify-center p-8"><div className="w-8 h-8 border-2 border-amber-500/50 border-t-amber-400 rounded-full animate-spin" /></div>}>
-            <DailyAIBlog language={language} onBack={() => setMode('hub')} onTryModule={(m) => setMode(m as AppViewMode)} />
+            <DailyAIBlog language={language} onBack={() => setMode('hub')} onTryModule={(m) => { const mode = (m || '').toLowerCase().trim() as AppViewMode; if (mode && VALID_APP_MODES.includes(mode)) switchMode(mode); }} />
           </React.Suspense>
         )}
         {mode === 'compatibility' && <CompatibilityTab language={language}  />}
@@ -1339,6 +1372,11 @@ const App: React.FC = () => {
         {mode === 'matchmaking' && <MatchMaking language={language} />}
         {mode === 'games' && <AstroGames language={language} />}
         {mode === 'appointment' && <BookAppointment language={language} onBack={() => setMode('hub')} />}
+        {mode === 'varshphal' && <Varshphal language={language} onBack={() => setMode('hub')} />}
+        {mode === 'name-suggestions' && <NameSuggestions language={language} onBack={() => setMode('hub')} />}
+        {mode === 'upay' && <UpayRemedies language={language} onBack={() => setMode('hub')} />}
+        {mode === 'disha' && <Disha language={language} onBack={() => setMode('hub')} />}
+        {mode === 'birthstone' && <BirthstoneByDob language={language} onBack={() => setMode('hub')} onOpenGemstones={() => setMode('gemstones')} />}
         
         {mode !== 'hub' && !loading && (
           <button onClick={() => {setMode('hub'); setError(null);}} className="mt-12 mx-auto flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-amber-400 uppercase tracking-[0.4em] bg-slate-900/50 px-10 py-3 rounded-full border border-slate-800 transition-all shadow-lg">

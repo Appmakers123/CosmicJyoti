@@ -163,8 +163,8 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
       const limitMsg = isPremium 
         ? t.chatLimitReached 
         : (language === 'hi' 
-          ? `आज के ${getMessageLimit(isPremium)} मुफ्त संदेश पूरे। विज्ञापन देखकर 5 और प्राप्त करें या प्रीमियम लें।`
-          : `You've used all ${getMessageLimit(isPremium)} free messages today. Watch ad for 5 more or upgrade to premium.`);
+          ? `आज के ${getMessageLimit(isPremium)} मुफ्त संदेश पूरे। विज्ञापन देखकर 1 और प्राप्त करें या प्रीमियम लें।`
+          : `You've used all ${getMessageLimit(isPremium)} free messages today. Watch ad for 1 more or upgrade to premium.`);
       setMessages(prev => [...prev, { 
         role: 'model', 
         text: limitMsg

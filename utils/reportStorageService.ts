@@ -3,7 +3,7 @@
  * Saves generated reports (Kundali, Panchang, etc.) for reuse and sharing.
  */
 
-export type ReportType = 'kundali' | 'panchang' | 'horoscope' | 'matchmaking' | 'muhurat' | 'numerology' | 'tarot' | 'palm';
+export type ReportType = 'kundali' | 'panchang' | 'horoscope' | 'matchmaking' | 'muhurat' | 'numerology' | 'tarot' | 'palm' | 'face';
 
 const STORAGE_PREFIX = 'cosmicjyoti_report_';
 const INDEX_KEY = 'cosmicjyoti_report_index';

@@ -1,15 +1,16 @@
 # Generate 2 AI blog posts per time slot using Perplexity only.
-# Slots: 6am, 12pm, 6pm, 9pm IST (UTC+5:30)
-# 6am IST = 00:30 UTC, 12pm IST = 06:30 UTC, 6pm IST = 12:30 UTC, 9pm IST = 15:30 UTC
+# Requires: Repository secrets PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS.
+# Slots (IST): 6am, 12pm, 6pm, 9pm. Cron uses UTC (6am IST = 00:30 UTC).
+# Note: Scheduled runs may be delayed; slot is resolved by current UTC hour.
 name: Generate Daily Blog
 permissions:
   contents: write
 on:
   schedule:
-    - cron: '30 0 * * *'   # 6am IST – Horoscope + Compatibility
-    - cron: '30 6 * * *'   # 12pm IST – Career, Love, other modules
-    - cron: '30 12 * * *'  # 6pm IST – Planetary position and effect
-    - cron: '30 15 * * *'  # 9pm IST – Events for next day
+    - cron: '30 0 * * *'   # 00:30 UTC ≈ 6am IST – Horoscope + Compatibility
+    - cron: '30 6 * * *'   # 06:30 UTC ≈ 12pm IST – Career, Love, other modules
+    - cron: '30 12 * * *'  # 12:30 UTC ≈ 6pm IST – Planetary position and effect
+    - cron: '30 15 * * *'  # 15:30 UTC ≈ 9pm IST – Events for next day
   workflow_dispatch:
     inputs:
       slot:
@@ -42,18 +43,19 @@ jobs:
         id: slot
         run: |
           H=$(date -u +%H)
-          if [ "$H" = "00" ] || [ "$H" = "01" ]; then echo "slot=6am" >> $GITHUB_OUTPUT
+          echo "UTC hour=$H"
+          if [ "$H" = "00" ] || [ "$H" = "01" ] || [ "$H" = "02" ]; then echo "slot=6am" >> $GITHUB_OUTPUT
           elif [ "$H" = "06" ] || [ "$H" = "07" ]; then echo "slot=12pm" >> $GITHUB_OUTPUT
           elif [ "$H" = "12" ] || [ "$H" = "13" ]; then echo "slot=6pm" >> $GITHUB_OUTPUT
           elif [ "$H" = "15" ] || [ "$H" = "16" ]; then echo "slot=9pm" >> $GITHUB_OUTPUT
           else echo "slot=6am" >> $GITHUB_OUTPUT; fi
+          echo "Resolved slot: ${{ steps.slot.outputs.slot }}"
 
       - name: Generate daily blog posts
         run: node scripts/generate-daily-blog.mjs ${{ github.event.inputs.slot || steps.slot.outputs.slot }}
         env:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           PERPLEXITY_API_KEYS: ${{ secrets.PERPLEXITY_API_KEYS }}
-
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"

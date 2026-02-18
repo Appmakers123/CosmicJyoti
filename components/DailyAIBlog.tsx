@@ -27,30 +27,51 @@ interface DailyPostsData {
   posts: DailyPost[];
 }
 
-/** Map blog serviceMode to app route mode (e.g. same name; add any alias here) */
+/** Map blog serviceMode to app route mode. Not every blog has a module; only show Try when mapped. */
 const SERVICE_MODE_TO_APP: Record<string, string> = {
   matchmaking: 'matchmaking',
   compatibility: 'compatibility',
   daily: 'daily',
+  horoscope: 'daily',
   kundali: 'kundali',
+  'birth chart': 'kundali',
   panchang: 'panchang',
+  'daily panchang': 'panchang',
+  panchangam: 'panchang',
   muhurat: 'muhurat',
   tarot: 'tarot',
   'palm-reading': 'palm-reading',
+  palmistry: 'palm-reading',
   'face-reading': 'face-reading',
+  'face reading': 'face-reading',
   numerology: 'numerology',
   dreams: 'dreams',
   mantra: 'mantra',
   gemstones: 'gemstones',
   vastu: 'vastu',
   'cosmic-health': 'cosmic-health',
+  'cosmic health': 'cosmic-health',
   'planets-houses': 'planets-houses',
+  varshphal: 'varshphal',
+  disha: 'disha',
+  upay: 'upay',
+  birthstone: 'birthstone',
+  'name suggestions': 'name-suggestions',
 };
 
+/** Valid app modes that can be navigated to from blog Try button */
+const VALID_TRY_MODES = new Set([
+  'daily', 'kundali', 'panchang', 'muhurat', 'compatibility', 'matchmaking',
+  'tarot', 'palm-reading', 'face-reading', 'numerology', 'dreams', 'mantra',
+  'gemstones', 'vastu', 'cosmic-health', 'planets-houses', 'varshphal', 'disha', 'upay', 'birthstone', 'name-suggestions',
+]);
+
 function appModeFor(post: DailyPost): string | null {
-  const mode = (post.serviceMode || '').trim();
-  if (!mode) return null;
-  return SERVICE_MODE_TO_APP[mode.toLowerCase()] || mode;
+  const raw = (post.serviceMode || post.serviceLabel || post.topic || '').trim();
+  if (!raw) return null;
+  const key = raw.toLowerCase().replace(/\s+/g, ' ').trim();
+  const mode = SERVICE_MODE_TO_APP[key] || SERVICE_MODE_TO_APP[raw.toLowerCase()] || (VALID_TRY_MODES.has(key) ? key : null);
+  return mode && VALID_TRY_MODES.has(mode) ? mode : null;
 }
 
 interface DailyAIBlogProps {
@@ -230,12 +251,12 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
   };
 
   const serviceUrl = (post: DailyPost) => {
-    const mode = appModeFor(post) || post.serviceMode;
+    const mode = appModeFor(post);
     return mode ? `/?mode=${encodeURIComponent(mode)}` : '/';
   };
 
   const handleTryClick = (e: React.MouseEvent, post: DailyPost) => {
-    const mode = appModeFor(post) || post.serviceMode;
+    const mode = appModeFor(post);
     if (mode && onTryModule) {
       e.preventDefault();
       e.stopPropagation();
@@ -248,7 +269,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
   // In-app article view (stay in dashboard, no redirect to blog.html)
   if (selectedPost) {
     const post = selectedPost;
-    const tryMode = appModeFor(post) || post.serviceMode;
+    const tryMode = appModeFor(post);
     const tryUrl = serviceUrl(post);
     return (
       <section className="animate-fade-in-up bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 md:p-8">
@@ -349,7 +370,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
               </span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-              {(appModeFor(post) || post.serviceMode) && (
+              {appModeFor(post) && (
                 <a
                   href={serviceUrl(post)}
                   onClick={(e) => handleTryClick(e, post)}

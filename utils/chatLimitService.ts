@@ -3,7 +3,7 @@
  */
 
 const FREE_CHAT_LIMIT = 10; // Free users get 10 messages per day
-const BONUS_MESSAGES_PER_AD = 5; // Messages added when user watches rewarded ad
+const BONUS_MESSAGES_PER_AD = 1; // One message per ad (light, non-intrusive)
 const PREMIUM_CHAT_LIMIT = -1; // Premium users get unlimited (-1 means unlimited)
 const STORAGE_KEY = 'cosmicjyoti_chat_usage';
 

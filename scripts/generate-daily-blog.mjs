@@ -138,15 +138,17 @@ function getGeminiKey() {
 }
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
 
-async function generateWithGemini(prompt, contextDate, postCount = 2) {
-  const apiKey = getGeminiKey();
-  if (!apiKey) return null;
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function generateWithGeminiOne(prompt, postCount, apiKey, model) {
   const systemContent = `You are an expert Vedic astrologer and content writer. Output ONLY valid JSON, no other text or markdown.`;
   const userContent = `${prompt}\n\nOutput a single JSON object with a "posts" array of exactly ${postCount} articles. No code fences, no explanation.`;
   const fullPrompt = `${systemContent}\n\n${userContent}`;
-  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -167,6 +169,36 @@ async function generateWithGemini(prompt, contextDate, postCount = 2) {
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from Gemini');
   return text;
+}
+
+async function generateWithGemini(prompt, contextDate, postCount = 2) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) return null;
+  const maxRetries = 3;
+  const retryDelayMs = 12000;
+
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 1) console.warn(`Gemini retry ${attempt}/${maxRetries} (${model}) after 429...`);
+        return await generateWithGeminiOne(prompt, postCount, apiKey, model);
+      } catch (e) {
+        const msg = e?.message || String(e);
+        const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+        if (is429 && attempt < maxRetries) {
+          console.warn(`Gemini ${model} rate limited (429). Waiting ${retryDelayMs / 1000}s before retry...`);
+          await sleep(retryDelayMs);
+          continue;
+        }
+        if (is429 && attempt === maxRetries && GEMINI_MODELS.indexOf(model) < GEMINI_MODELS.length - 1) {
+          console.warn(`Gemini ${model} still rate limited. Trying next model...`);
+          break;
+        }
+        throw e;
+      }
+    }
+  }
+  throw new Error('Gemini failed (all models and retries exhausted).');
 }
 
 const BLOG_DIR = path.join(__dirname, '../public/blog');
@@ -343,7 +375,14 @@ async function main() {
         if (!text) throw new Error('Empty response from Gemini');
         usedGemini = true;
       } catch (geminiErr) {
-        console.error('Gemini fallback failed:', geminiErr?.message || geminiErr);
+        const geminiMsg = geminiErr?.message || String(geminiErr);
+        console.error('Gemini fallback failed:', geminiMsg);
+        if (geminiMsg.includes('429') || geminiMsg.includes('RESOURCE_EXHAUSTED')) {
+          console.error('');
+          console.error('--- Gemini 429 (quota / rate limit) ---');
+          console.error('Gemini quota or rate limit hit. Script retried with backoff and alternate model.');
+          console.error('Check Google AI Studio quota: https://aistudio.google.com/ or try again later.');
+        }
         if (String(err?.message || '').includes('401')) {
           console.error('');
           console.error('--- 401 Authorization Required ---');

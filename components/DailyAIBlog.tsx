@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { BackButton } from './common';
 import AdBanner from './AdBanner';
 import { sanitizeHtml } from '../utils/sanitize';
+import { trackArticleRead } from '../utils/dataLayer';
 
 const POSTS_PER_PAGE = 9;
 
@@ -351,10 +352,10 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
           <div
             key={post.id}
             className="block bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/40 hover:bg-slate-800/60 transition-all group cursor-pointer"
-            onClick={() => setSelectedPost(post)}
+            onClick={() => { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); }}
             role="button"
             tabIndex={0}
-            onKeyDown={(e) => e.key === 'Enter' && setSelectedPost(post)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); } }}
             aria-label={post.title}
           >
             <div className="block">

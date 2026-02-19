@@ -5,6 +5,7 @@ import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
 import { BackButton, SaveShareBar } from './common';
 import { saveReport, getReportByForm } from '../utils/reportStorageService';
+import { trackRemind } from '../utils/dataLayer';
 
 interface DailyPanchangProps {
   data: DailyPanchangResponse;
@@ -39,6 +40,7 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
   };
 
   const handleRemindTomorrow = () => {
+    trackRemind('panchang', 'tomorrow');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().slice(0, 10);
@@ -75,6 +77,7 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
               isSaved={isSaved}
               shareContent={shareContent}
               shareTitle={`Panchang ${data.date}`}
+              contentType="panchang"
             />
             </div>
           </div>

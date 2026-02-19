@@ -65,6 +65,7 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
             isSaved={isSaved}
             shareContent={shareContent}
             shareTitle={`Kundali for ${name}`}
+            contentType="kundali"
           />
           <a
             href="#"

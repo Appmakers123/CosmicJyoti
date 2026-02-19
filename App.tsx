@@ -67,6 +67,8 @@ import { getGlobalProfile, saveGlobalProfile } from './utils/profileStorageServi
 import { recordVisit, getStreak } from './utils/streakService';
 import { submitProfileWithConsent, isProfileSubmitEnabled } from './services/profileSubmissionService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
+import { getPageMeta, getCanonicalPath } from './utils/pageMeta';
+import { trackToolOpen, trackReviewPromptDismissed } from './utils/dataLayer';
 import OfflineBanner from './components/OfflineBanner';
 import AppDownloadModal from './components/AppDownloadModal';
 import AdWatchModal from './components/AdWatchModal';
@@ -74,6 +76,9 @@ import AddToHomeScreenBanner from './components/AddToHomeScreenBanner';
 import CheckTodayOnboardingHint from './components/CheckTodayOnboardingHint';
 import StreakRewardToast from './components/StreakRewardToast';
 import InviteFriendBanner from './components/InviteFriendBanner';
+import FAQSection from './components/FAQSection';
+import HowItWorks from './components/HowItWorks';
+import MySavedReports from './components/MySavedReports';
 
 // Type-safe conditional import for Capacitor App plugin
 type CapacitorAppType = {
@@ -202,6 +207,8 @@ const App: React.FC = () => {
   
   // AdMob interstitial ad tracking
   const lastAdShownTime = React.useRef<number>(0);
+  const [showReviewPrompt, setShowReviewPrompt] = useState(false);
+  const reviewPromptShownRef = React.useRef(false);
 
   // Store current mode for external link restoration
   useEffect(() => {
@@ -219,7 +226,10 @@ const App: React.FC = () => {
     if (VALID_APP_MODES.includes(normalized)) {
       appliedUrlModeRef.current = true;
       switchMode(normalized);
-      window.history.replaceState({ mode: normalized }, '', window.location.pathname || '/');
+      // Keep ?mode= in URL for shareable links
+      const path = (window.location.pathname || '/').replace(/\/?$/, '');
+      const base = path || '/';
+      window.history.replaceState({ mode: normalized }, '', `${base}?mode=${normalized}`);
     }
   }, []);
 
@@ -496,6 +506,10 @@ const App: React.FC = () => {
       setKundaliData(data);
       setMode('kundali');
       incrementAIUsage('chart');
+      if (isCapacitor() && !reviewPromptShownRef.current) {
+        reviewPromptShownRef.current = true;
+        setShowReviewPrompt(true);
+      }
       if (saveToProfile) {
         saveReport('kundali', data, formInput, `Kundali for ${formData.name}`);
         loadSavedKundaliCharts();
@@ -687,10 +701,12 @@ const App: React.FC = () => {
     }
   }, [mode, showProfile, performBackNavigation]);
 
-  // Push state when navigating so Android/browser back has history
+  // Push state when navigating so Android/browser back has history; use ?mode= for shareable URLs
   useEffect(() => {
     if (typeof window !== 'undefined' && window.history) {
-      window.history.replaceState({ mode: 'hub' }, '', window.location.pathname || '/');
+      const params = new URLSearchParams(window.location.search);
+      const urlMode = params.get('mode');
+      if (!urlMode) window.history.replaceState({ mode: 'hub' }, '', window.location.pathname || '/');
     }
   }, []);
   useEffect(() => {
@@ -699,8 +715,42 @@ const App: React.FC = () => {
       return;
     }
     if (mode && typeof window !== 'undefined' && window.history) {
-      window.history.pushState({ mode }, '', window.location.pathname || '/');
+      const base = (window.location.pathname || '/').replace(/\/?$/, '') || '/';
+      const url = mode === 'hub' ? base : `${base}?mode=${mode}`;
+      window.history.pushState({ mode }, '', url);
     }
+  }, [mode]);
+
+  // Document title and meta (description, og) per view for SEO
+  useEffect(() => {
+    const { title, description } = getPageMeta(mode, language);
+    document.title = title;
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute('content', description);
+    let ogTitle = document.querySelector('meta[property="og:title"]');
+    if (!ogTitle) {
+      ogTitle = document.createElement('meta');
+      ogTitle.setAttribute('property', 'og:title');
+      document.head.appendChild(ogTitle);
+    }
+    ogTitle.setAttribute('content', title);
+    let ogDesc = document.querySelector('meta[property="og:description"]');
+    if (!ogDesc) {
+      ogDesc = document.createElement('meta');
+      ogDesc.setAttribute('property', 'og:description');
+      document.head.appendChild(ogDesc);
+    }
+    ogDesc.setAttribute('content', description);
+  }, [mode, language]);
+
+  // GTM: track tool open when mode changes (skip hub)
+  useEffect(() => {
+    if (mode && mode !== 'hub' && typeof window !== 'undefined') trackToolOpen(mode);
   }, [mode]);
 
   // Listen for popstate (browser/Android back)
@@ -781,7 +831,12 @@ const App: React.FC = () => {
   );
 
   return (
+    <>
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-amber-500 focus:text-slate-900 focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400">
+        {language === 'hi' ? 'मुख्य सामग्री पर जाएं' : 'Skip to main content'}
+      </a>
     <div
+      id="main-content"
       ref={scrollContainerRef}
       className="cosmicjyoti-scroll-container"
       style={{
@@ -1054,6 +1109,16 @@ const App: React.FC = () => {
             </div>
         )}
 
+        {mode === 'kundali' && kundaliData && showReviewPrompt && isCapacitor() && (
+          <div className="max-w-xl mx-auto mb-4 px-4 py-3 rounded-xl bg-amber-500/15 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-amber-200 text-sm">{language === 'hi' ? 'CosmicJyoti पसंद आया? Play Store पर रेट करें' : 'Enjoying CosmicJyoti? Rate us on Play Store'}</span>
+            <div className="flex gap-2">
+              <a {...getExternalLinkProps(PLAY_STORE_URL, language)} className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-900 text-xs font-bold">Rate us</a>
+              <button type="button" onClick={() => { setShowReviewPrompt(false); trackReviewPromptDismissed(); }} className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs">Maybe later</button>
+            </div>
+          </div>
+        )}
+
         {mode === 'hub' && !loading && (
           <div className="animate-fade-in-up space-y-10 md:space-y-14 pb-8">
             {/* Hero */}
@@ -1231,6 +1296,18 @@ const App: React.FC = () => {
                   </button>
                 </div>
               )}
+            </section>
+
+            <MySavedReports language={language} onOpenMode={switchMode} />
+
+            {/* How it works & FAQ */}
+            <section className="animate-fade-in-up grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-2xl border border-slate-600/50 bg-slate-800/30 p-5">
+                <HowItWorks language={language} compact />
+              </div>
+              <div className="rounded-2xl border border-slate-600/50 bg-slate-800/30 p-5">
+                <FAQSection language={language} inline />
+              </div>
             </section>
 
             {/* Categorized modules - user-friendly sections */}
@@ -1519,6 +1596,7 @@ const App: React.FC = () => {
       </footer>
       </div>
     </div>
+    </>
   );
 };
 

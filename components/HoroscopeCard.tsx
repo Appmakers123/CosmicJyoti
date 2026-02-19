@@ -7,6 +7,7 @@ import RichText from './RichText';
 import ModuleAskAI from './ModuleAskAI';
 import { BackButton, SaveShareBar } from './common';
 import { saveReport, getReportByForm } from '../utils/reportStorageService';
+import { trackRemind } from '../utils/dataLayer';
 
 interface HoroscopeCardProps {
   data: HoroscopeResponse;
@@ -63,6 +64,7 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
   };
 
   const handleRemindTomorrow = () => {
+    trackRemind('horoscope', 'tomorrow');
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const dateStr = tomorrow.toISOString().slice(0, 10);
@@ -94,6 +96,7 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
               isSaved={isSaved}
               shareContent={shareContent}
               shareTitle={personalizedName ? `Daily Forecast for ${personalizedName}` : `${sign.name} Horoscope`}
+              contentType="horoscope"
             />
             </div>
           </div>

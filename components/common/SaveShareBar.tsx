@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Language } from '../../types';
+import { trackShare } from '../../utils/dataLayer';
 
 interface SaveShareBarProps {
   language: Language;
@@ -8,6 +9,8 @@ interface SaveShareBarProps {
   isSaved?: boolean;
   shareContent: string;
   shareTitle?: string;
+  /** For GTM: e.g. 'horoscope', 'kundali', 'panchang', 'matchmaking' */
+  contentType?: string;
   saveLabel?: string;
   shareLabel?: string;
   savedLabel?: string;
@@ -23,6 +26,7 @@ const SaveShareBar: React.FC<SaveShareBarProps> = ({
   isSaved = false,
   shareContent,
   shareTitle = 'CosmicJyoti Report',
+  contentType,
   saveLabel,
   shareLabel,
   savedLabel,
@@ -40,6 +44,13 @@ const SaveShareBar: React.FC<SaveShareBarProps> = ({
     dontSave: dontSaveLabel || (language === 'hi' ? 'सेव न करें' : "Don't save"),
   };
 
+  const reportShareSuccess = (method: string) => {
+    setShareSuccess(true);
+    onShare?.();
+    if (contentType) trackShare(contentType, method);
+    setTimeout(() => setShareSuccess(false), 2000);
+  };
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -47,9 +58,7 @@ const SaveShareBar: React.FC<SaveShareBarProps> = ({
           title: shareTitle,
           text: shareContent,
         });
-        setShareSuccess(true);
-        onShare?.();
-        setTimeout(() => setShareSuccess(false), 2000);
+        reportShareSuccess('native');
       } catch (err) {
         if ((err as Error).name !== 'AbortError') {
           copyToClipboard(shareContent);
@@ -62,9 +71,7 @@ const SaveShareBar: React.FC<SaveShareBarProps> = ({
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard?.writeText(text).then(() => {
-      setShareSuccess(true);
-      onShare?.();
-      setTimeout(() => setShareSuccess(false), 2000);
+      reportShareSuccess('copy');
     });
   };
 

@@ -217,20 +217,27 @@ Output ONLY valid JSON:
 }`;
 }
 
+function formatDateLabel(isoDate) {
+  const d = new Date(isoDate + 'T12:00:00Z');
+  const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+}
+
 function buildPrompt9pm(today, tomorrow) {
+  const dateLabel = formatDateLabel(tomorrow);
   return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
 ${BASE_INSTRUCTIONS}
-Generate exactly 2 blog articles about the NEXT day (${tomorrow}):
+Generate exactly 2 blog articles about the NEXT day (${tomorrow}, i.e. ${dateLabel}):
 
-1. Auspicious events and muhurat for tomorrow – Best times for important activities on ${tomorrow}, muhurat, tithi, nakshatra, and what to do or avoid. serviceMode: "panchang".
+1. Auspicious events and muhurat for ${dateLabel} – Best times for important activities on ${dateLabel}, muhurat, tithi, nakshatra, and what to do or avoid. serviceMode: "panchang". Use the exact date "${dateLabel}" in titles and topic, NOT the word "tomorrow".
 
-2. Key astrological events tomorrow – Festivals, eclipses, special yogas, or notable planetary events on ${tomorrow}; what to expect and how to make the most of the day. serviceMode: "panchang".
+2. Key astrological events on ${dateLabel} – Festivals, eclipses, special yogas, or notable planetary events on ${dateLabel}; what to expect and how to make the most of the day. serviceMode: "panchang". Use the exact date "${dateLabel}" in titles and topic, NOT the word "tomorrow".
 
 Output ONLY valid JSON:
 {
   "posts": [
-    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Auspicious Events Tomorrow", "serviceMode": "panchang" },
-    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Astrological Events Tomorrow", "serviceMode": "panchang" }
+    { "id": "1", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Auspicious Events ${dateLabel}", "serviceMode": "panchang" },
+    { "id": "2", "title": "...", "slug": "url-slug", "excerpt": "...", "content": "Full HTML...", "readingTime": "6 min", "topic": "Astrological Events ${dateLabel}", "serviceMode": "panchang" }
   ]
 }`;
 }

@@ -1,14 +1,8 @@
 /**
  * Astrology API key rotation utility - uses multiple keys to avoid single-point failure.
  * Respects rate limits: 1 req/sec per key, 50/day per key (in-memory for server).
+ * Keys must be set in .env.local (project root) or env: ASTROLOGY_API_KEYS=key1,key2,key3
  */
-
-const DEFAULT_KEYS = [
-  'xiSfthVZmC3PpK0BMe4cnaVz9SXDLnnS9SiQpcTr',
-  '74vQL6WJHK9dmLT9Jdyin5FDoj4Q1LmdajqMWQaq',
-  'ktDiemKEyK9rH9ZPBhHCF8o0zl1Cw1bo6LHc2wRL',
-  'Hx3Z1gdtCD9XYPbVcNrqG5dNqA3kWBKT1LyOTvXw',
-];
 
 function getKeys() {
   const envKeys = process.env.ASTROLOGY_API_KEYS;
@@ -16,7 +10,7 @@ function getKeys() {
     const parsed = envKeys.split(',').map((k) => k.trim()).filter(Boolean);
     if (parsed.length > 0) return parsed;
   }
-  return DEFAULT_KEYS;
+  return [];
 }
 
 const MS_PER_SECOND = 1000;
@@ -95,6 +89,9 @@ function shouldRetryWithNextKey(status, body) {
  */
 async function postWithKeyRotation(axios, url, data, config = {}) {
   const keys = getKeys();
+  if (!keys.length) {
+    throw new Error('Astrology API keys not configured. Add ASTROLOGY_API_KEYS to .env.local (comma-separated keys from freeastrologyapi.com).');
+  }
   let lastError = null;
   let lastStatus = 0;
   let lastData = null;

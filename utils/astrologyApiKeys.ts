@@ -3,16 +3,12 @@
  * NOT for Gemini - Gemini uses a single API key only.
  * Respects rate limits: 1 req/sec per key, 50 req/day per key.
  * Tries keys in sequence when a request fails (quota, invalid key, etc.).
+ *
+ * Set keys in .env.local: ASTROLOGY_API_KEYS=key1,key2,key3
+ * (or VITE_ASTROLOGY_API_KEYS for frontend build). No keys are hardcoded.
  */
 
 import { acquireKeySlot, recordKeyUsed } from './astrologyRateLimiter';
-
-const DEFAULT_KEYS = [
-  'xiSfthVZmC3PpK0BMe4cnaVz9SXDLnnS9SiQpcTr',
-  '74vQL6WJHK9dmLT9Jdyin5FDoj4Q1LmdajqMWQaq',
-  'ktDiemKEyK9rH9ZPBhHCF8o0zl1Cw1bo6LHc2wRL',
-  'Hx3Z1gdtCD9XYPbVcNrqG5dNqA3kWBKT1LyOTvXw',
-];
 
 function getKeys(): string[] {
   const envKeys = (typeof process !== 'undefined' && process.env?.ASTROLOGY_API_KEYS) ||
@@ -21,7 +17,7 @@ function getKeys(): string[] {
     const parsed = envKeys.split(',').map((k) => k.trim()).filter(Boolean);
     if (parsed.length > 0) return parsed;
   }
-  return DEFAULT_KEYS;
+  return [];
 }
 
 let keyIndex = 0;
@@ -63,6 +59,11 @@ export async function fetchWithKeyRotation(
   options: Omit<RequestInit, 'body'> & { body?: string | Record<string, unknown> }
 ): Promise<Response> {
   const keys = getAllKeys();
+  if (!keys.length) {
+    throw new Error(
+      'Astrology API keys not configured. Add ASTROLOGY_API_KEYS to .env.local (comma-separated keys from freeastrologyapi.com).'
+    );
+  }
   const body = options.body !== undefined
     ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body))
     : undefined;

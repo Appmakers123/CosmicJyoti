@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Generate 2 daily AI blog posts per time slot using Perplexity API only.
+ * Generate 2 daily AI blog posts per time slot.
+ * Uses Perplexity API first; if Perplexity fails, falls back to Gemini.
  *
  * Time slots (run script with slot argument; schedule via cron or GitHub Actions):
  * - 6am  (morning): Horoscope + Compatibility
@@ -12,8 +13,9 @@
  *   node scripts/generate-daily-blog.mjs [slot]
  *   slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)
  *
- * Requires PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local.
- * Keys are loaded from project root .env and .env.local.
+ * Requires at least one of:
+ *   PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local
+ *   GEMINI_API_KEY or API_KEY for fallback
  */
 import fs from 'fs';
 import path from 'path';
@@ -127,6 +129,44 @@ async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
     }
   }
   throw lastError || new Error('No Perplexity keys available');
+}
+
+function getGeminiKey() {
+  const key = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+  const k = key.trim();
+  return k || null;
+}
+
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GEMINI_MODEL = 'gemini-2.0-flash';
+
+async function generateWithGemini(prompt, contextDate, postCount = 2) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) return null;
+  const systemContent = `You are an expert Vedic astrologer and content writer. Output ONLY valid JSON, no other text or markdown.`;
+  const userContent = `${prompt}\n\nOutput a single JSON object with a "posts" array of exactly ${postCount} articles. No code fences, no explanation.`;
+  const fullPrompt = `${systemContent}\n\n${userContent}`;
+  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: fullPrompt }] }],
+      generationConfig: {
+        maxOutputTokens: 8192,
+        temperature: 0.4,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('Empty response from Gemini');
+  return text;
 }
 
 const BLOG_DIR = path.join(__dirname, '../public/blog');
@@ -263,12 +303,13 @@ function parseSlot() {
 }
 
 async function main() {
-  if (!getPerplexityKeys().length) {
-    console.error('Error: Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local');
+  const hasPerplexity = getPerplexityKeys().length > 0;
+  const hasGemini = !!getGeminiKey();
+  if (!hasPerplexity && !hasGemini) {
+    console.error('Error: Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) and/or GEMINI_API_KEY (or API_KEY) in .env or .env.local');
     process.exit(1);
   }
-  const keyCount = getPerplexityKeys().length;
-  if (keyCount > 1) console.log(`Using ${keyCount} Perplexity API key(s) in rotation.`);
+  if (hasPerplexity && getPerplexityKeys().length > 1) console.log(`Using ${getPerplexityKeys().length} Perplexity API key(s) in rotation.`);
 
   const slot = parseSlot();
   const today = new Date().toISOString().split('T')[0];
@@ -285,23 +326,45 @@ async function main() {
   console.log(`Generating 2 blog posts for slot ${slot} (${today})...`);
 
   let text;
+  let usedGemini = false;
   try {
-    text = await generateWithPerplexity(prompt, today, 2);
-    if (!text) throw new Error('Empty response from Perplexity');
-  } catch (err) {
-    console.error('Perplexity failed:', err?.message || err);
-    if (String(err?.message || '').includes('401')) {
-      console.error('');
-      console.error('--- 401 Authorization Required ---');
-      console.error('Perplexity rejected all API keys. Do this:');
-      console.error('1. Open https://www.perplexity.ai/settings/api and check/create API keys.');
-      console.error('2. In GitHub: repo Settings → Secrets and variables → Actions.');
-      console.error('3. Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS as comma-separated keys).');
-      console.error('4. Ensure no extra spaces/newlines in secrets; keys usually start with pplx-.');
-      console.error('5. If keys are valid, Perplexity may block CI IPs; try a new key or contact support.');
+    if (hasPerplexity) {
+      text = await generateWithPerplexity(prompt, today, 2);
+      if (!text) throw new Error('Empty response from Perplexity');
+    } else {
+      throw new Error('No Perplexity keys');
     }
-    process.exit(1);
+  } catch (err) {
+    console.warn('Perplexity failed:', err?.message || err);
+    if (hasGemini) {
+      console.log('Trying Gemini fallback...');
+      try {
+        text = await generateWithGemini(prompt, today, 2);
+        if (!text) throw new Error('Empty response from Gemini');
+        usedGemini = true;
+      } catch (geminiErr) {
+        console.error('Gemini fallback failed:', geminiErr?.message || geminiErr);
+        if (String(err?.message || '').includes('401')) {
+          console.error('');
+          console.error('--- 401 Authorization Required ---');
+          console.error('Perplexity rejected all API keys. Do this:');
+          console.error('1. Open https://www.perplexity.ai/settings/api and check/create API keys.');
+          console.error('2. In GitHub: repo Settings → Secrets and variables → Actions.');
+          console.error('3. Set PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS.');
+          console.error('4. For fallback, set GEMINI_API_KEY or API_KEY.');
+        }
+        process.exit(1);
+      }
+    } else {
+      if (String(err?.message || '').includes('401')) {
+        console.error('');
+        console.error('--- 401 Authorization Required ---');
+        console.error('Perplexity rejected all API keys. Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS), or add GEMINI_API_KEY for fallback.');
+      }
+      process.exit(1);
+    }
   }
+  if (usedGemini) console.log('Generated with Gemini.');
 
   let parsed;
   try {

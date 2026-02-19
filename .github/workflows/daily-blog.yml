@@ -51,20 +51,23 @@ jobs:
           else echo "slot=6am" >> $GITHUB_OUTPUT; fi
           echo "Resolved slot: ${{ steps.slot.outputs.slot }}"
 
-      - name: Check Perplexity secrets
+      - name: Check API secrets (Perplexity or Gemini)
         run: |
-          KEYS="${{ secrets.PERPLEXITY_API_KEYS }}${{ secrets.PERPLEXITY_API_KEY }}"
-          if [ -z "$KEYS" ] || [ "$KEYS" = " " ]; then
-            echo "::error::No PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS set. Add one in repo Settings → Secrets and variables → Actions."
+          PERP="${{ secrets.PERPLEXITY_API_KEYS }}${{ secrets.PERPLEXITY_API_KEY }}"
+          GEM="${{ secrets.GEMINI_API_KEY }}${{ secrets.API_KEY }}"
+          if [ -z "$PERP" ] && [ -z "$GEM" ]; then
+            echo "::error::Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) and/or GEMINI_API_KEY (or API_KEY) in repo Secrets."
             exit 1
           fi
-          echo "Perplexity API key(s) are set."
+          echo "API key(s) are set (Perplexity and/or Gemini for fallback)."
 
       - name: Generate daily blog posts
         run: node scripts/generate-daily-blog.mjs ${{ github.event.inputs.slot || steps.slot.outputs.slot }}
         env:
           PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
           PERPLEXITY_API_KEYS: ${{ secrets.PERPLEXITY_API_KEYS }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"

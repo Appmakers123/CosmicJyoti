@@ -51,6 +51,15 @@ jobs:
           else echo "slot=6am" >> $GITHUB_OUTPUT; fi
           echo "Resolved slot: ${{ steps.slot.outputs.slot }}"
 
+      - name: Check Perplexity secrets
+        run: |
+          KEYS="${{ secrets.PERPLEXITY_API_KEYS }}${{ secrets.PERPLEXITY_API_KEY }}"
+          if [ -z "$KEYS" ] || [ "$KEYS" = " " ]; then
+            echo "::error::No PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS set. Add one in repo Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          echo "Perplexity API key(s) are set."
+
       - name: Generate daily blog posts
         run: node scripts/generate-daily-blog.mjs ${{ github.event.inputs.slot || steps.slot.outputs.slot }}
         env:

@@ -19,6 +19,8 @@ The app generates 2 AI blog posts per time slot via GitHub Actions.
    - `PERPLEXITY_API_KEYS` (comma‑separated list)  
    is set. The workflow uses these; the script exits with an error if none are set.
 
+   **401 Authorization Required:** If the run fails with Perplexity API 401 for all keys, the keys are invalid, expired, or revoked. Create new keys at [Perplexity API settings](https://www.perplexity.ai/settings/api) and update repo **Secrets** (`PERPLEXITY_API_KEY` or `PERPLEXITY_API_KEYS`). Use comma-separated keys with no extra spaces; keys usually start with `pplx-`. If keys work locally but not in Actions, Perplexity may be blocking CI IPs—try a new key or contact support.
+
 2. **Scheduled runs**  
    GitHub can delay or skip scheduled workflows on inactive repos. Trigger once manually to confirm:
    - **Actions** tab → **Generate Daily Blog** → **Run workflow** → choose slot (e.g. **6am**) → **Run workflow**.

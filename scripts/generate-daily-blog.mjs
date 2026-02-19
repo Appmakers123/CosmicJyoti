@@ -97,6 +97,15 @@ async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
       if (!res.ok) {
         const err = await res.text();
         const isRetryable = res.status === 429 || res.status >= 500;
+        if (res.status === 401) {
+          lastError = new Error(`Perplexity API 401: ${err}`);
+          // 401 = invalid/expired key or auth rejected (e.g. by Cloudflare). Don't retry same key.
+          if (j < keys.length - 1) {
+            console.warn(`Perplexity key failed: ${lastError.message}. Trying next key...`);
+            continue;
+          }
+          throw lastError;
+        }
         if (isRetryable && j < keys.length - 1) {
           console.warn(`Perplexity key returned ${res.status}, trying next key...`);
           lastError = new Error(`Perplexity API ${res.status}: ${err}`);
@@ -274,6 +283,16 @@ async function main() {
     if (!text) throw new Error('Empty response from Perplexity');
   } catch (err) {
     console.error('Perplexity failed:', err?.message || err);
+    if (String(err?.message || '').includes('401')) {
+      console.error('');
+      console.error('--- 401 Authorization Required ---');
+      console.error('Perplexity rejected all API keys. Do this:');
+      console.error('1. Open https://www.perplexity.ai/settings/api and check/create API keys.');
+      console.error('2. In GitHub: repo Settings → Secrets and variables → Actions.');
+      console.error('3. Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS as comma-separated keys).');
+      console.error('4. Ensure no extra spaces/newlines in secrets; keys usually start with pplx-.');
+      console.error('5. If keys are valid, Perplexity may block CI IPs; try a new key or contact support.');
+    }
     process.exit(1);
   }
 

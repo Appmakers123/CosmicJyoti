@@ -49,6 +49,8 @@ const META: Record<AppViewMode, PageMeta> = {
   upay: { titleEn: 'Upay Remedies | CosmicJyoti', titleHi: 'उपाय और रेमेडीज | CosmicJyoti', descriptionEn: 'Vedic remedies and Upay for doshas.', descriptionHi: 'वैदिक उपाय और दोष निवारण।' },
   disha: { titleEn: 'Lucky Direction Today | CosmicJyoti', titleHi: 'आज की शुभ दिशा | CosmicJyoti', descriptionEn: "Today's auspicious direction (Disha Shool).", descriptionHi: 'आज की शुभ दिशा (दिशा शूल)।' },
   birthstone: { titleEn: 'Birthstone by Date of Birth | CosmicJyoti', titleHi: 'जन्म तिथि के अनुसार रत्न | CosmicJyoti', descriptionEn: 'Find your birthstone by DOB.', descriptionHi: 'जन्म तिथि से अपना रत्न जानें।' },
+  transits: { titleEn: 'Planetary Transits | CosmicJyoti', titleHi: 'गोचर | CosmicJyoti', descriptionEn: 'Current planetary transits and their effects.', descriptionHi: 'वर्तमान ग्रह गोचर और उनके प्रभाव।' },
+  'astro-lab': { titleEn: 'Astro Lab | CosmicJyoti', titleHi: 'अस्ट्रो लैब | CosmicJyoti', descriptionEn: 'Astrology tools and experiments.', descriptionHi: 'ज्योतिष उपकरण और प्रयोग।' },
 };
 
 export function getPageMeta(mode: AppViewMode, language: 'en' | 'hi'): { title: string; description: string } {

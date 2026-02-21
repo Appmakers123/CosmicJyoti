@@ -53,7 +53,8 @@ import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, La
 import { ZODIAC_SIGNS, PLAY_STORE_URL } from './constants';
 import { generateHoroscope, generateKundali, generateDailyPanchang } from './services/geminiService';
 import { generatePersonalizedDailyForecast } from './services/perplexityService';
-import { useTranslation } from './utils/translations';
+import { useTranslation, UI_LANGUAGES } from './utils/translations';
+import { TranslationProvider, useTranslationContext } from './contexts/TranslationContext';
 import { setErrorSafely } from './utils/errorHandler';
 import { getExternalLinkProps, openExternalLink } from './utils/linkHandler';
 import { isCapacitor } from './utils/linkHandler';
@@ -182,6 +183,17 @@ const MODULE_CATEGORIES: CategoryDef[] = [
 
 const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone'];
 
+/** Renders when Sarvam/Shunya are loading UI translations (must be inside TranslationProvider). */
+function TranslationLoadingIndicator() {
+  const ctx = useTranslationContext();
+  if (!ctx?.isLocaleLoading) return null;
+  return (
+    <span className="text-[10px] text-amber-400/90 animate-pulse whitespace-nowrap" aria-live="polite">
+      {ctx.language === 'hi' ? 'अनुवाद हो रहा है...' : 'Translating...'}
+    </span>
+  );
+}
+
 const App: React.FC = () => {
   const isOnline = useNetworkStatus();
   const [mode, setMode] = useState<AppViewMode>('hub');
@@ -191,7 +203,20 @@ const App: React.FC = () => {
   const modeHistoryRef = React.useRef<AppViewMode[]>(['hub']);
   const isPopStateRef = React.useRef(false);
 
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>(() => {
+    try {
+      const s = localStorage.getItem('cosmicjyoti_language');
+      if (s && UI_LANGUAGES.some((l) => l.code === s)) return s;
+    } catch (_) {}
+    return 'en';
+  });
+  const setLanguage = (lang: Language) => {
+    const valid = UI_LANGUAGES.some((l) => l.code === lang) ? lang : 'en';
+    setLanguageState(valid);
+    try {
+      localStorage.setItem('cosmicjyoti_language', valid);
+    } catch (_) {}
+  };
   const t = useTranslation(language);
   const [user, setUser] = useState<User | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -832,6 +857,7 @@ const App: React.FC = () => {
 
   return (
     <>
+      <TranslationProvider language={language}>
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[10000] focus:px-4 focus:py-2 focus:bg-amber-500 focus:text-slate-900 focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400">
         {language === 'hi' ? 'मुख्य सामग्री पर जाएं' : 'Skip to main content'}
       </a>
@@ -996,23 +1022,21 @@ const App: React.FC = () => {
             <Logo className="w-8 h-8 sm:w-10 sm:h-10 animate-spin-slow shrink-0" />
             <span className="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-100 hidden sm:block tracking-widest uppercase whitespace-nowrap">CosmicJyoti</span>
           </div>
-          {/* Language + Hamburger + Notif - always visible on mobile */}
+          {/* Language dropdown + Translating indicator + Hamburger + Notif - always visible on mobile */}
           <div className="flex items-center gap-2 sm:hidden shrink-0">
-            <div className="flex rounded-lg overflow-hidden border border-slate-700">
-              <button
-                onClick={() => setLanguage('en')}
-                className={`min-h-[40px] min-w-[40px] px-2 text-xs font-bold transition-all touch-manipulation ${language === 'en' ? 'bg-amber-500/30 text-amber-200 border-r border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
-                aria-label="English"
+            <div className="flex items-center gap-1.5">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as Language)}
+                aria-label="Select language"
+                className="min-h-[40px] pl-2 pr-7 py-1 text-xs font-bold rounded-lg border border-slate-700 bg-slate-800/80 text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 appearance-none bg-no-repeat bg-[length:12px] bg-[right_6px_center]"
+                style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")" }}
               >
-                EN
-              </button>
-              <button
-                onClick={() => setLanguage('hi')}
-                className={`min-h-[40px] min-w-[40px] px-2 text-xs font-bold transition-all touch-manipulation ${language === 'hi' ? 'bg-amber-500/30 text-amber-200 border-l border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
-                aria-label="हिंदी"
-              >
-                HI
-              </button>
+                {UI_LANGUAGES.map(({ code, label }) => (
+                  <option key={code} value={code}>{label}</option>
+                ))}
+              </select>
+              <TranslationLoadingIndicator />
             </div>
             <NotificationToggle language={language} />
             <button
@@ -1038,7 +1062,7 @@ const App: React.FC = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              placeholder={language === 'hi' ? 'खोजें... (कुंडली, राशिफल, आदि)' : 'Search... (kundali, horoscope, etc.)'}
+              placeholder={t.searchPlaceholder}
               className="w-full pl-10 pr-4 py-2.5 min-h-[44px] bg-slate-800/60 border border-slate-700 rounded-xl text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 text-sm touch-manipulation"
             />
             {searchQuery && (
@@ -1053,21 +1077,19 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-2 shrink-0 ml-auto">
-          <div className="flex rounded-lg overflow-hidden border border-slate-700">
-            <button
-              onClick={() => setLanguage('en')}
-              className={`min-h-[40px] min-w-[44px] px-3 text-xs font-bold transition-all touch-manipulation ${language === 'en' ? 'bg-amber-500/30 text-amber-200 border-r border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
-              aria-label="English"
+          <div className="flex items-center gap-2">
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value as Language)}
+              aria-label="Select language"
+              className="min-h-[40px] pl-3 pr-8 py-2 text-xs font-bold rounded-lg border border-slate-700 bg-slate-800/80 text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/30 appearance-none bg-no-repeat bg-[length:12px] bg-[right_8px_center] max-w-[180px]"
+              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E\")" }}
             >
-              EN
-            </button>
-            <button
-              onClick={() => setLanguage('hi')}
-              className={`min-h-[40px] min-w-[44px] px-3 text-xs font-bold transition-all touch-manipulation ${language === 'hi' ? 'bg-amber-500/30 text-amber-200 border-l border-amber-500/40' : 'bg-slate-800/80 text-slate-500 hover:text-slate-300'}`}
-              aria-label="हिंदी"
-            >
-              HI
-            </button>
+              {UI_LANGUAGES.map(({ code, label }) => (
+                <option key={code} value={code}>{label}</option>
+              ))}
+            </select>
+            <TranslationLoadingIndicator />
           </div>
           <a 
             href="/landing.html"
@@ -1361,10 +1383,10 @@ const App: React.FC = () => {
             ) && (
               <div className="text-center py-12 px-4">
                 <p className="text-slate-500 text-sm mb-2">
-                  {language === 'hi' ? 'कोई परिणाम नहीं मिला।' : 'No results found.'}
+                  {t.searchNoResults}
                 </p>
                 <p className="text-slate-600 text-xs">
-                  {language === 'hi' ? 'कुंडली, राशिफल, पंचांग आदि खोजें' : 'Try: kundali, horoscope, panchang'}
+                  {t.searchHint}
                 </p>
               </div>
             )}
@@ -1596,6 +1618,7 @@ const App: React.FC = () => {
       </footer>
       </div>
     </div>
+      </TranslationProvider>
     </>
   );
 };

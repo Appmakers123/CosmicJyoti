@@ -3,6 +3,7 @@ import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
 import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
+import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { askRishiFromBackend } from "./backendService";
 
@@ -14,14 +15,9 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-// Language name mapping for AI prompts
-const LANGUAGE_NAMES: Record<Language, string> = {
-  'en': 'English',
-  'hi': 'Hindi',
-};
-
+/** Language name for AI prompts — supports all UI languages (en, hi, ta, te, etc.) so Rishi responds in selected language. */
 const getLanguageName = (lang: Language): string => {
-  return LANGUAGE_NAMES[lang] || 'English';
+  return getLanguageDisplayName(lang) || 'English';
 };
 
 /** Clean prediction text: fix HTML entities, remove leaked instruction/placeholder text */
@@ -2023,6 +2019,33 @@ return (async () => {
             }
         }
     )();
+};
+
+/**
+ * Translate any text (website copy or AI response) to a target language.
+ * Use for: UI text, AI chat/kundali/analysis responses. Output only the translation.
+ */
+export const translateText = async (content: string, targetLanguageName: string): Promise<string> => {
+  if (!content?.trim() || !targetLanguageName?.trim()) return content || '';
+  const lang = targetLanguageName.trim();
+  try {
+    const ai = getAI();
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents: {
+        parts: [
+          {
+            text: `Translate the following text into ${lang}. Preserve meaning and tone. Output ONLY the translated text, no explanation, no quotes, no preamble.\n\nText:\n${content.trim()}`
+          }
+        ]
+      }
+    });
+    const text = (response as { text?: string }).text?.trim();
+    return text || content;
+  } catch (e) {
+    console.warn('Translation failed, returning original:', e);
+    return content;
+  }
 };
 
 /**

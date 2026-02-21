@@ -2,6 +2,8 @@
  * Service to manage temporary premium feature unlocks via ads
  */
 
+import type { Language } from '../types';
+
 const STORAGE_KEY = 'cosmicjyoti_ad_unlocks';
 const UNLOCK_DURATION = 5 * 60 * 1000; // 5 minutes per ad watch
 
@@ -85,7 +87,7 @@ export const getRemainingTime = (feature: string): number => {
 /**
  * Format remaining time as human-readable string
  */
-export const formatRemainingTime = (feature: string, language: 'en' | 'hi' = 'en'): string => {
+export const formatRemainingTime = (feature: string, language: Language = 'en'): string => {
   const remaining = getRemainingTime(feature);
   if (remaining <= 0) return '';
   

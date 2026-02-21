@@ -4,6 +4,8 @@
  * Subscription: Unlimited AI, no ads (or fewer)
  */
 
+import type { Language } from '../types';
+
 const STORAGE_KEY = 'cosmicjyoti_subscription';
 
 export type SubscriptionTier = 'day' | 'week' | 'month' | 'year';
@@ -130,7 +132,7 @@ export function redeemPromoCode(code: string): boolean {
 /**
  * Format remaining time
  */
-export function formatRemainingTime(language: 'en' | 'hi' = 'en'): string {
+export function formatRemainingTime(language: Language = 'en'): string {
   const state = getStoredState();
   if (!state) return '';
   const remaining = state.expiresAt - Date.now();

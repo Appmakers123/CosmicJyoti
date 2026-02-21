@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '../utils/translations';
 import { Language, KundaliResponse } from '../types';
-import { createChatSession, askRishiWithFallback, type AstrologerPersona } from '../services/geminiService';
+import { createChatSession, askRishiWithFallback, translateText, type AstrologerPersona } from '../services/geminiService';
 import { GenerateContentResponse, Chat } from '@google/genai';
 import RichText from './RichText';
 import DownloadAppForAICta from './common/DownloadAppForAICta';
@@ -27,6 +27,7 @@ interface ChatWidgetProps {
 interface Message {
   role: 'user' | 'model';
   text: string;
+  translatedText?: string;
   sources?: { title: string, uri: string }[];
   isFallback?: boolean;
   showDownloadCta?: boolean;
@@ -56,6 +57,7 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
   const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
   const [responseType, setResponseType] = useState<'general' | 'detailed' | null>(null);
   const [persona, setPersona] = useState<AstrologerPersona>('general');
+  const [translatingIndex, setTranslatingIndex] = useState<number | null>(null);
 
   const contextStringRef = useRef("");
   const lastLanguageRef = useRef<Language | null>(null);
@@ -543,7 +545,35 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
                         </div>
                       ) : (
                         <>
-                          <RichText text={msg.text} />
+                          <RichText text={msg.translatedText ?? msg.text} />
+                          {msg.role === 'model' && (msg.text || msg.translatedText) && (
+                            <div className="mt-3 pt-2 border-t border-white/10 flex flex-wrap gap-2">
+                              {msg.translatedText ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setMessages(prev => prev.map((m, i) => i === idx ? { ...m, translatedText: undefined } : m))}
+                                  className="text-[10px] uppercase font-bold text-amber-400/90 hover:text-amber-300"
+                                >
+                                  {t.showOriginal}
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={translatingIndex !== null}
+                                  onClick={async () => {
+                                    setTranslatingIndex(idx);
+                                    const targetLang = language === 'hi' ? 'English' : 'Hindi';
+                                    const translated = await translateText(msg.text, targetLang);
+                                    setMessages(prev => prev.map((m, i) => i === idx ? { ...m, translatedText: translated } : m));
+                                    setTranslatingIndex(null);
+                                  }}
+                                  className="text-[10px] uppercase font-bold text-amber-400/90 hover:text-amber-300 disabled:opacity-50"
+                                >
+                                  {translatingIndex === idx ? '…' : (language === 'hi' ? t.translateToEnglish : t.translateToHindi)}
+                                </button>
+                              )}
+                            </div>
+                          )}
                           {msg.showDownloadCta && (
                             <DownloadAppForAICta language={language} accentColor="amber" />
                           )}

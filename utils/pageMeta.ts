@@ -2,7 +2,7 @@
  * Per-view page meta for SEO: title and description by mode (en/hi).
  */
 
-import type { AppViewMode } from '../types';
+import type { AppViewMode, Language } from '../types';
 
 export interface PageMeta {
   titleEn: string;
@@ -53,7 +53,7 @@ const META: Record<AppViewMode, PageMeta> = {
   'astro-lab': { titleEn: 'Astro Lab | CosmicJyoti', titleHi: 'अस्ट्रो लैब | CosmicJyoti', descriptionEn: 'Astrology tools and experiments.', descriptionHi: 'ज्योतिष उपकरण और प्रयोग।' },
 };
 
-export function getPageMeta(mode: AppViewMode, language: 'en' | 'hi'): { title: string; description: string } {
+export function getPageMeta(mode: AppViewMode, language: Language): { title: string; description: string } {
   const meta = META[mode] ?? META.hub;
   const isHi = language === 'hi';
   return { title: isHi ? meta.titleHi : meta.titleEn, description: isHi ? meta.descriptionHi : meta.descriptionEn };

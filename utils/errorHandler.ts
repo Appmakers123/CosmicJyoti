@@ -13,7 +13,9 @@ export interface SafeError {
  * Safely extract error message from any error type
  * Prevents crashes from undefined/null errors
  */
-export function getSafeErrorMessage(error: unknown, language: 'en' | 'hi' = 'en'): string {
+import type { Language } from '../types';
+
+export function getSafeErrorMessage(error: unknown, language: Language = 'en'): string {
   try {
     // Handle null/undefined
     if (!error) {
@@ -108,7 +110,7 @@ export function logErrorSafely(error: unknown, context?: string): void {
 export function setErrorSafely(
   setError: (error: string | null) => void,
   error: unknown,
-  language: 'en' | 'hi' = 'en',
+  language: Language = 'en',
   context?: string
 ): void {
   try {

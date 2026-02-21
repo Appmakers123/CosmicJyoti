@@ -3,6 +3,8 @@
  * Works on both web and mobile (Capacitor) platforms
  */
 
+import type { Language } from '../types';
+
 /**
  * Check if running on Capacitor (mobile app)
  */
@@ -35,7 +37,7 @@ export function isAndroid(): boolean {
  */
 export async function openExternalLink(
   url: string,
-  language: 'en' | 'hi' = 'en'
+  language: Language = 'en'
 ): Promise<void> {
   try {
     // Validate URL
@@ -214,7 +216,7 @@ export async function openExternalLink(
 export function handleExternalLinkClick(
   e: React.MouseEvent<HTMLAnchorElement>,
   url: string,
-  language: 'en' | 'hi' = 'en'
+  language: Language = 'en'
 ): void {
   try {
     e.preventDefault();
@@ -230,7 +232,7 @@ export function handleExternalLinkClick(
  */
 export function getExternalLinkProps(
   url: string,
-  language: 'en' | 'hi' = 'en'
+  language: Language = 'en'
 ): {
   href: string;
   target: string;

@@ -1211,7 +1211,7 @@ const NumerologyGuide: React.FC<NumerologyGuideProps> = ({ language }) => {
                           key={idx}
                           className="px-3 py-1.5 bg-indigo-800/40 border border-indigo-500/50 rounded-lg text-sm text-indigo-200 font-medium"
                         >
-                          {DAY_NAMES[day]?.[language] || day}
+                          {DAY_NAMES[day]?.[language === 'hi' ? 'hi' : 'en'] || day}
                         </span>
                       ))}
                     </div>

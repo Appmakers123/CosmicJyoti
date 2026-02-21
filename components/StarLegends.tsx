@@ -119,7 +119,7 @@ const StarLegends: React.FC<StarLegendsProps> = ({ language }) => {
               }`}
             >
               <span className="text-2xl mr-2 inline-block group-hover:rotate-12 transition-transform">{cat.icon}</span>
-              <span>{cat.label[language]}</span>
+              <span>{cat.label[language === 'hi' ? 'hi' : 'en']}</span>
               {activeCategory === cat.id && (
                 <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-amber-400 rounded-full animate-pulse"></div>
               )}

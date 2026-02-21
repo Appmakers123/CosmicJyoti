@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Language, KundaliFormData, KundaliResponse } from "../types";
 import { getNextGeminiKey } from "../utils/geminiApiKeys";
+import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateKundali } from "./geminiService";
 import { generateChartBasedHealthAnalysisFromBackend } from "./backendService";
 
@@ -57,9 +58,7 @@ const getAI = () => {
   return new GoogleGenAI({ apiKey });
 };
 
-const getLanguageName = (lang: Language): string => {
-  return lang === 'hi' ? 'Hindi' : 'English';
-};
+const getLanguageName = (lang: Language): string => getLanguageDisplayName(lang) || 'English';
 
 // Simplified astrological calculations (Moon sign, doshas) — approximate for quick context
 const calculateBasicAstrology = (birthData: { date: string; time: string; city: string }) => {

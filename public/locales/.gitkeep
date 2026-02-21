@@ -1,0 +1,5 @@
+# Pre-translated locale JSON files (en + 6 languages).
+# - English & Hindi: in-app (no file needed for en/hi).
+# - 1. npm run export-en-locale  -> creates en.json (source for pre-translate).
+# - 2. npm run pre-translate      -> creates bn.json, gu.json, kn.json, mr.json, ta.json, te.json (Sarvam/Shunya/Gemini from .env.local).
+# The app loads /locales/{lang}.json for bn, gu, kn, mr, ta, te and skips runtime translation when present.

@@ -539,7 +539,7 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
                            key={idx}
                            className="px-2 py-1 bg-indigo-800/40 border border-indigo-500/50 rounded-lg text-xs text-indigo-200 font-medium"
                          >
-                           {DAY_NAMES[day]?.[language] || day}
+                           {DAY_NAMES[day]?.[language === 'hi' ? 'hi' : 'en'] || day}
                          </span>
                        ))}
                      </div>

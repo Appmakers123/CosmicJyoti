@@ -2,6 +2,8 @@
  * Timer-based ad service - Shows ads every 5-10 minutes during app usage
  */
 
+import type { Language } from '../types';
+
 const STORAGE_KEY = 'cosmicjyoti_timer_ads';
 const MIN_INTERVAL = 5 * 60 * 1000; // 5 minutes
 const MAX_INTERVAL = 10 * 60 * 1000; // 10 minutes
@@ -120,7 +122,7 @@ export const getTimeUntilNextAd = (): number => {
 /**
  * Format time until next ad as human-readable string
  */
-export const formatTimeUntilNextAd = (language: 'en' | 'hi' = 'en'): string => {
+export const formatTimeUntilNextAd = (language: Language = 'en'): string => {
   const remaining = getTimeUntilNextAd();
   if (remaining <= 0) return language === 'en' ? 'Now' : 'अभी';
   

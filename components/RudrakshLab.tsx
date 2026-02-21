@@ -467,7 +467,7 @@ const RudrakshLab: React.FC<{ language: Language }> = ({ language }) => {
                             {language === 'hi' ? 'पहनने की विधि' : 'How to Wear'}
                         </h5>
                         <ul className="space-y-2">
-                            {activeMukhi.wearingProcess[language].map((step, index) => (
+                            {activeMukhi.wearingProcess[language === 'hi' ? 'hi' : 'en'].map((step: string, index: number) => (
                                 <li key={index} className="text-slate-400 text-xs leading-relaxed flex items-start gap-2">
                                     <span className="text-orange-500 font-bold mt-0.5 flex-shrink-0">{index + 1}.</span>
                                     <span>{step}</span>

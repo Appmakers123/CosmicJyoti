@@ -2,7 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
-import { generateMantraAudio } from '../services/geminiService';
+import { generateMantraTts, SARVAM_LANGUAGES, type SarvamLanguageCode } from '../utils/sarvamTts';
+import { getCachedMantraAudio, setCachedMantraAudio } from '../utils/mantraAudioCache';
 import AdBanner from './AdBanner';
 
 interface Mantra {
@@ -491,7 +492,8 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
+  const [ttsLanguageCode, setTtsLanguageCode] = useState<SarvamLanguageCode>('hi-IN');
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const audioCacheRef = useRef<Map<string, AudioBuffer>>(new Map());
@@ -579,22 +581,21 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
         const ctx = audioContextRef.current;
         if (ctx.state === 'suspended') await ctx.resume();
 
-        // In browser, Gemini TTS often fails (CORS). Use browser TTS directly for reliable playback.
-        const isBrowser = typeof window !== 'undefined';
+        // 1) Use cached audio (memory or IndexedDB) keyed by mantra + language
+        const cacheKey = `${selected.id}_${ttsLanguageCode}`;
         let audioData: string | null = null;
-        if (!isBrowser) {
-            audioData = await generateMantraAudio(selected.sanskrit);
-        }
-        if (audioData !== "BROWSER_TTS_FALLBACK" && audioData) {
-            // Use Gemini audio (decode below)
+        const cachedBase64 = await getCachedMantraAudio(selected.id, ttsLanguageCode);
+        if (cachedBase64) {
+            audioData = cachedBase64;
         } else {
-            // Use browser's Web Speech API (default in browser for reliability)
-            if (isBrowser) {
-                audioData = "BROWSER_TTS_FALLBACK";
+            // 2) Generate via Sarvam TTS (mantra text as-is; language controls voice/accent) and cache
+            audioData = await generateMantraTts(selected.sanskrit, { target_language_code: ttsLanguageCode });
+            if (audioData) {
+                await setCachedMantraAudio(selected.id, ttsLanguageCode, audioData);
             }
         }
-        
-        if (audioData === "BROWSER_TTS_FALLBACK" || !audioData) {
+
+        if (!audioData) {
             // Use browser's Web Speech API
             if (typeof window === 'undefined' || !window.speechSynthesis) {
                 throw new Error(language === 'hi' ? 'इस ब्राउज़र में ध्वनि समर्थित नहीं है। Chrome या Edge आज़माएं।' : "Audio not supported in this browser. Try Chrome or Edge.");
@@ -655,12 +656,12 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
             return;
         }
         
-        // Try to decode Gemini audio
-        let audioBuffer = audioCacheRef.current.get(selected.id);
-        
+        // Decode Sarvam/cached WAV (or other) audio
+        let audioBuffer = audioCacheRef.current.get(cacheKey);
+
         if (!audioBuffer) {
             try {
-                console.log("Received audio data, length:", audioData.length, "First 100 chars:", audioData.substring(0, 100));
+                console.log("Decoding mantra audio, length:", audioData.length);
                 
                 // Try multiple decoding approaches
                 let decoded = false;
@@ -735,7 +736,7 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
                     return;
                 }
                 
-                audioCacheRef.current.set(selected.id, audioBuffer);
+                audioCacheRef.current.set(cacheKey, audioBuffer);
             } catch (audioGenError: any) {
                 console.error("Audio generation/decoding error, using browser TTS:", audioGenError);
                 // Final fallback to browser TTS
@@ -864,6 +865,21 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
                                 <p className="text-base text-slate-300 leading-relaxed">{language === 'hi' ? selected.benefitHi : selected.benefit}</p>
                              </div>
                         </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-[10px] text-slate-500 uppercase font-bold tracking-[0.3em]">{t.playInLanguage}</label>
+                        <select
+                            value={ttsLanguageCode}
+                            onChange={(e) => setTtsLanguageCode(e.target.value as SarvamLanguageCode)}
+                            className="w-full px-5 py-4 rounded-[2rem] bg-slate-950/60 border border-white/10 text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/30"
+                        >
+                            {SARVAM_LANGUAGES.map((lang) => (
+                                <option key={lang.code} value={lang.code}>
+                                    {language === 'hi' ? lang.nameHi : lang.nameEn}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <button 

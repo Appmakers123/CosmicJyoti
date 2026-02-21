@@ -29,6 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -77,6 +79,7 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: update daily AI blog posts (${{ github.event.inputs.slot || steps.slot.outputs.slot || '6am' }}), RSS feed and blog sitemap"
-            git pull --rebase origin main
+            git fetch origin main
+            git pull origin main --no-rebase --no-edit -X ours
             git push origin main
           fi

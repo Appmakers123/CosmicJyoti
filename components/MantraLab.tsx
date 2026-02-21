@@ -577,6 +577,24 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
     }
   };
 
+  /** Unlock audio on iOS: start a tiny sound in the same user gesture (no await). Same pattern as Yantra radiance. */
+  const unlockAudioSync = () => {
+    try {
+      if (!audioContextRef.current) {
+        const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+        audioContextRef.current = new Ctx();
+      }
+      const ctx = audioContextRef.current;
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.05, ctx.sampleRate);
+      buf.getChannelData(0).fill(0);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+      src.onended = () => { src.disconnect(); };
+    } catch (_) {}
+  };
+
   const playMeditation = async () => {
     if (isPlaying) {
         stopAudio();
@@ -587,7 +605,9 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
     setErrorMsg(null);
 
     try {
-        // Unlock AudioContext on first user gesture (required on iOS). Do this before any other await.
+        // iOS: unlock audio in this same user gesture (synchronous, no await) – like Yantra radiance.
+        unlockAudioSync();
+
         if (!audioContextRef.current) {
             const Ctx = window.AudioContext || (window as any).webkitAudioContext;
             audioContextRef.current = new Ctx();
@@ -672,26 +692,8 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
             return;
         }
 
-        // iOS Safari: play via <audio> (avoids Web Audio decode/gesture issues)
-        if (isIOS && audioData) {
-            const tryPlay = async (mime: string): Promise<boolean> => {
-                try {
-                    const audio = new Audio(`data:${mime};base64,${audioData}`);
-                    audio.loop = true;
-                    audio.volume = 1;
-                    audioElementRef.current = audio;
-                    await audio.play();
-                    return true;
-                } catch {
-                    return false;
-                }
-            };
-            if (await tryPlay('audio/wav') || await tryPlay('audio/mpeg')) {
-                setIsPlaying(true);
-                return;
-            }
-            audioElementRef.current = null;
-        }
+        // iOS: we unlocked Web Audio in the same gesture above, so use Web Audio path (decode + play).
+        // Skipping HTMLAudioElement here because audio.play() would run after await and is blocked by iOS.
 
         // Decode Sarvam/cached WAV (or other) audio
         let audioBuffer = audioCacheRef.current.get(cacheKey);

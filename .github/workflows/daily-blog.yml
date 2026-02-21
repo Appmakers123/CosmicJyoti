@@ -77,5 +77,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: update daily AI blog posts (${{ github.event.inputs.slot || steps.slot.outputs.slot || '6am' }}), RSS feed and blog sitemap"
+            git pull --rebase origin main
             git push origin main
           fi

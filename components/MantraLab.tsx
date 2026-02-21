@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
-import { generateMantraTts, SARVAM_LANGUAGES, type SarvamLanguageCode } from '../utils/sarvamTts';
+import { generateMantraTts } from '../utils/sarvamTts';
 import { getCachedMantraAudio, setCachedMantraAudio } from '../utils/mantraAudioCache';
 import AdBanner from './AdBanner';
 
@@ -492,7 +492,8 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [ttsLanguageCode, setTtsLanguageCode] = useState<SarvamLanguageCode>('hi-IN');
+  /** Mantra TTS uses a single spiritual voice (Sanskrit/Hindi); text is not translated. */
+  const TTS_LANGUAGE_CODE = 'hi-IN';
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -581,17 +582,17 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
         const ctx = audioContextRef.current;
         if (ctx.state === 'suspended') await ctx.resume();
 
-        // 1) Use cached audio (memory or IndexedDB) keyed by mantra + language
-        const cacheKey = `${selected.id}_${ttsLanguageCode}`;
+        // 1) Use cached audio (memory or IndexedDB) keyed by mantra + voice
+        const cacheKey = `${selected.id}_${TTS_LANGUAGE_CODE}`;
         let audioData: string | null = null;
-        const cachedBase64 = await getCachedMantraAudio(selected.id, ttsLanguageCode);
+        const cachedBase64 = await getCachedMantraAudio(selected.id, TTS_LANGUAGE_CODE);
         if (cachedBase64) {
             audioData = cachedBase64;
         } else {
-            // 2) Generate via Sarvam TTS (mantra text as-is; language controls voice/accent) and cache
-            audioData = await generateMantraTts(selected.sanskrit, { target_language_code: ttsLanguageCode });
+            // 2) Generate via Sarvam TTS (mantra text as-is, single spiritual voice) and cache
+            audioData = await generateMantraTts(selected.sanskrit, { target_language_code: TTS_LANGUAGE_CODE });
             if (audioData) {
-                await setCachedMantraAudio(selected.id, ttsLanguageCode, audioData);
+                await setCachedMantraAudio(selected.id, TTS_LANGUAGE_CODE, audioData);
             }
         }
 
@@ -794,38 +795,40 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
-      <div className="bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-[4rem] p-8 md:p-16 shadow-3xl flex flex-col items-center relative overflow-hidden">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-24 pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-fade-in-up min-h-0">
+      <div className="bg-slate-900/80 backdrop-blur-3xl border border-white/10 rounded-[2rem] sm:rounded-[4rem] p-6 sm:p-8 md:p-16 shadow-3xl flex flex-col items-center relative overflow-hidden">
         
         <div className={`absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br ${selected.bgGlow} via-transparent to-transparent blur-[150px] transition-all duration-1000 opacity-40`}></div>
         <div className={`absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr ${selected.bgGlow} via-transparent to-transparent blur-[120px] transition-all duration-1000 opacity-20`}></div>
 
-        <div className="text-center mb-12 relative z-10">
-            <span className="text-[10px] uppercase font-bold tracking-[1.5em] text-orange-400 mb-4 block">{t.dhvaniSanctuary}</span>
-            <h2 className="text-5xl md:text-8xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-500 drop-shadow-sm">{t.mantraLabTitle}</h2>
-            <p className="text-slate-400 text-xs italic mt-6 tracking-[0.5em] uppercase">{t.mantraSubtitle}</p>
+        <div className="text-center mb-8 sm:mb-12 relative z-10 px-1">
+            <span className="text-[10px] uppercase font-bold tracking-[1em] sm:tracking-[1.5em] text-orange-400 mb-4 block">{t.dhvaniSanctuary}</span>
+            <h2 className="text-3xl sm:text-5xl md:text-8xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-500 drop-shadow-sm">{t.mantraLabTitle}</h2>
+            <p className="text-slate-400 text-xs italic mt-4 sm:mt-6 tracking-[0.3em] sm:tracking-[0.5em] uppercase">{t.mantraSubtitle}</p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-16 relative z-10 w-full overflow-x-auto pb-2">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-10 sm:mb-16 relative z-10 w-full overflow-x-auto pb-2 -mx-2 px-2 scrollbar-thin">
             {CATEGORIES.map(cat => (
                 <button 
                     key={cat} 
                     onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-2 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-[2rem] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest border transition-all duration-700 whitespace-nowrap flex-shrink-0 ${activeCategory === cat ? 'bg-orange-500 text-white border-orange-400 shadow-[0_15px_40px_rgba(249,115,22,0.3)] scale-105' : 'bg-slate-950/40 border-slate-800 text-slate-500 hover:text-white hover:border-slate-600'}`}
+                    type="button"
+                    className={`min-h-[44px] min-w-[44px] touch-manipulation px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-[2rem] text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest border transition-all duration-700 whitespace-nowrap flex-shrink-0 ${activeCategory === cat ? 'bg-orange-500 text-white border-orange-400 shadow-[0_15px_40px_rgba(249,115,22,0.3)] scale-105' : 'bg-slate-950/40 border-slate-800 text-slate-500 hover:text-white hover:border-slate-600 active:scale-[0.98]'}`}
                 >
                     {language === 'hi' ? (cat === "Obstacles" ? "बाधाएं" : cat === "Planetary" ? "ग्रह" : cat === "Wealth" ? "धन" : cat === "Health" ? "स्वास्थ्य" : "ब्रह्मांड") : cat}
                 </button>
             ))}
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 w-full relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-16 w-full relative z-10">
             
-            <div className="lg:col-span-4 space-y-4 max-h-[600px] overflow-y-auto pr-4 custom-scrollbar">
+            <div className="lg:col-span-4 space-y-3 sm:space-y-4 max-h-[50vh] sm:max-h-[600px] overflow-y-auto pr-2 sm:pr-4 custom-scrollbar">
                 {MANTRA_LIBRARY.filter(m => m.category === activeCategory).map(m => (
                     <button 
                         key={m.id} 
+                        type="button"
                         onClick={() => { setSelected(m); setCount(0); stopAudio(); setErrorMsg(null); }} 
-                        className={`w-full p-10 rounded-[3rem] border transition-all duration-700 text-left relative group overflow-hidden ${selected.id === m.id ? 'bg-white border-white shadow-[0_20px_50px_rgba(255,255,255,0.1)]' : 'bg-slate-950/20 border-white/5 hover:border-white/20'}`}
+                        className={`w-full min-h-[44px] p-6 sm:p-10 rounded-[2rem] sm:rounded-[3rem] border transition-all duration-700 text-left relative group overflow-hidden touch-manipulation active:scale-[0.99] ${selected.id === m.id ? 'bg-white border-white shadow-[0_20px_50px_rgba(255,255,255,0.1)]' : 'bg-slate-950/20 border-white/5 hover:border-white/20'}`}
                     >
                         <div className={`text-2xl font-serif mb-2 transition-colors ${selected.id === m.id ? 'text-slate-950' : 'text-slate-300'}`}>{language === 'hi' ? m.nameHi : m.name}</div>
                         <div className={`text-[10px] uppercase tracking-wider transition-colors ${selected.id === m.id ? 'text-slate-500' : 'text-slate-600'}`}>{m.transliteration.substring(0, 30)}...</div>
@@ -839,53 +842,39 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
                 <div className="flex-1 space-y-10 w-full lg:w-auto">
                     <div className="space-y-6 text-center md:text-left">
                         <div className="inline-block px-5 py-1.5 bg-orange-900/20 border border-orange-500/20 rounded-full text-[10px] uppercase font-bold text-orange-400 tracking-widest">{language === 'hi' ? 'मंत्र शक्ति' : selected.category + ' Ritual'}</div>
-                        <h3 className={`text-5xl md:text-7xl font-serif ${selected.color} drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all`}>{language === 'hi' ? selected.nameHi : selected.name}</h3>
+                        <h3 className={`text-3xl sm:text-5xl md:text-7xl font-serif ${selected.color} drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all break-words`}>{language === 'hi' ? selected.nameHi : selected.name}</h3>
                         
-                        <div className="bg-black/40 backdrop-blur-md p-14 rounded-[4.5rem] border border-white/10 relative group shadow-2xl overflow-hidden">
+                        <div className="bg-black/40 backdrop-blur-md p-6 sm:p-10 md:p-14 rounded-[2.5rem] sm:rounded-[4.5rem] border border-white/10 relative group shadow-2xl overflow-hidden">
                              <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none"></div>
-                             <div className="text-4xl md:text-6xl text-white font-serif leading-relaxed mb-10 tracking-widest text-center drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">{selected.sanskrit}</div>
-                             <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-10 w-2/3 mx-auto"></div>
-                             <div className="text-xl text-slate-500 italic leading-relaxed text-center font-light tracking-wide">{selected.transliteration}</div>
+                             <div className="text-2xl sm:text-4xl md:text-6xl text-white font-serif leading-relaxed mb-6 sm:mb-10 tracking-widest text-center drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] break-words">{selected.sanskrit}</div>
+                             <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-6 sm:mb-10 w-2/3 mx-auto"></div>
+                             <div className="text-base sm:text-xl text-slate-500 italic leading-relaxed text-center font-light tracking-wide break-words">{selected.transliteration}</div>
                         </div>
 
                         {errorMsg && (
                             <div className="p-5 bg-red-950/20 border border-red-500/20 rounded-3xl text-red-400 text-xs text-center animate-pulse tracking-wide flex flex-col gap-2">
                                 <span>{errorMsg}</span>
-                                <button onClick={playMeditation} className="text-[10px] uppercase font-bold underline hover:text-white">Retry Call</button>
+                                <button type="button" onClick={playMeditation} className="min-h-[44px] px-4 py-2 text-[10px] uppercase font-bold underline hover:text-white touch-manipulation">Retry</button>
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                             <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-colors">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                             <div className="p-6 sm:p-8 bg-white/5 rounded-[2rem] sm:rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-colors">
                                 <h4 className="text-[10px] text-slate-500 uppercase font-bold mb-3 tracking-[0.3em]">{t.spiritualFocus}</h4>
-                                <p className="text-base text-slate-300 leading-relaxed italic">"{language === 'hi' ? selected.meaningHi : selected.meaning}"</p>
+                                <p className="text-sm sm:text-base text-slate-300 leading-relaxed italic">"{language === 'hi' ? selected.meaningHi : selected.meaning}"</p>
                              </div>
-                             <div className="p-8 bg-white/5 rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-colors">
+                             <div className="p-6 sm:p-8 bg-white/5 rounded-[2rem] sm:rounded-[2.5rem] border border-white/5 group hover:border-white/10 transition-colors">
                                 <h4 className="text-[10px] text-slate-500 uppercase font-bold mb-3 tracking-[0.3em]">{t.karmicAlchemy}</h4>
-                                <p className="text-base text-slate-300 leading-relaxed">{language === 'hi' ? selected.benefitHi : selected.benefit}</p>
+                                <p className="text-sm sm:text-base text-slate-300 leading-relaxed">{language === 'hi' ? selected.benefitHi : selected.benefit}</p>
                              </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-[10px] text-slate-500 uppercase font-bold tracking-[0.3em]">{t.playInLanguage}</label>
-                        <select
-                            value={ttsLanguageCode}
-                            onChange={(e) => setTtsLanguageCode(e.target.value as SarvamLanguageCode)}
-                            className="w-full px-5 py-4 rounded-[2rem] bg-slate-950/60 border border-white/10 text-slate-200 font-medium focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/30"
-                        >
-                            {SARVAM_LANGUAGES.map((lang) => (
-                                <option key={lang.code} value={lang.code}>
-                                    {language === 'hi' ? lang.nameHi : lang.nameEn}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
                     <button 
+                        type="button"
                         onClick={playMeditation}
                         disabled={isLoadingAudio}
-                        className={`w-full flex items-center justify-center gap-6 px-12 py-8 rounded-[3rem] border-2 transition-all duration-700 font-serif font-bold text-2xl ${isPlaying ? 'bg-orange-600 border-orange-400 text-white shadow-[0_20px_80px_rgba(249,115,22,0.3)]' : 'bg-slate-950 border-white/10 text-white hover:border-white hover:shadow-3xl'} group disabled:opacity-50`}
+                        className={`w-full min-h-[48px] flex items-center justify-center gap-4 sm:gap-6 px-6 sm:px-12 py-5 sm:py-8 rounded-[2rem] sm:rounded-[3rem] border-2 transition-all duration-700 font-serif font-bold text-lg sm:text-2xl touch-manipulation active:scale-[0.98] ${isPlaying ? 'bg-orange-600 border-orange-400 text-white shadow-[0_20px_80px_rgba(249,115,22,0.3)]' : 'bg-slate-950 border-white/10 text-white hover:border-white hover:shadow-3xl'} group disabled:opacity-50`}
                     >
                         {isLoadingAudio ? (
                             <><div className="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"></div> {language === 'hi' ? 'मंत्र का आह्वान...' : 'INVOKING MANTRA...'}</>
@@ -897,12 +886,12 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
                     </button>
                 </div>
 
-                <div className="flex flex-col items-center gap-14 w-full lg:w-auto flex-shrink-0">
-                    <div className="relative w-64 h-64 lg:w-80 lg:h-80 flex items-center justify-center">
+                <div className="flex flex-col items-center gap-8 sm:gap-14 w-full lg:w-auto flex-shrink-0">
+                    <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-80 lg:h-80 flex items-center justify-center">
                         <div className={`absolute inset-[-20px] rounded-full border border-white/5 transition-all duration-[3000ms] ${isPlaying ? 'rotate-180 scale-110 opacity-100' : 'opacity-0'}`}></div>
                         <div className={`absolute inset-0 rounded-full border border-white/5 ${isPlaying ? 'animate-spin-slow' : ''}`}></div>
                         
-                        <svg className="absolute inset-0 w-full h-full -rotate-90">
+                        <svg className="absolute inset-0 w-full h-full -rotate-90" aria-hidden>
                             <circle cx="50%" cy="50%" r="48%" className="fill-none stroke-slate-950 stroke-[6]" />
                             <circle 
                                 cx="50%" cy="50%" r="48%" 
@@ -913,8 +902,10 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
                         </svg>
 
                         <button 
+                            type="button"
                             onClick={handleChant}
-                            className="relative z-10 w-48 h-48 lg:w-64 lg:h-64 bg-slate-950 rounded-full border border-white/10 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-all duration-500 shadow-4xl shadow-white/5 group overflow-hidden"
+                            aria-label={t.touchBead}
+                            className="relative z-10 w-40 h-40 sm:w-48 sm:h-48 lg:w-64 lg:h-64 min-w-[140px] min-h-[140px] bg-slate-950 rounded-full border border-white/10 flex flex-col items-center justify-center hover:scale-105 active:scale-95 transition-all duration-500 shadow-4xl shadow-white/5 group overflow-hidden touch-manipulation select-none"
                         >
                             <div className={`absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 via-transparent to-transparent transition-opacity duration-1000 ${isPlaying ? 'opacity-100' : 'opacity-50'}`}></div>
                             

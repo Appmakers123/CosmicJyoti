@@ -499,6 +499,10 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const audioCacheRef = useRef<Map<string, AudioBuffer>>(new Map());
   const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  /** iOS Safari: play via HTMLAudioElement (Web Audio is restricted until after gesture). */
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
+
+  const isIOS = typeof navigator !== 'undefined' && /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
   useEffect(() => {
     const firstInCategory = MANTRA_LIBRARY.find(m => m.category === activeCategory);
@@ -547,6 +551,13 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
         try { sourceNodeRef.current.stop(); } catch(e) {}
         sourceNodeRef.current = null;
     }
+    if (audioElementRef.current) {
+        try {
+            audioElementRef.current.pause();
+            audioElementRef.current.src = '';
+        } catch(e) {}
+        audioElementRef.current = null;
+    }
     if (speechSynthesisRef.current && window.speechSynthesis) {
         try {
             window.speechSynthesis.cancel();
@@ -576,11 +587,15 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
     setErrorMsg(null);
 
     try {
+        // Unlock AudioContext on first user gesture (required on iOS). Do this before any other await.
         if (!audioContextRef.current) {
-            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+            const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+            audioContextRef.current = new Ctx();
         }
         const ctx = audioContextRef.current;
-        if (ctx.state === 'suspended') await ctx.resume();
+        if (ctx.state === 'suspended') {
+            await ctx.resume();
+        }
 
         // 1) Use cached audio (memory or IndexedDB) keyed by mantra + voice
         const cacheKey = `${selected.id}_${TTS_LANGUAGE_CODE}`;
@@ -656,7 +671,28 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
             setIsPlaying(true);
             return;
         }
-        
+
+        // iOS Safari: play via <audio> (avoids Web Audio decode/gesture issues)
+        if (isIOS && audioData) {
+            const tryPlay = async (mime: string): Promise<boolean> => {
+                try {
+                    const audio = new Audio(`data:${mime};base64,${audioData}`);
+                    audio.loop = true;
+                    audio.volume = 1;
+                    audioElementRef.current = audio;
+                    await audio.play();
+                    return true;
+                } catch {
+                    return false;
+                }
+            };
+            if (await tryPlay('audio/wav') || await tryPlay('audio/mpeg')) {
+                setIsPlaying(true);
+                return;
+            }
+            audioElementRef.current = null;
+        }
+
         // Decode Sarvam/cached WAV (or other) audio
         let audioBuffer = audioCacheRef.current.get(cacheKey);
 

@@ -8,6 +8,7 @@ import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import ModuleAskAI from './ModuleAskAI';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 interface TarotReadingProps {
@@ -148,7 +149,13 @@ const TarotReading: React.FC<TarotReadingProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-12 animate-fade-in-up min-h-[60vh] flex flex-col items-center">
-        
+        <ModuleIntro
+          language={language}
+          subtitleEn="Tarot reading – pick cards and get guidance; Major Arcana and Minor Arcana meanings."
+          subtitleHi="टैरो रीडिंग – कार्ड चुनें और मार्गदर्शन पाएं; मेजर और माइनर अर्चना अर्थ।"
+          descriptionEn="Shuffle the deck, choose your cards and receive an AI-generated interpretation. Use for daily guidance, reflection and self-discovery."
+          descriptionHi="ताश गड्डा फेंटें, कार्ड चुनें और AI व्याख्या पाएं। दैनिक मार्गदर्शन और आत्म-खोज के लिए।"
+        />
         {/* Header */}
         <div className="text-center mb-8">
             <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-purple-200 via-pink-200 to-purple-200 mb-2">

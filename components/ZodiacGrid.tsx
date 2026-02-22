@@ -2,6 +2,7 @@
 import React from 'react';
 import { ZODIAC_SIGNS } from '../constants';
 import { ZodiacSignData, Language } from '../types';
+import { getLunarPhase } from '../utils/lunarPhase';
 
 interface ZodiacGridProps {
   onSelect: (sign: ZodiacSignData) => void;
@@ -9,11 +10,17 @@ interface ZodiacGridProps {
 }
 
 const ZodiacGrid: React.FC<ZodiacGridProps> = ({ onSelect, language }) => {
+  const lunar = getLunarPhase(new Date());
+  const isHi = language === 'hi';
   return (
     <div className="animate-fade-in space-y-12">
       <div className="text-center space-y-2">
-        <h2 className="text-2xl font-serif text-amber-100">Which sign are you?</h2>
+        <h2 className="text-2xl font-serif text-amber-100">{isHi ? 'आप कौन सी राशि हैं?' : 'Which sign are you?'}</h2>
         <div className="h-1 w-12 bg-amber-500 mx-auto rounded-full"></div>
+        <p className="text-slate-500 text-sm flex items-center justify-center gap-2">
+          <span>{lunar.emoji}</span>
+          <span>{isHi ? lunar.labelHi : lunar.labelEn}</span>
+        </p>
       </div>
       
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-5xl mx-auto pb-12">

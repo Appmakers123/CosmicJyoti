@@ -4,12 +4,13 @@ import { getExternalLinkProps } from '../utils/linkHandler';
 import { setErrorSafely } from '../utils/errorHandler';
 import { Language, NumerologyInput, NumerologyResponse } from '../types';
 import { getGlobalProfile } from '../utils/profileStorageService';
-import { calculateLifePath, calculateDestiny, calculateSoulUrge, calculatePersonality, calculateBirthday } from '../utils/numerologyUtils';
+import { calculateLifePath, calculateDestiny, calculateSoulUrge, calculatePersonality, calculateBirthday, calculatePersonalYear, calculatePersonalMonth } from '../utils/numerologyUtils';
 import { generateNumerologyReport } from '../services/geminiService';
 import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 type LuckStatus = 'Very Lucky' | 'Lucky' | 'Neutral' | 'Avoid' | '-';
@@ -356,10 +357,16 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 pb-12 animate-fade-in-up">
       {!report ? (
-        <div className="bg-slate-800/80 backdrop-blur-md border border-teal-500/30 rounded-2xl p-8 shadow-2xl relative overflow-hidden max-w-xl mx-auto">
+        <div className="bg-slate-800/80 backdrop-blur-md border border-teal-500/30 rounded-2xl p-8 shadow-2xl relative overflow-visible min-w-0 max-w-xl mx-auto">
           {/* Decorative Elements */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-teal-500 to-transparent opacity-60"></div>
-          
+          <ModuleIntro
+            language={language}
+            subtitleEn="Numerology – life path number, destiny number, soul urge and personality from name and date of birth."
+            subtitleHi="अंक ज्योतिष – नाम और जन्म तारीख से लाइफ पाथ, भाग्य अंक, सोल उर्ज और व्यक्तित्व।"
+            descriptionEn="Get your core numbers and an AI-powered interpretation. Extended features include lucky mobile, vehicle, business name and marriage date compatibility."
+            descriptionHi="मूल अंक और AI व्याख्या पाएं। मोबाइल, वाहन, व्यापार नाम और विवाह तारीख अनुकूलता भी।"
+          />
           <div className="text-center mb-8">
             <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-teal-200 via-emerald-200 to-teal-100 mb-2">
               {t.numerologyTitle}
@@ -438,6 +445,20 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
               <NumberCard title={t.personalityNum} num={report.personality.number} desc={report.personality.description} />
               <NumberCard title={t.birthdayNum} num={report.birthday.number} desc={report.birthday.description} />
            </div>
+
+           {/* Personal Year / Month (today) */}
+           {formData.dob && (
+             <div className="grid grid-cols-2 gap-4 mt-6">
+               <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-center">
+                 <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">{language === 'hi' ? 'व्यक्तिगत वर्ष' : 'Personal Year'}</span>
+                 <span className="text-2xl font-bold text-amber-300">{calculatePersonalYear(formData.dob, new Date())}</span>
+               </div>
+               <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-center">
+                 <span className="text-slate-500 text-xs uppercase tracking-wider block mb-1">{language === 'hi' ? 'व्यक्तिगत माह' : 'Personal Month'}</span>
+                 <span className="text-2xl font-bold text-amber-300">{calculatePersonalMonth(formData.dob, new Date())}</span>
+               </div>
+             </div>
+           )}
 
            <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-8 mt-8">
               <h3 className="text-xl font-serif text-amber-200 mb-4 flex items-center gap-2">

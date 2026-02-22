@@ -5,6 +5,7 @@ import { useTranslation } from '../utils/translations';
 import { generateMatchMaking, generateCompatibilityReport } from '../services/geminiService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
+import { ModuleIntro } from './common';
 
 interface MatchMakingProps {
   language: Language;
@@ -36,6 +37,13 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
     <div className="w-full max-w-6xl mx-auto px-4 pb-12 animate-fade-in-up">
         {!result ? (
             <div className="bg-slate-800/80 border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-2xl">
+                <ModuleIntro
+                  language={language}
+                  subtitleEn="Guna Milan & marriage compatibility – Ashtakoot matching by birth details (Vedic astrology)."
+                  subtitleHi="गुण मिलान और विवाह अनुकूलता – जन्म विवरण से अष्टकूट मिलान (वैदिक ज्योतिष)।"
+                  descriptionEn="Enter birth details of both partners to get Ashtakoot (36 points) Guna Milan score and a compatibility report for marriage or relationship."
+                  descriptionHi="दोनों साथियों का जन्म विवरण डालें – अष्टकूट गुण मिलान अंक और विवाह/रिश्ते की अनुकूलता रिपोर्ट पाएं।"
+                />
                 <h2 className="text-3xl font-serif text-amber-200 text-center mb-10">{t.matchmaking}</h2>
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">

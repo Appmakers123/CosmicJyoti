@@ -8,6 +8,7 @@ import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 interface FaceReadingProps {
@@ -96,6 +97,13 @@ const FaceReading: React.FC<FaceReadingProps> = ({ language }) => {
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">
       <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-8 shadow-2xl relative">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Face reading – Samudrik Shastra; face analysis, features and personality insights."
+          subtitleHi="चेहरा पढ़ना – समुद्रिक शास्त्र; चेहरे का विश्लेषण और व्यक्तित्व।"
+          descriptionEn="Upload a clear photo of your face for an AI-based reading. Explores features and possible traits (for entertainment and self-reflection)."
+          descriptionHi="चेहरे की स्पष्ट फोटो अपलोड करें – AI आधारित पढ़ाई। विशेषताएं और संभावित गुण (मनोरंजन)।"
+        />
         <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
           <div className="flex-1">
             <h2 className="text-3xl font-serif text-amber-200 mb-2">{faceTitle}</h2>

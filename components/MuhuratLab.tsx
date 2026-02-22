@@ -3,7 +3,7 @@ import { Language, MuhuratItem } from '../types';
 import { useTranslation } from '../utils/translations';
 import { generateMuhuratPlanner } from '../services/geminiService';
 import { getGlobalProfile } from '../utils/profileStorageService';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 import Logo from './Logo';
 import AdBanner from './AdBanner';
 
@@ -62,12 +62,16 @@ const MuhuratLab: React.FC<MuhuratLabProps> = ({ language, onBack }) => {
         <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
       </div>
       <div className="bg-slate-800/80 border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-2xl">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Muhurat planner – auspicious time (shubh muhurat) for marriage, travel, griha pravesh, business by date & place."
+          subtitleHi="मुहूर्त प्लानर – विवाह, यात्रा, गृह प्रवेश, व्यापार के लिए शुभ मुहूर्त तारीख और स्थान के अनुसार।"
+          descriptionEn="Get daily muhurat based on Vedic Panchang and planetary positions. Choose activity type and location for accurate auspicious and inauspicious timings."
+          descriptionHi="वैदिक पंचांग और ग्रह स्थिति के आधार पर दैनिक मुहूर्त पाएं। गतिविधि और स्थान चुनें – शुभ और अशुभ समय।"
+        />
         <h2 className="text-2xl md:text-3xl font-serif text-amber-200 text-center mb-2">
           {t.muhuratPlanner}
         </h2>
-        <p className="text-slate-500 text-sm text-center mb-8">
-          {t.muhuratSubtitle || (language === 'hi' ? 'ग्रह स्थिति के आधार पर शुभ समय' : 'Auspicious timings based on planetary positions')}
-        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

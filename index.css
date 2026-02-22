@@ -24,11 +24,13 @@ html, body, #root {
   position: fixed;
   inset: 0;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: auto; /* allow horizontal scroll if content overflows so text is never permanently hidden */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior-y: contain;
   overscroll-behavior-x: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Global touch-action rules for all devices - ensures single-finger scrolling */

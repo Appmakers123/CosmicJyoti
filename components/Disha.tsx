@@ -1,6 +1,6 @@
 import React from 'react';
 import { Language } from '../types';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 
 const WEEKDAY_DIRECTION: { day: number; en: string; hi: string; favourable: string; avoid: string }[] = [
   { day: 0, en: 'Sunday', hi: 'रविवार', favourable: 'East, North', avoid: 'South' },
@@ -25,12 +25,16 @@ const Disha: React.FC<{ language: Language; onBack?: () => void }> = ({ language
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
           </div>
         )}
+        <ModuleIntro
+          language={language}
+          subtitleEn="Lucky direction today – Disha Shool; favourable and avoid directions by weekday (Vedic)."
+          subtitleHi="आज की शुभ दिशा – दिशा शूल; वार के अनुसार शुभ और अशुभ दिशा (वैदिक)।"
+          descriptionEn="Check which direction is favourable and which to avoid today. Based on weekday; useful for travel, meetings and important moves."
+          descriptionHi="आज कौन सी दिशा शुभ और कौन सी टालें। वार के अनुसार; यात्रा और महत्वपूर्ण कदम के लिए।"
+        />
         <h2 className="text-3xl font-serif text-amber-200 mb-2">
           {language === 'hi' ? 'दिशा शूल — आज की दिशा' : 'Disha — Today direction'}
         </h2>
-        <p className="text-slate-400 text-sm mb-6">
-          {language === 'hi' ? 'वार के अनुसार शुभ और अशुभ दिशा' : 'Favourable and avoid directions by weekday'}
-        </p>
 
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-6 mb-6">
           <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">{language === 'hi' ? 'आज' : 'Today'}</p>

@@ -8,7 +8,7 @@ permissions:
 on:
   schedule:
     - cron: '30 0 * * *'   # 00:30 UTC ≈ 6am IST – Horoscope + Compatibility
-    - cron: '30 6 * * *'   # 06:30 UTC ≈ 12pm IST – Career, Love, other modules
+    - cron: '30 6 * * *'   # 06:30 UTC ≈ 12pm IST – All modules (Kundali, Panchang, Tarot, Guna Milan, Muhurat, etc.) rotating
     - cron: '30 12 * * *'  # 12:30 UTC ≈ 6pm IST – Planetary position and effect
     - cron: '30 15 * * *'  # 15:30 UTC ≈ 9pm IST – Events for next day
   workflow_dispatch:

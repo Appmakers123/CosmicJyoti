@@ -404,7 +404,7 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
   return (
     <div className="w-full max-w-5xl mx-auto px-4 pb-12 animate-fade-in-up">
       {!result ? (
-        <div className="bg-slate-800/80 backdrop-blur-md border border-pink-500/30 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+        <div className="bg-slate-800/80 backdrop-blur-md border border-pink-500/30 rounded-2xl p-6 md:p-8 shadow-2xl relative overflow-visible min-w-0">
           {loading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-2xl" aria-live="polite">
               <div className="flex flex-col items-center gap-4">

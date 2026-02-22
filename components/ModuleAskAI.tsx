@@ -87,10 +87,10 @@ const ModuleAskAI: React.FC<ModuleAskAIProps> = ({ contextStr, language, moduleN
           <div className="space-y-4 mb-4 max-h-[280px] overflow-y-auto custom-scrollbar pr-2">
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}>
-                <div className={`max-w-[90%] p-4 rounded-2xl text-sm leading-relaxed ${
+                <div className={`max-w-[90%] min-w-0 p-4 rounded-2xl text-sm leading-relaxed break-words ${
                   msg.role === 'user' ? `bg-gradient-to-br ${cls.split(' ').slice(1, 3).join(' ')} text-white rounded-br-none` : 'bg-slate-900/60 border border-slate-700/50 text-slate-200 rounded-bl-none'
                 }`}>
-                  <RichText text={msg.text} />
+                  <RichText text={msg.text} className="break-words" />
                   {msg.showDownloadCta && (
                     <DownloadAppForAICta language={language} accentColor={accentColor} />
                   )}

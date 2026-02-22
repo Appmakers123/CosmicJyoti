@@ -13,22 +13,23 @@ interface FAQSectionProps {
   language: Language;
   onClose?: () => void;
   inline?: boolean;
+  compact?: boolean;
 }
 
-const FAQSection: React.FC<FAQSectionProps> = ({ language, onClose, inline = true }) => {
+const FAQSection: React.FC<FAQSectionProps> = ({ language, onClose, inline = true, compact = false }) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const isHi = language === 'hi';
 
   const block = (
-    <div className="space-y-2">
-      <h3 className="text-lg font-serif font-semibold text-amber-200 mb-3">{isHi ? 'अक्सर पूछे जाने वाले प्रश्न' : 'Frequently Asked Questions'}</h3>
+    <div className={compact ? 'space-y-1.5' : 'space-y-2'}>
+      <h3 className={`font-serif font-semibold text-amber-200 mb-2 ${compact ? 'text-sm uppercase tracking-wider' : 'text-lg mb-3'}`}>{isHi ? 'अक्सर पूछे जाने वाले प्रश्न' : 'Frequently Asked Questions'}</h3>
       {FAQ_ITEMS.map((item, i) => (
-        <div key={i} className="border border-slate-600/50 rounded-xl overflow-hidden bg-slate-800/30">
-          <button type="button" onClick={() => setOpenIndex(openIndex === i ? null : i)} className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left text-slate-200 hover:bg-slate-700/30 transition-colors" aria-expanded={openIndex === i}>
-            <span className="font-medium text-sm">{isHi ? item.qHi : item.qEn}</span>
-            <span className="text-amber-400 text-lg flex-shrink-0">{openIndex === i ? '−' : '+'}</span>
+        <div key={i} className={`border border-slate-600/50 overflow-visible bg-slate-800/30 min-w-0 ${compact ? 'rounded-lg' : 'rounded-xl'}`}>
+          <button type="button" onClick={() => setOpenIndex(openIndex === i ? null : i)} className={`w-full flex items-center justify-between gap-2 text-left text-slate-200 hover:bg-slate-700/30 transition-colors ${compact ? 'px-3 py-2.5' : 'px-4 py-3'}`} aria-expanded={openIndex === i}>
+            <span className={`font-medium ${compact ? 'text-xs' : 'text-sm'}`}>{isHi ? item.qHi : item.qEn}</span>
+            <span className="text-amber-400 flex-shrink-0">{openIndex === i ? '−' : '+'}</span>
           </button>
-          {openIndex === i && <div className="px-4 pb-3 pt-0 text-slate-400 text-sm leading-relaxed border-t border-slate-700/50">{isHi ? item.aHi : item.aEn}</div>}
+          {openIndex === i && <div className={`pt-0 text-slate-400 leading-relaxed border-t border-slate-700/50 ${compact ? 'px-3 pb-2.5 text-xs' : 'px-4 pb-3 text-sm'}`}>{isHi ? item.aHi : item.aEn}</div>}
         </div>
       ))}
     </div>

@@ -5,6 +5,7 @@ import { generateAstroStory } from '../services/geminiService';
 import { ZODIAC_SIGNS, PLANETS_INFO, PLANETS_INFO_DETAILED, NAKSHATRAS_INFO } from '../constants';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface StarLegendsProps {
   language: Language;
@@ -77,6 +78,15 @@ const StarLegends: React.FC<StarLegendsProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Star legends – Puranic tales; zodiac, planetary and nakshatra myths and stories."
+          subtitleHi="तारा कथाएं – पौराणिक कथाएं; राशि, ग्रह और नक्षत्र की कहानियाँ।"
+          descriptionEn="Explore legends of signs, planets (Surya, Chandra, Shani, etc.) and nakshatras. AI-generated stories based on Puranic and Vedic lore."
+          descriptionHi="राशि, ग्रह और नक्षत्र की कथाएं देखें। पौराणिक और वैदिक आधार पर AI कहानियाँ।"
+        />
+      </div>
       {/* Hero Section with Creative Design */}
       <div className="text-center mb-16 relative">
         <div className="absolute inset-0 flex items-center justify-center">

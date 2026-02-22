@@ -6,6 +6,7 @@ import { useTranslation } from '../utils/translations';
 import { getExternalLinkProps } from '../utils/linkHandler';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface Mukhi {
     num: string;
@@ -426,7 +427,13 @@ const RudrakshLab: React.FC<{ language: Language }> = ({ language }) => {
     <div className="w-full max-w-6xl mx-auto animate-fade-in-up pb-12">
       <div className="bg-slate-800/80 border border-orange-500/30 rounded-3xl p-8 shadow-2xl overflow-hidden relative">
         <div className="absolute top-0 right-0 p-10 opacity-5 text-9xl">📿</div>
-        
+        <ModuleIntro
+          language={language}
+          subtitleEn="Rudraksha beads – benefits by mukhi (face); which bead for which planet and how to wear."
+          subtitleHi="रुद्राक्ष माला – मुखी के अनुसार लाभ; कौन सा मणि किस ग्रह के लिए और कैसे पहनें।"
+          descriptionEn="Explore one to fourteen mukhi rudraksha. Each bead is linked to a planet and has specific benefits. Get wearing method and beej mantra."
+          descriptionHi="एक से चौदह मुखी रुद्राक्ष देखें। प्रत्येक ग्रह से जुड़ा और विशेष लाभ। पहनने का तरीका और बीज मंत्र।"
+        />
         <div className="text-center mb-10">
           <h2 className="text-3xl font-serif text-orange-200 mb-2">{t.rudrakshAlchemist}</h2>
           <p className="text-slate-400 text-sm italic">{t.shivaTears}</p>

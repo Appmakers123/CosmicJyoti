@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Language } from '../types';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 
 // Rashi (sign) -> primary gemstone (Vedic Ratna)
 const RASHI_GEMSTONE: Record<string, { en: string; hi: string; gemEn: string; gemHi: string }> = {
@@ -44,12 +44,16 @@ const BirthstoneByDob: React.FC<{ language: Language; onBack?: () => void; onOpe
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
           </div>
         )}
+        <ModuleIntro
+          language={language}
+          subtitleEn="Birthstone by date of birth – Sun sign gemstone (Vedic rashi ratna); ruby, pearl, emerald, etc."
+          subtitleHi="जन्म तिथि से राशि रत्न – सूर्य राशि के अनुसार मुख्य रत्न (माणिक, मोती, पन्ना आदि)।"
+          descriptionEn="Enter your date of birth to see your zodiac sign and its primary gemstone. For detailed advice see Gemstone Lab."
+          descriptionHi="जन्म तारीख डालें – राशि और मुख्य रत्न देखें। विस्तृत सलाह के लिए रत्न लैब देखें।"
+        />
         <h2 className="text-3xl font-serif text-amber-200 mb-2">
           {language === 'hi' ? 'राशि रत्न — जन्म तिथि से' : 'Birthstone by date of birth'}
         </h2>
-        <p className="text-slate-400 text-sm mb-6">
-          {language === 'hi' ? 'जन्म तारीख डालें, अपनी राशि का मुख्य रत्न देखें' : 'Enter birth date to see your rashi\'s primary gemstone'}
-        </p>
 
         <div className="mb-6">
           <label className="block text-slate-400 text-xs uppercase tracking-wider mb-1">{language === 'hi' ? 'जन्म तिथि' : 'Date of birth'}</label>

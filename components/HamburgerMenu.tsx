@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { Language, User, AppViewMode } from '../types';
 import { PLAY_STORE_URL } from '../constants';
 import { getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
+import MySavedReports from './MySavedReports';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -143,6 +144,13 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               </button>
             )}
           </div>
+
+          {/* My saved reports – after Profile */}
+          <MySavedReports
+            language={language}
+            onOpenMode={(mode) => { onNavigate(mode); onClose(); }}
+            compact
+          />
         </div>
       </div>
     </>

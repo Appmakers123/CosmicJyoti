@@ -4,7 +4,7 @@ import React from 'react';
 /** App UI language code. en/hi = static; Sarvam 11 = Sarvam; 200+ = Shunya Labs. */
 export type Language = string;
 
-export type ViewMode = 'daily' | 'kundali' | 'panchang' | 'numerology' | 'learning' | 'transits' | 'tarot' | 'compatibility' | 'games' | 'palm-reading' | 'face-reading' | 'muhurat' | 'mantra' | 'rudraksh' | 'planets-houses' | 'zodiac-signs' | 'nakshatra-library' | 'kundali-basics' | 'palmistry-guide' | 'numerology-guide' | 'astro-lab' | 'star-legends' | 'matchmaking' | 'varshphal' | 'name-suggestions' | 'upay' | 'disha' | 'birthstone';
+export type ViewMode = 'daily' | 'kundali' | 'panchang' | 'numerology' | 'learning' | 'transits' | 'tarot' | 'compatibility' | 'games' | 'palm-reading' | 'face-reading' | 'muhurat' | 'mantra' | 'rudraksh' | 'planets-houses' | 'zodiac-signs' | 'nakshatra-library' | 'kundali-basics' | 'palmistry-guide' | 'numerology-guide' | 'astro-lab' | 'star-legends' | 'matchmaking' | 'varshphal' | 'name-suggestions' | 'upay' | 'disha' | 'birthstone' | 'loshu' | 'i-ching' | 'runes' | 'signature' | 'ashta-siddhis' | 'rasa-shastra' | 'sadesati-dasha' | 'about' | 'contact' | 'lal-kitab' | 'prashna-kundali' | 'mobile-numerology';
 
 export type AppViewMode = ViewMode | 'hub' | 'vastu' | 'gemstones' | 'dreams' | 'cosmic-health' | 'yantra' | 'appointment' | 'ai-blog';
 

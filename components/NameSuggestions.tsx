@@ -4,7 +4,7 @@ import { generateNameSuggestions } from '../services/geminiService';
 import { setErrorSafely } from '../utils/errorHandler';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 
 const NameSuggestions: React.FC<{ language: Language; onBack?: () => void }> = ({ language, onBack }) => {
   const [type, setType] = useState<'baby' | 'business'>('baby');
@@ -33,8 +33,14 @@ const NameSuggestions: React.FC<{ language: Language; onBack?: () => void }> = (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">
       <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-8 shadow-2xl">
         {onBack && <div className="mb-6"><BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} /></div>}
+        <ModuleIntro
+          language={language}
+          subtitleEn="Baby name & business name suggestions – by numerology and preferences (Vedic and modern)."
+          subtitleHi="बेबी नाम और व्यापार नाम सुझाव – अंक ज्योतिष और पसंद के अनुसार।"
+          descriptionEn="Get name ideas for your baby or for a business/brand. Share preferences (e.g. letter, meaning) for personalised suggestions."
+          descriptionHi="बच्चे या व्यापार/ब्रांड के लिए नाम सुझाव पाएं। पसंद बताएं (अक्षर, अर्थ) – व्यक्तिगत सुझाव।"
+        />
         <h2 className="text-3xl font-serif text-amber-200 mb-2">Name Suggestions</h2>
-        <p className="text-slate-400 text-sm mb-6">Baby and business names by preferences</p>
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

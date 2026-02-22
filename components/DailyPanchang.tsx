@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { DailyPanchangResponse, Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
-import { BackButton, SaveShareBar } from './common';
+import { BackButton, SaveShareBar, ModuleIntro } from './common';
 import { saveReport, getReportByForm } from '../utils/reportStorageService';
 import { trackRemind } from '../utils/dataLayer';
 
@@ -63,7 +63,7 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 animate-fade-in-up pb-12">
-      <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
+      <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-6 md:p-10 shadow-2xl relative overflow-visible min-w-0">
         {onBack && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
@@ -85,6 +85,15 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
         {/* Background Decorative */}
         <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/10 rounded-bl-full pointer-events-none"></div>
 
+        <div className="relative z-10 mb-6">
+          <ModuleIntro
+            language={language}
+            subtitleEn="Today's Panchang – tithi, nakshatra, sunrise, sunset, Rahu Kalam, Abhijit muhurat by date and location."
+            subtitleHi="आज का पंचांग – तिथि, नक्षत्र, सूर्योदय, राहु काल, अभिजीत मुहूर्त तारीख और स्थान के अनुसार।"
+            descriptionEn="Vedic daily almanac for your place. Check auspicious and inauspicious timings, yoga, karana and planetary positions."
+            descriptionHi="आपके स्थान के लिए वैदिक दैनिक पंचांग। शुभ-अशुभ समय, योग, करण और ग्रह स्थिति देखें।"
+          />
+        </div>
         <div className="text-center mb-10 relative z-10">
           <h2 className="text-3xl md:text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-200 to-yellow-200 mb-3">
              {t.todaysPanchang}

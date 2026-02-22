@@ -5,7 +5,7 @@
  *
  * Time slots (run script with slot argument; schedule via cron or GitHub Actions):
  * - 6am  (morning): Horoscope + Compatibility
- * - 12pm (noon):    Career, Love, and other dashboard modules (2 rotating)
+ * - 12pm (noon):    All dashboard modules rotating (Kundali, Panchang, Muhurat, Guna Milan, Tarot, Numerology, etc. – 2 per day)
  * - 6pm  (evening): Planetary position and its effect (2 articles)
  * - 9pm  (night):   Events and muhurat for the next day (2 articles)
  *
@@ -206,18 +206,29 @@ const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
 const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
 
-// Dashboard modules for 12pm slot (career, love, other) – rotate daily
+// All dashboard modules for 12pm slot – rotate daily so every module gets blog coverage
 const NOON_MODULES = [
   { mode: 'kundali', topic: 'Birth Chart / Kundali', keywords: 'Kundali, birth chart, Vedic astrology', label: 'Birth Chart' },
-  { mode: 'panchang', topic: 'Panchang / Muhurat', keywords: 'Panchang, muhurat, auspicious time', label: 'Panchang' },
+  { mode: 'panchang', topic: 'Panchang', keywords: 'Panchang, tithi, nakshatra, celestial almanac', label: 'Panchang' },
+  { mode: 'muhurat', topic: 'Muhurat / Auspicious Timing', keywords: 'Muhurat, auspicious time, shubh muhurat', label: 'Muhurat' },
+  { mode: 'matchmaking', topic: 'Guna Milan / Ashtakoot', keywords: 'Guna Milan, Ashtakoota, Kundali milan, marriage compatibility', label: 'Guna Milan' },
+  { mode: 'compatibility', topic: 'Compatibility / Love Match', keywords: 'Compatibility, relationship, love match, Kundali milan', label: 'Compatibility' },
+  { mode: 'varshphal', topic: 'Varshphal / Yearly Horoscope', keywords: 'Varshphal, yearly horoscope, annual prediction', label: 'Varshphal' },
+  { mode: 'disha', topic: 'Disha Shool / Lucky Direction', keywords: 'Disha shool, lucky direction, today direction', label: 'Disha' },
   { mode: 'tarot', topic: 'Tarot Reading', keywords: 'Tarot, card reading, divination', label: 'Tarot' },
-  { mode: 'numerology', topic: 'Numerology & Career', keywords: 'Numerology, life path, career, destiny number', label: 'Numerology' },
+  { mode: 'numerology', topic: 'Numerology', keywords: 'Numerology, life path, destiny number', label: 'Numerology' },
   { mode: 'palm-reading', topic: 'Palmistry', keywords: 'Palmistry, hand reading, hast rekha', label: 'Palmistry' },
+  { mode: 'face-reading', topic: 'Face Reading / Samudrik', keywords: 'Face reading, Samudrik Shastra, face astrology', label: 'Face Reading' },
   { mode: 'dreams', topic: 'Dream Interpretation', keywords: 'Dream interpretation, swapna shastra', label: 'Dreams' },
+  { mode: 'loshu', topic: 'Lo Shu Grid', keywords: 'Lo Shu Grid, magic square, numerology grid', label: 'Lo Shu Grid' },
   { mode: 'mantra', topic: 'Mantra', keywords: 'Mantra, chanting, planetary mantras', label: 'Mantra' },
   { mode: 'gemstones', topic: 'Gemstones', keywords: 'Gemstones, ratna, planetary remedies', label: 'Gemstones' },
+  { mode: 'birthstone', topic: 'Birthstone by Rashi', keywords: 'Birthstone, rashi ratna, zodiac gem', label: 'Birthstone' },
   { mode: 'vastu', topic: 'Vastu', keywords: 'Vastu, vastu shastra, home energy', label: 'Vastu' },
+  { mode: 'rudraksh', topic: 'Rudraksh', keywords: 'Rudraksh, sacred beads, mala', label: 'Rudraksh' },
+  { mode: 'yantra', topic: 'Yantra', keywords: 'Yantra, sacred geometry, Sri Yantra', label: 'Yantra' },
   { mode: 'cosmic-health', topic: 'Cosmic Health', keywords: 'Vedic wellness, health astrology', label: 'Cosmic Health' },
+  { mode: 'upay', topic: 'Upay / Vedic Remedies', keywords: 'Upay, Vedic remedies, astrological remedies', label: 'Upay' },
 ];
 
 function getNoonModulesForDate(dateStr) {
@@ -257,7 +268,7 @@ Output ONLY valid JSON in this exact format:
 function buildPrompt12pm(today, modules) {
   return `You are an expert Vedic astrologer and content writer for CosmicJyoti (cosmicjyoti.com).
 ${BASE_INSTRUCTIONS}
-Generate exactly 2 blog articles for today (${today}) about these dashboard modules (career, love, life guidance):
+Generate exactly 2 blog articles for today (${today}) about these CosmicJyoti dashboard modules:
 
 1. ${modules[0].topic} (serviceMode: "${modules[0].mode}") – Keywords: ${modules[0].keywords}
 2. ${modules[1].topic} (serviceMode: "${modules[1].mode}") – Keywords: ${modules[1].keywords}

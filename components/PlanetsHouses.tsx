@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { PLANETS_INFO_DETAILED, HOUSES_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface PlanetsHousesProps {
   language: Language;
@@ -14,6 +15,15 @@ const PlanetsHouses: React.FC<PlanetsHousesProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Planets & houses – the 9 Navagrahas and 12 Bhavas; foundation of Vedic astrology."
+          subtitleHi="ग्रह और भाव – नवग्रह और 12 भाव; वैदिक ज्योतिष की नींव।"
+          descriptionEn="Learn the meaning of each planet (Sun to Ketu) and each house (1st to 12th). Essential for reading a Kundali."
+          descriptionHi="प्रत्येक ग्रह (सूर्य से केतु) और प्रत्येक भाव (1 से 12) का अर्थ सीखें। कुंडली पढ़ने के लिए जरूरी।"
+        />
+      </div>
       <div className="text-center mb-16">
         <span className="text-[10px] uppercase font-bold tracking-[1em] text-amber-500 mb-2 block">Vedic Foundations</span>
         <h2 className="text-5xl md:text-7xl font-serif text-amber-100 drop-shadow-lg">

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface NumerologyGuideProps {
   language: Language;
@@ -371,6 +372,15 @@ const NumerologyGuide: React.FC<NumerologyGuideProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Numerology guide – life path, destiny number, soul urge, personality number; calculations and meanings."
+          subtitleHi="अंक ज्योतिष गाइड – लाइफ पाथ, भाग्य अंक, सोल उर्ज, व्यक्तित्व अंक; गणना और अर्थ।"
+          descriptionEn="Core concepts: how to calculate life path, destiny, soul urge and birthday numbers. Includes lucky numbers and compatibility. For education."
+          descriptionHi="मूल अवधारणाएं: लाइफ पाथ, भाग्य, सोल उर्ज की गणना। शिक्षा के लिए।"
+        />
+      </div>
       <div className="text-center mb-16">
         <span className="text-[10px] uppercase font-bold tracking-[1em] text-amber-500 mb-2 block">Numerology Secrets</span>
         <h2 className="text-5xl md:text-7xl font-serif text-amber-100 drop-shadow-lg">

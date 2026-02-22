@@ -5,6 +5,7 @@ import { getGlobalProfile } from '../utils/profileStorageService';
 import { generateChartBasedHealthAnalysis, getDefaultChartHealthAnalysis, HealthRemedy, ChartHealthAnalysis } from '../services/healthService';
 import Logo from './Logo';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 interface CosmicHealthAIProps {
@@ -194,6 +195,13 @@ const CosmicHealthAI: React.FC<CosmicHealthAIProps> = ({ language }) => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-950 via-slate-900 to-purple-950 py-8 px-4">
         <div className="max-w-2xl mx-auto">
+          <ModuleIntro
+            language={language}
+            subtitleEn="Cosmic Health – Vedic wellness from birth chart; dosha, remedies and lifestyle tips."
+            subtitleHi="कॉस्मिक हेल्थ – जन्म कुंडली से वैदिक स्वास्थ्य; दोष, उपाय और जीवनशैली टिप्स।"
+            descriptionEn="Enter birth details to get a health analysis based on your chart. Includes planetary influences, dosha balance and personalised remedies."
+            descriptionHi="जन्म विवरण डालें – कुंडली आधारित स्वास्थ्य विश्लेषण। ग्रह प्रभाव, दोष संतुलन और उपाय।"
+          />
           <div className="text-center mb-8">
             <h2 className="text-3xl md:text-4xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-amber-300 to-purple-300 mb-2">
               {language === 'hi' ? 'जन्म विवरण दर्ज करें' : 'Enter Birth Details'}

@@ -57,7 +57,7 @@ export default defineConfig(({ mode }) => {
       assetsDir: 'assets',
       sourcemap: false,
       minify: 'esbuild',
-      chunkSizeWarningLimit: 600, // Warn if chunks exceed 600KB (main app chunk is large due to many features)
+      chunkSizeWarningLimit: 800, // Warn if chunks exceed 800KB; route components are code-split via manualChunks
       cssCodeSplit: true, // Split CSS for better caching
       rollupOptions: {
         external: (id) => {
@@ -92,9 +92,23 @@ export default defineConfig(({ mode }) => {
               // All other node_modules
               return 'vendor';
             }
-            // Split large components into separate chunks
-            if (id.includes('components/') && (id.includes('LearningCenter') || id.includes('KundaliResult'))) {
-              return 'components-large';
+            // Split large / route components into separate chunks to keep main bundle under 600KB
+            if (id.includes('components/')) {
+              if (id.includes('LearningCenter') || id.includes('KundaliResult') || id.includes('NumerologyGuide') || id.includes('PalmistryGuide') || id.includes('KundaliBasics') || id.includes('PlanetsHouses') || id.includes('ZodiacSignsGuide') || id.includes('NakshatraLibrary') || id.includes('StarLegends')) {
+                return 'chunk-learning';
+              }
+              if (id.includes('MantraLab') || id.includes('YantraLab') || id.includes('CosmicHealthAI') || id.includes('RudrakshLab') || id.includes('VastuLab') || id.includes('GemstoneLab')) {
+                return 'chunk-labs';
+              }
+              if (id.includes('TarotReading') || id.includes('PalmReading') || id.includes('FaceReading') || id.includes('DreamInterpreter') || id.includes('Numerology') || id.includes('MatchMaking') || id.includes('CompatibilityTab')) {
+                return 'chunk-readings';
+              }
+              if (id.includes('MuhuratLab') || id.includes('Varshphal') || id.includes('NameSuggestions') || id.includes('UpayRemedies') || id.includes('Disha') || id.includes('BirthstoneByDob') || id.includes('LalKitab') || id.includes('SadesatiDashaCalculator') || id.includes('PrashnaKundali') || id.includes('MobileNumerology')) {
+                return 'chunk-tools';
+              }
+              if (id.includes('LoshuGrid') || id.includes('IChing') || id.includes('Runes') || id.includes('SignatureAnalysis') || id.includes('AshtaSiddhis') || id.includes('RasaShastra') || id.includes('AstroGames') || id.includes('BookAppointment')) {
+                return 'chunk-other';
+              }
             }
           }
         }

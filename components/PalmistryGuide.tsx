@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface PalmistryGuideProps {
   language: Language;
@@ -267,6 +268,15 @@ const PalmistryGuide: React.FC<PalmistryGuideProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pb-16 sm:pb-20 md:pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Palmistry guide – life line, heart line, head line, fate line; mounts and finger meanings."
+          subtitleHi="हस्तरेखा गाइड – जीवन रेखा, हृदय रेखा, मस्तिष्क रेखा, भाग्य रेखा; पर्वत और उंगली अर्थ।"
+          descriptionEn="Learn the major palm lines and mounts (Jupiter, Saturn, Sun, Mercury, etc.). For education and self-reflection; not a substitute for professional reading."
+          descriptionHi="मुख्य रेखाएं और पर्वत सीखें। शिक्षा और आत्म-चिंतन के लिए।"
+        />
+      </div>
       <div className="text-center mb-8 sm:mb-12 md:mb-16">
         <span className="text-[8px] sm:text-[10px] uppercase font-bold tracking-[0.5em] sm:tracking-[1em] text-amber-500 mb-2 block">Palmistry Learning</span>
         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-serif text-amber-100 drop-shadow-lg">

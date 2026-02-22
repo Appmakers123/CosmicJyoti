@@ -53,18 +53,18 @@ const RichText: React.FC<RichTextProps> = ({ text, className = '' }) => {
       // Headers
       if (trimmed.startsWith('### ')) {
           flushList(`header-${index}`);
-          renderedLines.push(<h4 key={`h4-${index}`} className="text-lg font-serif font-bold text-amber-100 mt-6 mb-3">{processInline(trimmed.slice(4))}</h4>);
+          renderedLines.push(<h4 key={`h4-${index}`} className="text-lg font-serif font-bold text-amber-100 mt-6 mb-3 break-words">{processInline(trimmed.slice(4))}</h4>);
           return;
       }
       if (trimmed.startsWith('## ')) {
           flushList(`header-${index}`);
-          renderedLines.push(<h3 key={`h3-${index}`} className="text-xl font-serif font-bold text-amber-200 mt-8 mb-4 border-b border-slate-700/50 pb-2">{processInline(trimmed.slice(3))}</h3>);
+          renderedLines.push(<h3 key={`h3-${index}`} className="text-xl font-serif font-bold text-amber-200 mt-8 mb-4 border-b border-slate-700/50 pb-2 break-words">{processInline(trimmed.slice(3))}</h3>);
           return;
       }
 
       // List Items (Support *, -, and •)
       if (trimmed.startsWith('* ') || trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
-          listItems.push(<li key={`li-${index}`} className="pl-1">{processInline(trimmed.slice(2))}</li>);
+          listItems.push(<li key={`li-${index}`} className="pl-1 break-words">{processInline(trimmed.slice(2))}</li>);
           return;
       }
 
@@ -75,14 +75,14 @@ const RichText: React.FC<RichTextProps> = ({ text, className = '' }) => {
           renderedLines.push(<div key={`spacer-${index}`} className="h-2"></div>);
       } else {
           flushList(`text-${index}`);
-          renderedLines.push(<p key={`p-${index}`} className="mb-4 leading-relaxed text-slate-200 font-light">{processInline(trimmed)}</p>);
+          renderedLines.push(<p key={`p-${index}`} className="mb-4 leading-relaxed text-slate-200 font-light break-words">{processInline(trimmed)}</p>);
       }
   });
 
   flushList('end');
 
   return (
-    <div className={`text-sm md:text-base selection:bg-amber-500/30 ${className}`}>
+    <div className={`text-sm md:text-base selection:bg-amber-500/30 break-words min-w-0 overflow-visible ${className}`} style={{ overflowWrap: 'break-word', wordBreak: 'break-word' }}>
       {renderedLines}
     </div>
   );

@@ -5,7 +5,7 @@ import { PLANETS_INFO } from '../constants';
 import { setErrorSafely } from '../utils/errorHandler';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 
 const PROBLEMS = [
   'Financial growth', 'Health and vitality', 'Love and relationships', 'Mental peace',
@@ -44,12 +44,16 @@ const UpayRemedies: React.FC<{ language: Language; onBack?: () => void }> = ({ l
             <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
           </div>
         )}
+        <ModuleIntro
+          language={language}
+          subtitleEn="Upay & Vedic remedies – by planet or by life problem (finance, health, marriage, career)."
+          subtitleHi="उपाय और वैदिक उपचार – ग्रह या जीवन समस्या (धन, स्वास्थ्य, विवाह, करियर) के अनुसार।"
+          descriptionEn="Select a planet to strengthen or a life area (e.g. financial growth, marriage delay). Get simple, practical remedies and mantras."
+          descriptionHi="ग्रह मजबूत करने के लिए या जीवन क्षेत्र चुनें। सरल, व्यावहारिक उपाय और मंत्र पाएं।"
+        />
         <h2 className="text-3xl font-serif text-amber-200 mb-2">
           {language === 'hi' ? 'उपाय — ज्योतिषीय उपचार' : 'Upay — Vedic Remedies'}
         </h2>
-        <p className="text-slate-400 text-sm mb-6">
-          {language === 'hi' ? 'ग्रह या समस्या के अनुसार व्यावहारिक उपाय' : 'Short remedies by planet or life problem'}
-        </p>
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -92,8 +96,8 @@ const UpayRemedies: React.FC<{ language: Language; onBack?: () => void }> = ({ l
         ) : (
           <div className="space-y-6">
             <AdBanner variant="leaderboard" />
-            <div className="bg-slate-900/60 p-6 rounded-2xl border border-amber-500/20">
-              <RichText text={result} />
+            <div className="bg-slate-900/60 p-4 sm:p-6 rounded-2xl border border-amber-500/20 min-w-0 w-full overflow-visible">
+              <RichText text={result} className="break-words" />
             </div>
             <button type="button" onClick={() => { setResult(null); setError(null); }} className="px-4 py-2 bg-slate-700 rounded-lg text-slate-300 text-sm">
               {language === 'hi' ? 'दूसरा उपाय' : 'Another remedy'}

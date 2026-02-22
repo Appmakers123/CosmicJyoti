@@ -266,6 +266,70 @@ export const generateUpayRemedies = async (planetOrProblem: string, language: La
         language
     );
 
+/** Lal Kitab: simple, non-ritualistic totkas (remedies) popular in North India. */
+export const generateLalKitabTotkas = async (topicOrPlanet: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        `Give Lal Kitab style totkas (remedies) for: ${topicOrPlanet}. Lal Kitab is known for simple, non-ritualistic, practical remedies—no complex rituals. Include 3–5 short totkas: everyday items, simple actions, charity, or dietary tips. Keep each 1–2 sentences.`,
+        "Act as a Lal Kitab expert. Remedies must be simple, non-ritualistic, and practical. Popular in North India.",
+        "gemini-2.0-flash",
+        language
+    );
+
+/** Prashna Kundali (Horary): answer based on time of question when birth time is unknown. */
+export const generatePrashnaAnswer = async (question: string, questionTimeIso: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        `Prashna Kundali (Horary Astrology): The seeker asked at ${questionTimeIso}: "${question}". Answer this specific question using horary principles—the moment of the question holds the answer. Give a clear, practical response in 150–250 words. Do not ask for birth details.`,
+        "Act as a Prashna/Horary astrology expert. Answer based on the time the question was asked. Be direct and helpful.",
+        "gemini-2.0-flash",
+        language
+    );
+
+const SATURN_SIGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+
+/**
+ * Ask AI for current Saturn transit sign (Vedic/Lahiri). Use for Sade Sati so the app stays current without manual updates.
+ * Returns null on failure or if response cannot be parsed; caller should use a fallback constant.
+ */
+export const getCurrentSaturnSignFromAI = async (): Promise<string | null> => {
+    try {
+        const today = new Date().toISOString().slice(0, 10);
+        const ai = getAI();
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash',
+            contents: `In Vedic (Lahiri sidereal) astrology, which zodiac sign is Saturn transiting today? Today's date: ${today}. Reply with exactly one word: the sign name. Choose only from: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.`,
+            config: { systemInstruction: 'You are a Vedic astrologer. Answer only with the exact sign name, nothing else.' }
+        });
+        const text = (response.text || '').trim();
+        const lower = text.toLowerCase();
+        const found = SATURN_SIGN_NAMES.find((s) => lower === s.toLowerCase() || lower.includes(s.toLowerCase()));
+        if (found) return found;
+        const match = text.match(/\b(Aries|Taurus|Gemini|Cancer|Leo|Virgo|Libra|Scorpio|Sagittarius|Capricorn|Aquarius|Pisces)\b/i);
+        return match ? match[1] : null;
+    } catch {
+        return null;
+    }
+};
+
+/** Sade Sati interpretation for a given Moon sign and current status (phase: 12th, 1st, 2nd or empty if not in Sade Sati). */
+export const generateSadeSatiInterpretation = async (moonSign: string, inSadeSati: boolean, phase: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        inSadeSati
+            ? `Give a brief Vedic interpretation of Sade Sati for Moon sign (Chandra Rashi) ${moonSign}. The native is currently in the ${phase} house phase of Sade Sati (Saturn transiting ${phase} from Moon). Explain in 2–3 short paragraphs: what this phase means for this Moon sign, areas of life likely affected, and one or two simple remedies or mindfulness tips. Be supportive and practical.`
+            : `Give a brief Vedic interpretation for Moon sign (Chandra Rashi) ${moonSign}. The native is NOT currently in Sade Sati. In 1–2 short paragraphs, explain what this means (relief from the Sade Sati cycle), and any general guidance for this Moon sign at this time. Be concise and uplifting.`,
+        "Act as a Vedic astrologer expert in Shani Sade Sati (Saturn's 7.5-year transit over 12th, 1st, 2nd from Moon). Interpret according to Moon sign and phase. Be clear and compassionate.",
+        "gemini-2.0-flash",
+        language
+    );
+
+/** Mobile Numerology: vibration of phone number for business/luck. */
+export const generateMobileNumerologyAnalysis = async (mobileNumber: string, language: Language): Promise<string> =>
+    generateInterpretativeReading(
+        `Analyze this mobile number for numerology (digit vibration): ${mobileNumber}. Consider: total sum, single-digit root, repeating digits, and popular methods (e.g. last 4 digits, full number). Give impact on business, luck, and personal energy. Suggest if the number is favourable or what to be mindful of. Keep 150–250 words.`,
+        "Act as a numerology expert specializing in mobile number analysis. Be practical and positive.",
+        "gemini-2.0-flash",
+        language
+    );
+
 /**
  * Structured Data Services
  */
@@ -896,6 +960,100 @@ function transformBackendResponse(backendResponse: any): KundaliResponse {
         dasha: backendResponse.dasha,
         predictions,
     };
+}
+
+/**
+ * Get Moon sign (and basic D1 details) from birth details only. Uses D1 planets API only — no D9, no chart URLs, no dasha.
+ * Use this when only Moon sign is needed (e.g. Sade Sati module).
+ */
+export async function getMoonSignFromBirthDetails(
+    formData: KundaliFormData,
+    language: Language = 'en'
+): Promise<{ moonSign: string; sunSign?: string; nakshatra?: string }> {
+    const coords = await getCoordinates(formData.location, formData.lat, formData.lon);
+    const dt = parseDateTime(formData.date, formData.time, formData.seconds);
+    let timezone = coords.timezone;
+    if (formData.tzone) {
+        const tzMatch = formData.tzone.match(/([+-]?\d+):?(\d+)?/);
+        if (tzMatch) {
+            const hours = parseInt(tzMatch[1]) || 0;
+            const minutes = parseInt(tzMatch[2] || '0');
+            timezone = hours + (minutes / 60);
+        }
+    }
+    const d1Payload = {
+        year: dt.year,
+        month: dt.month,
+        date: dt.date,
+        hours: dt.hours,
+        minutes: dt.minutes,
+        seconds: dt.seconds,
+        latitude: coords.lat,
+        longitude: coords.lon,
+        timezone: timezone,
+        settings: {
+            observation_point: formData.observationPoint || 'topocentric',
+            ayanamsha: formData.ayanamsha || 'lahiri',
+            language: formData.language || (language === 'hi' ? 'hi' : 'en')
+        }
+    };
+    let d1Response = await fetchWithKeyRotation('https://json.apiastro.com/planets/extended', {
+        method: 'POST',
+        body: d1Payload
+    });
+    if (!d1Response.ok) {
+        d1Response = await fetchWithKeyRotation('https://json.freeastrologyapi.com/planets', {
+            method: 'POST',
+            body: d1Payload
+        });
+    }
+    if (!d1Response.ok) {
+        throw new Error(`D1 API error: ${d1Response.status} - ${await d1Response.text()}`);
+    }
+    let d1Data = await d1Response.json();
+    if (d1Data.output) d1Data = d1Data.output;
+    const planetKeys = ['Sun', 'Moon', 'Mars', 'Mercury', 'Jupiter', 'Venus', 'Saturn', 'Rahu', 'Ketu', 'Ascendant'];
+    let planetsData: any = null;
+    if (planetKeys.some(key => d1Data[key])) {
+        planetsData = d1Data;
+    } else if (d1Data.planets) {
+        planetsData = d1Data.planets;
+    } else if (d1Data.planet_positions) {
+        planetsData = d1Data.planet_positions;
+    } else if (d1Data.data?.planets) {
+        planetsData = d1Data.data.planets;
+    } else {
+        planetsData = {};
+        Object.keys(d1Data).forEach(key => {
+            const m = key.match(/^(sun|moon|mars|mercury|jupiter|venus|saturn|rahu|ketu|ascendant)$/i);
+            if (m || planetKeys.includes(key)) planetsData[key] = d1Data[key];
+        });
+    }
+    let moonSign = 'Aries';
+    let sunSign: string | undefined;
+    let nakshatra: string | undefined;
+    const moonData = planetsData?.Moon || planetsData?.moon;
+    const sunData = planetsData?.Sun || planetsData?.sun;
+    if (moonData) {
+        const signName = moonData.zodiac_sign_name || moonData.sign || moonData.sign_name || moonData.zodiac || moonData.rashi || 'Aries';
+        let signId = moonData.current_sign;
+        if (!signId || signId < 1 || signId > 12) {
+            signId = signMap[signName] || moonData.sign_id || moonData.signId || 1;
+        }
+        if (signId < 1 || signId > 12) signId = 1;
+        moonSign = signNames[signId - 1] || signName;
+        nakshatra = moonData.nakshatra_name || moonData.nakshatra || moonData.nakshatra_name_english || moonData.star;
+    }
+    if (sunData) {
+        const signName = sunData.zodiac_sign_name || sunData.sign || sunData.sign_name || sunData.zodiac || sunData.rashi || 'Aries';
+        let signId = sunData.current_sign;
+        if (!signId || signId < 1 || signId > 12) {
+            signId = signMap[signName] || sunData.sign_id || sunData.signId || 1;
+        }
+        if (signId < 1 || signId > 12) signId = 1;
+        sunSign = signNames[signId - 1] || signName;
+    }
+    return { moonSign, sunSign, nakshatra };
 }
 
 /**
@@ -2220,6 +2378,50 @@ export const generateFaceReading = async (base64Image: string, mimeType: 'image/
         },
         config: {
             systemInstruction: MASTER_MENTOR_PROMPT + ' Act as an expert in Samudrik Shastra (Vedic face reading). Be respectful, positive, and insightful. Do not make medical or definitive predictions—frame insights as traditional wisdom and self-reflection.'
+        }
+    });
+    return response.text || '';
+};
+
+/** Signature analysis (graphology) — analyze a signature image and return personality/character insights. */
+export const generateSignatureAnalysis = async (base64Image: string, mimeType: 'image/jpeg' | 'image/png' | 'image/webp', language: Language): Promise<string> => {
+    const ai = getAI();
+    const langName = getLanguageName(language);
+    const prompt = language === 'hi'
+        ? `इस हस्ताक्षर (signature) का ग्राफोलॉजी (हस्तलेखन विज्ञान) के आधार पर विश्लेषण करें। आकार, झुकाव, दबाव, लय, बड़े/छोटे अक्षर, अंतिम स्ट्रोक और समग्र प्रवाह देखें। व्यक्तित्व, आत्मविश्वास, सामाजिकता, महत्वाकांक्षा और सकारात्मक सलाह दें। उत्तर केवल ${langName} में दें।`
+        : `Analyze this signature using graphology (handwriting/signature analysis). Consider size, slant, pressure, rhythm, use of capitals, ending strokes, and overall flow. Provide insights on personality, confidence, sociability, ambition, and positive guidance. Respond only in ${langName}.`;
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: {
+            parts: [
+                { inlineData: { mimeType, data: base64Image } },
+                { text: prompt }
+            ]
+        },
+        config: {
+            systemInstruction: MASTER_MENTOR_PROMPT + ' Act as an expert in graphology and signature analysis. Be respectful, positive, and insightful. Do not make definitive predictions—frame insights as traditional graphology wisdom and self-reflection.'
+        }
+    });
+    return response.text || '';
+};
+
+/** AI Palmistry — analyze a palm image (vision) and return Vedic palm reading. */
+export const generatePalmReadingFromImage = async (base64Image: string, mimeType: 'image/jpeg' | 'image/png' | 'image/webp', language: Language): Promise<string> => {
+    const ai = getAI();
+    const langName = getLanguageName(language);
+    const prompt = language === 'hi'
+        ? `इस हथेली की वैदिक हस्तरेखा (Palmistry) के अनुसार विश्लेषण करें। जीवन रेखा, हृदय रेखा, मस्तिष्क रेखा, भाग्य रेखा, पर्वत (ग्रह), और अन्य चिह्न देखें। व्यक्तित्व, स्वास्थ्य, करियर, प्रेम और सकारात्मक मार्गदर्शन दें। उत्तर केवल ${langName} में दें।`
+        : `Analyze this palm using Vedic Palmistry (Hast Rekha Shastra). Look at life line, heart line, head line, fate line, mounts (planetary), and other markings. Provide insights on personality, health, career, love, and positive guidance. Respond only in ${langName}.`;
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: {
+            parts: [
+                { inlineData: { mimeType, data: base64Image } },
+                { text: prompt }
+            ]
+        },
+        config: {
+            systemInstruction: MASTER_MENTOR_PROMPT + ' Act as an expert in Vedic Palmistry (Hast Rekha). Be respectful, positive, and insightful. Do not make medical or definitive predictions—frame insights as traditional wisdom and self-reflection.'
         }
     });
     return response.text || '';

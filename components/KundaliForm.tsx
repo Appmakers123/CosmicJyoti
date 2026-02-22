@@ -10,6 +10,7 @@ import {
   clearKundaliDraft,
 } from '../utils/kundaliFormUtils';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface KundaliFormProps {
   onSubmit: (data: KundaliFormData, options?: { saveToProfile?: boolean; consentToShare?: boolean }) => void;

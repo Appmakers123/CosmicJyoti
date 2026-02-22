@@ -5,6 +5,7 @@ import { PLANETS_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 const PROBLEMS = ["Financial Growth", "Health & Vitality", "Love & Relationships", "Mental Peace", "Career Success", "Spiritual Growth"];
 
@@ -30,6 +31,13 @@ const GemstoneLab: React.FC<{ language: Language }> = ({ language }) => {
   return (
     <div className="w-full max-w-4xl mx-auto animate-fade-in-up">
       <div className="bg-slate-800/80 border border-cyan-500/30 rounded-2xl p-8 shadow-2xl">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Gemstone lab – planetary gems (ruby, pearl, emerald, blue sapphire, etc.) and which to wear for which planet."
+          subtitleHi="रत्न लैब – ग्रह रत्न (माणिक, मोती, पन्ना, नीलम आदि) और किस ग्रह के लिए कौन सा पहनें।"
+          descriptionEn="Select afflicted planet and life objective. Get Vedic gemstone advice: which gem suits you, benefits and wearing guidelines."
+          descriptionHi="पीड़ित ग्रह और जीवन लक्ष्य चुनें। वैदिक रत्न सलाह: कौन सा रत्न आपके लिए, लाभ और पहनने के नियम।"
+        />
         <h2 className="text-3xl font-serif text-cyan-200 text-center mb-8">{t.gemstoneAlchemy}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <div className="space-y-2">

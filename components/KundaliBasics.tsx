@@ -5,6 +5,7 @@ import { generateConjunctionAnalysis } from '../services/geminiService';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface KundaliBasicsProps {
   language: Language;
@@ -199,6 +200,15 @@ const AstroLabSection: React.FC<{ language: Language }> = ({ language }) => {
 const KundaliBasics: React.FC<KundaliBasicsProps> = ({ language }) => {
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 pb-16 sm:pb-20 md:pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Kundali basics – what is a birth chart, D1–D60 divisional charts, 12 houses and how to read them."
+          subtitleHi="कुंडली बेसिक्स – जन्म चार्ट क्या है, D1–D60 विभाजन चार्ट, 12 भाव और पढ़ने का तरीका।"
+          descriptionEn="Fundamentals of Vedic Kundali: types of charts (D1 Rashi, D9 Navamsha, etc.), 12 Bhavas and interactive Astro Lab for planetary combinations."
+          descriptionHi="वैदिक कुंडली की मूल बातें: चार्ट प्रकार (D1 राशि, D9 नवमांश आदि), 12 भाव और ग्रह योग के लिए इंटरैक्टिव लैब।"
+        />
+      </div>
       <div className="text-center mb-8 sm:mb-12 md:mb-16">
         <span className="text-[8px] sm:text-[10px] uppercase font-bold tracking-[0.5em] sm:tracking-[1em] text-amber-500 mb-2 block">Kundali Learning</span>
         <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-serif text-amber-100 drop-shadow-lg">

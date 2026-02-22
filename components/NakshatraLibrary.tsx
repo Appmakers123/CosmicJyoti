@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { NAKSHATRAS_INFO } from '../constants';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface NakshatraLibraryProps {
   language: Language;
@@ -14,6 +15,15 @@ const NakshatraLibrary: React.FC<NakshatraLibraryProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Nakshatra library – 27 lunar mansions; Vedic nakshatras with ruler, symbol and traits."
+          subtitleHi="नक्षत्र पुस्तकालय – 27 चंद्र मंडल; ग्रह, प्रतीक और गुण के साथ।"
+          descriptionEn="All 27 Nakshatras used in Vedic astrology. Each has a ruling planet, symbol and nature. Essential for birth chart and Muhurta."
+          descriptionHi="वैदिक ज्योतिष में प्रयुक्त सभी 27 नक्षत्र। प्रत्येक का स्वामी ग्रह, प्रतीक और स्वभाव। जन्म कुंडली और मुहूर्त के लिए।"
+        />
+      </div>
       <div className="text-center mb-16">
         <span className="text-[10px] uppercase font-bold tracking-[1em] text-amber-500 mb-2 block">Lunar Mansions</span>
         <h2 className="text-5xl md:text-7xl font-serif text-amber-100 drop-shadow-lg">

@@ -21,6 +21,11 @@ import TarotReading from './components/TarotReading';
 import AstroGames from './components/AstroGames';
 import ChatWidget from './components/ChatWidget'; 
 import PalmReading from './components/PalmReading';
+import AshtaSiddhis from './components/AshtaSiddhis';
+import RasaShastra from './components/RasaShastra';
+import SadesatiDashaCalculator from './components/SadesatiDashaCalculator';
+import AboutUs from './components/AboutUs';
+import ContactUs from './components/ContactUs';
 import FaceReading from './components/FaceReading';
 import Varshphal from './components/Varshphal';
 import NameSuggestions from './components/NameSuggestions';
@@ -69,6 +74,7 @@ import { recordVisit, getStreak } from './utils/streakService';
 import { submitProfileWithConsent, isProfileSubmitEnabled } from './services/profileSubmissionService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import { getPageMeta, getCanonicalPath } from './utils/pageMeta';
+import { getFavoriteModules, toggleFavorite } from './utils/favoriteModules';
 import { trackToolOpen, trackReviewPromptDismissed } from './utils/dataLayer';
 import OfflineBanner from './components/OfflineBanner';
 import AppDownloadModal from './components/AppDownloadModal';
@@ -80,6 +86,14 @@ import InviteFriendBanner from './components/InviteFriendBanner';
 import FAQSection from './components/FAQSection';
 import HowItWorks from './components/HowItWorks';
 import MySavedReports from './components/MySavedReports';
+import LoshuGrid from './components/LoshuGrid';
+import IChing from './components/IChing';
+import Runes from './components/Runes';
+import TodaysOccultWidget from './components/TodaysOccultWidget';
+import SignatureAnalysis from './components/SignatureAnalysis';
+import LalKitab from './components/LalKitab';
+import PrashnaKundali from './components/PrashnaKundali';
+import MobileNumerology from './components/MobileNumerology';
 
 // Type-safe conditional import for Capacitor App plugin
 type CapacitorAppType = {
@@ -117,10 +131,16 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     color: 'from-purple-500/20 to-indigo-500/10',
     modules: [
       { mode: 'tarot', labelEn: 'Tarot', labelHi: 'टैरो', icon: '🃏', descEn: 'Card readings', descHi: 'कार्ड पाठ', isPremium: true },
-      { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'Hand reading', descHi: 'हाथ पढ़ना', isPremium: true },
+      { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'AI palm reading from photo', descHi: 'फोटो से AI हस्तरेखा', isPremium: true },
       { mode: 'face-reading', labelEn: 'Face Reading', labelHi: 'चेहरा पढ़ना', icon: '👤', descEn: 'Samudrik Shastra', descHi: 'समुद्रिक शास्त्र', isPremium: true },
       { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false },
       { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true },
+      { mode: 'loshu', labelEn: 'Lo Shu Grid', labelHi: 'लो शू ग्रिड', icon: '🔳', descEn: 'Magic square numerology', descHi: 'अंक ज्योतिष ग्रिड', isPremium: false },
+      { mode: 'i-ching', labelEn: 'I Ching', labelHi: 'ई चिंग', icon: '☰', descEn: 'Chinese hexagram wisdom', descHi: 'चीनी हेक्साग्राम', isPremium: false },
+      { mode: 'runes', labelEn: 'Runes', labelHi: 'रून्स', icon: 'ᚠ', descEn: 'Norse rune draw', descHi: 'नॉर्स रून', isPremium: false },
+      { mode: 'signature', labelEn: 'Signature Meaning', labelHi: 'हस्ताक्षर अर्थ', icon: '✍️', descEn: 'Draw or upload, AI analysis', descHi: 'बनाएं या अपलोड, AI विश्लेषण', isPremium: false },
+      { mode: 'prashna-kundali', labelEn: 'Prashna Kundali', labelHi: 'प्रश्न कुंडली', icon: '❓', descEn: 'Horary – answer by question time', descHi: 'प्रश्न के समय पर उत्तर', isPremium: false },
+      { mode: 'mobile-numerology', labelEn: 'Mobile Numerology', labelHi: 'मोबाइल अंक ज्योतिष', icon: '📱', descEn: 'Phone number vibration & luck', descHi: 'नंबर कंपन और भाग्य', isPremium: false },
       { mode: 'name-suggestions', labelEn: 'Name Suggestions', labelHi: 'नाम सुझाव', icon: '✏️', descEn: 'Baby & business names', descHi: 'बच्चा और व्यवसाय नाम', isPremium: false },
     ],
   },
@@ -138,6 +158,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'yantra', labelEn: 'Yantra', labelHi: 'यंत्र', icon: '🔺', descEn: 'Sacred geometry', descHi: 'पवित्र ज्यामिति', isPremium: false },
       { mode: 'cosmic-health', labelEn: 'Cosmic Health', labelHi: 'कॉस्मिक हेल्थ', icon: '🏥', descEn: 'Vedic wellness', descHi: 'वैदिक स्वास्थ्य', isPremium: false },
       { mode: 'upay', labelEn: 'Upay Remedies', labelHi: 'उपाय', icon: '🪔', descEn: 'Quick Vedic remedies', descHi: 'ज्योतिषीय उपाय', isPremium: false },
+      { mode: 'lal-kitab', labelEn: 'Lal Kitab', labelHi: 'लाल किताब', icon: '📕', descEn: 'Simple totkas & remedies', descHi: 'सरल टोटके और उपाय', isPremium: false },
       { mode: 'birthstone', labelEn: 'Birthstone by DOB', labelHi: 'राशि रत्न', icon: '💎', descEn: 'Your rashi gemstone', descHi: 'जन्म तिथि से रत्न', isPremium: false },
     ],
   },
@@ -157,6 +178,9 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'numerology-guide', labelEn: 'Numerology Guide', labelHi: 'अंक गाइड', icon: '🔢', descEn: 'Number meanings', descHi: 'अंक अर्थ', isPremium: false },
       { mode: 'star-legends', labelEn: 'Star Legends', labelHi: 'तारा कथाएं', icon: '🌟', descEn: 'Cosmic stories', descHi: 'आकाशीय कथाएं', isPremium: false },
       { mode: 'ai-blog', labelEn: 'AI Articles', labelHi: 'AI लेख', icon: '📝', descEn: 'Daily astrology articles', descHi: 'दैनिक ज्योतिष लेख', isPremium: false },
+      { mode: 'ashta-siddhis', labelEn: 'Ashta Siddhis & Nav Nidhi', labelHi: 'अष्ट सिद्धि व नव निधि', icon: '✨', descEn: 'Eight siddhis, nine nidhis', descHi: 'आठ सिद्धि, नव निधि', isPremium: false },
+      { mode: 'rasa-shastra', labelEn: 'Rasa Shastra', labelHi: 'रस शास्त्र', icon: '⚗️', descEn: 'Indian alchemy & Rasayana', descHi: 'भारतीय रसायन विद्या', isPremium: false },
+      { mode: 'sadesati-dasha', labelEn: 'Sade Sati & Dasha', labelHi: 'साढ़े साती और दशा', icon: '🪐', descEn: 'Calculator with AI interpretation', descHi: 'कैलकुलेटर और AI व्याख्या', isPremium: false },
     ],
   },
   {
@@ -181,7 +205,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
   },
 ];
 
-const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone'];
+const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone', 'lal-kitab', 'prashna-kundali', 'mobile-numerology', 'loshu', 'i-ching', 'runes', 'signature', 'ashta-siddhis', 'rasa-shastra', 'sadesati-dasha', 'about', 'contact'];
 
 /** Renders when Sarvam/Shunya are loading UI translations (must be inside TranslationProvider). */
 function TranslationLoadingIndicator() {
@@ -347,6 +371,7 @@ const App: React.FC = () => {
   const [streakCount, setStreakCount] = useState(0);
   const [showRemindToast, setShowRemindToast] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
+  const [favoriteModules, setFavoriteModules] = useState<AppViewMode[]>(() => getFavoriteModules());
 
   // Record visit and update streak when hub is shown; check "remind me tomorrow"
   useEffect(() => {
@@ -746,7 +771,7 @@ const App: React.FC = () => {
     }
   }, [mode]);
 
-  // Document title and meta (description, og) per view for SEO
+  // Document title, meta (description, og), canonical and og:url per view for SEO
   useEffect(() => {
     const { title, description } = getPageMeta(mode, language);
     document.title = title;
@@ -771,6 +796,29 @@ const App: React.FC = () => {
       document.head.appendChild(ogDesc);
     }
     ogDesc.setAttribute('content', description);
+    const baseUrl = typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname || '/').replace(/\/?$/, '')) : 'https://www.cosmicjyoti.com';
+    const canonicalUrl = mode === 'hub' ? `${baseUrl}/` : `${baseUrl}/?mode=${mode}`;
+    let linkCanonical = document.querySelector('link[rel="canonical"]');
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.setAttribute('rel', 'canonical');
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.setAttribute('href', canonicalUrl);
+    let ogUrl = document.querySelector('meta[property="og:url"]');
+    if (!ogUrl) {
+      ogUrl = document.createElement('meta');
+      ogUrl.setAttribute('property', 'og:url');
+      document.head.appendChild(ogUrl);
+    }
+    ogUrl.setAttribute('content', canonicalUrl);
+    let twitterUrl = document.querySelector('meta[name="twitter:url"]');
+    if (!twitterUrl) {
+      twitterUrl = document.createElement('meta');
+      twitterUrl.setAttribute('name', 'twitter:url');
+      document.head.appendChild(twitterUrl);
+    }
+    twitterUrl.setAttribute('content', canonicalUrl);
   }, [mode, language]);
 
   // GTM: track tool open when mode changes (skip hub)
@@ -824,6 +872,10 @@ const App: React.FC = () => {
     admobService.showInterstitialDelayed(delayMs, onShown);
   };
 
+  const handleToggleFavorite = (mode: AppViewMode) => {
+    setFavoriteModules(toggleFavorite(mode));
+  };
+
   const handleFeatureClick = (target: string) => {
     const mode = target as AppViewMode;
     if (['tarot', 'palm-reading', 'face-reading', 'numerology'].includes(mode) && !isFeatureUnlocked(mode)) {
@@ -837,22 +889,48 @@ const App: React.FC = () => {
 
 
 
-  const FeatureCard = ({ target, label, icon, desc, category, color, isPremium = false, isSubscriptionOnly = false, mustRead = false, isFeatured = false }: any) => (
-    <PremiumFeatureCard
-      target={target}
-      label={label}
-      icon={icon}
-      desc={desc}
-      category={category}
-      color={color}
-      onClick={() => handleFeatureClick(target)}
-      user={user}
-      isPremium={isPremium}
-      isSubscriptionOnly={isSubscriptionOnly}
-      mustRead={mustRead}
-      isFeatured={isFeatured}
-      language={language}
-    />
+  const getModuleByMode = (mode: AppViewMode): ModuleDef | null => {
+    for (const cat of MODULE_CATEGORIES) {
+      const m = cat.modules.find((x) => x.mode === mode);
+      if (m) return m;
+    }
+    return null;
+  };
+
+  const FeatureCard = ({ target, label, icon, desc, category, color, isPremium = false, isSubscriptionOnly = false, mustRead = false, isFeatured = false, isFavorite = false, onToggleFavorite }: any) => (
+    <div className="relative w-full h-full flex flex-col min-h-0">
+      {onToggleFavorite && (
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleFavorite(target); }}
+          className="absolute bottom-2 right-2 z-20 w-9 h-9 flex items-center justify-center rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-600 hover:border-amber-500/50 text-slate-400 hover:text-amber-400 transition-all"
+          aria-label={isFavorite ? (language === 'hi' ? 'पसंदीदा से हटाएं' : 'Remove from favorites') : (language === 'hi' ? 'पसंदीदा में जोड़ें' : 'Add to favorites')}
+        >
+          {isFavorite ? (
+            <svg className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.364 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.364-1.118L2.38 8.411c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+          )}
+        </button>
+      )}
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col">
+        <PremiumFeatureCard
+          target={target}
+          label={label}
+          icon={icon}
+          desc={desc}
+          category={category}
+          color={color}
+          onClick={() => handleFeatureClick(target)}
+          user={user}
+          isPremium={isPremium}
+          isSubscriptionOnly={isSubscriptionOnly}
+          mustRead={mustRead}
+          isFeatured={isFeatured}
+          language={language}
+        />
+      </div>
+    </div>
   );
 
   return (
@@ -869,7 +947,7 @@ const App: React.FC = () => {
         position: 'fixed',
         inset: 0,
         overflowY: 'auto',
-        overflowX: 'hidden',
+        overflowX: 'auto',
         WebkitOverflowScrolling: 'touch',
         touchAction: 'pan-y pan-x',
       }}
@@ -1038,6 +1116,12 @@ const App: React.FC = () => {
               </select>
               <TranslationLoadingIndicator />
             </div>
+            {mode === 'hub' && streakCount > 0 && (
+              <div className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold" title={language === 'hi' ? `${streakCount} दिन स्ट्रीक` : `${streakCount} day streak`}>
+                <span>🔥</span>
+                <span>{streakCount}</span>
+              </div>
+            )}
             <NotificationToggle language={language} />
             <button
               onClick={() => setHamburgerOpen(true)}
@@ -1077,6 +1161,13 @@ const App: React.FC = () => {
           </div>
         </div>
         <div className="hidden sm:flex items-center gap-2 shrink-0 ml-auto">
+          {mode === 'hub' && streakCount > 0 && (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold">
+              <span>🔥</span>
+              <span>{streakCount}</span>
+              <span>{language === 'hi' ? 'दिन स्ट्रीक' : 'day streak'}</span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <select
               value={language}
@@ -1151,6 +1242,37 @@ const App: React.FC = () => {
             
             <ThoughtOfTheDay language={language} />
 
+            {/* Favorites – quick access at top */}
+            {favoriteModules.length > 0 && (
+              <section className="animate-fade-in-up rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-5 md:p-6">
+                <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <span>⭐</span>
+                  {language === 'hi' ? 'पसंदीदा' : 'Favorites'}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 items-stretch">
+                  {favoriteModules.map((mode) => {
+                    const m = getModuleByMode(mode);
+                    if (!m) return null;
+                    return (
+                      <FeatureCard
+                        key={mode}
+                        target={m.mode}
+                        label={language === 'hi' ? m.labelHi : m.labelEn}
+                        icon={m.icon}
+                        desc={language === 'hi' ? m.descHi : m.descEn}
+                        category={language === 'hi' ? 'पसंदीदा' : 'Favorites'}
+                        color="from-amber-500 to-orange-500"
+                        isPremium={m.isPremium}
+                        isFeatured={false}
+                        isFavorite={true}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
             <DashboardConsentBanner
               language={language}
               onAddBirthDetails={() => switchMode('kundali')}
@@ -1158,6 +1280,46 @@ const App: React.FC = () => {
             />
 
             <CheckTodayOnboardingHint language={language} />
+
+            {/* Search results – show matching modules above "Check today" when user searches */}
+            {searchQuery.trim() && (() => {
+              const q = searchQuery.toLowerCase().trim();
+              const searchMatches: { m: ModuleDef; cat: CategoryDef }[] = [];
+              MODULE_CATEGORIES.forEach((cat) => {
+                cat.modules.forEach((m) => {
+                  if (m.labelEn.toLowerCase().includes(q) || m.labelHi.includes(q) || m.mode.toLowerCase().includes(q) || m.descEn.toLowerCase().includes(q) || m.descHi.includes(q) || cat.labelEn.toLowerCase().includes(q) || cat.labelHi.includes(q)) {
+                    searchMatches.push({ m, cat });
+                  }
+                });
+              });
+              if (searchMatches.length === 0) return null;
+              return (
+                <section className="animate-fade-in-up mb-6">
+                  <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🔍</span>
+                    {language === 'hi' ? 'खोज परिणाम' : 'Search results'}
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {searchMatches.map(({ m, cat }) => (
+                      <FeatureCard
+                        key={m.mode}
+                        target={m.mode}
+                        label={language === 'hi' ? m.labelHi : m.labelEn}
+                        icon={m.icon}
+                        desc={language === 'hi' ? m.descHi : m.descEn}
+                        category={language === 'hi' ? cat.labelHi : cat.labelEn}
+                        color="from-amber-500 to-orange-500"
+                        isPremium={m.isPremium}
+                        isSubscriptionOnly={false}
+                        isFeatured
+                        isFavorite={favoriteModules.includes(m.mode)}
+                        onToggleFavorite={handleToggleFavorite}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
 
             {/* Today – daily habit: Horoscope, Panchang, AI Articles */}
             <section className="animate-fade-in-up rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-5 md:p-6">
@@ -1221,49 +1383,7 @@ const App: React.FC = () => {
               </div>
             </section>
 
-            {/* Today for you: streak + quick links */}
-            <section className="animate-fade-in-up flex flex-wrap items-center justify-center gap-3 py-2">
-              {streakCount > 0 && (
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-sm font-medium">
-                  <span>🔥</span>
-                  <span>{language === 'hi' ? `${streakCount} दिन स्ट्रीक` : `${streakCount} day streak`}</span>
-                </div>
-              )}
-              <div className="flex flex-wrap justify-center gap-2">
-                <button onClick={() => switchMode('daily')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>🌞</span>
-                  <span>{language === 'hi' ? 'राशिफल' : 'Horoscope'}</span>
-                </button>
-                <button onClick={() => switchMode('kundali')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>🧭</span>
-                  <span>{language === 'hi' ? 'कुंडली' : 'Kundali'}</span>
-                </button>
-                <button onClick={() => switchMode('panchang')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>📅</span>
-                  <span>{language === 'hi' ? 'पंचांग' : 'Panchang'}</span>
-                </button>
-                <button onClick={() => switchMode('muhurat')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>🕐</span>
-                  <span>{language === 'hi' ? 'मुहूर्त' : 'Muhurat'}</span>
-                </button>
-                <button onClick={() => switchMode('compatibility')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>❤️</span>
-                  <span>{language === 'hi' ? 'मिलान' : 'Compatibility'}</span>
-                </button>
-                <button onClick={() => switchMode('matchmaking')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>💒</span>
-                  <span>{language === 'hi' ? 'गुण मिलान' : 'Guna Milan'}</span>
-                </button>
-                <button onClick={() => switchMode('games')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>🎲</span>
-                  <span>{language === 'hi' ? 'पहेलियाँ' : 'Games'}</span>
-                </button>
-                <button onClick={() => switchMode('ai-blog')} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-slate-300 hover:text-amber-200 text-sm font-medium transition-all">
-                  <span>📝</span>
-                  <span>{language === 'hi' ? 'AI लेख' : 'AI Articles'}</span>
-                </button>
-              </div>
-            </section>
+            <TodaysOccultWidget language={language} onNavigate={switchMode} />
 
             {/* Daily Luck Score - KundaliCard style */}
             <section className="animate-fade-in-up">
@@ -1320,18 +1440,6 @@ const App: React.FC = () => {
               )}
             </section>
 
-            <MySavedReports language={language} onOpenMode={switchMode} />
-
-            {/* How it works & FAQ */}
-            <section className="animate-fade-in-up grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="rounded-2xl border border-slate-600/50 bg-slate-800/30 p-5">
-                <HowItWorks language={language} compact />
-              </div>
-              <div className="rounded-2xl border border-slate-600/50 bg-slate-800/30 p-5">
-                <FAQSection language={language} inline />
-              </div>
-            </section>
-
             {/* Categorized modules - user-friendly sections */}
             {MODULE_CATEGORIES.map((cat, catIdx) => {
               const filteredModules = cat.modules.filter((m) => {
@@ -1352,7 +1460,7 @@ const App: React.FC = () => {
                     <div className="h-px flex-1 bg-slate-600/50 rounded-full"></div>
                   </div>
                   {/* Module grid - larger for Popular */}
-                  <div className={`grid gap-3 ${isPopular ? 'grid-cols-2 sm:grid-cols-4 gap-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4'} `}>
+                  <div className={`grid items-stretch ${isPopular ? 'grid-cols-2 sm:grid-cols-4 gap-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'}`}>
                     {filteredModules.map((m) => (
                       <FeatureCard
                         key={m.mode}
@@ -1365,12 +1473,82 @@ const App: React.FC = () => {
                         isPremium={m.isPremium}
                         isSubscriptionOnly={false}
                         isFeatured={isPopular}
+                        isFavorite={favoriteModules.includes(m.mode)}
+                        onToggleFavorite={handleToggleFavorite}
                       />
                     ))}
                   </div>
                 </section>
               );
             })}
+
+            {/* Guides – How to use our tools (SEO: keyword-rich content + internal links to tools) */}
+            <section className="animate-fade-in-up mt-8" aria-label={language === 'hi' ? 'टूल गाइड' : 'Tool guides'}>
+              <div className="flex items-center gap-3 mb-4 px-1 rounded-xl py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-slate-700/30">
+                <span className="text-2xl">📖</span>
+                <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider">
+                  {language === 'hi' ? 'गाइड – टूल कैसे इस्तेमाल करें' : 'Guides – How to use our tools'}
+                </h3>
+                <div className="h-px flex-1 bg-slate-600/50 rounded-full" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'साढ़े साती कैसे जांचें' : 'How to check Sade Sati by Moon sign'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'चंद्र राशि दर्ज करें या जन्म से ढूंढें। 12वाँ, 1ला, 2रा भाव तारीखें और AI व्याख्या मिलती है।' : 'Enter your Moon sign or find it from birth details. Get dates for 12th, 1st, 2nd house phase and AI interpretation.'}</p>
+                  <button type="button" onClick={() => switchMode('sadesati-dasha')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'साढ़े साती कैलकुलेटर खोलें' : 'Try Sade Sati calculator'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'मुफ्त कुंडली कैसे बनाएं' : 'How to create your free Kundali'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'जन्म तारीख, समय और स्थान दर्ज करें। D1 व D9 चार्ट, ग्रह स्थिति और भविष्यवाणी मिलती है।' : 'Enter birth date, time and place. Get D1 & D9 chart, planetary positions and predictions.'}</p>
+                  <button type="button" onClick={() => switchMode('kundali')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'मुफ्त कुंडली खोलें' : 'Try free Kundali'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'लाल किताब टोटके और उपाय' : 'Lal Kitab totkas and simple remedies'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'ग्रह या समस्या लिखें। सरल, अनुष्ठान-रहित टोटके मिलते हैं।' : 'Enter a planet or problem. Get simple, non-ritualistic totkas popular in North India.'}</p>
+                  <button type="button" onClick={() => switchMode('lal-kitab')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'लाल किताब खोलें' : 'Try Lal Kitab totkas'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'आज का पंचांग देखें' : "Today's Panchang – tithi, nakshatra, muhurat"}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'तिथि, नक्षत्र, योग, करण, सूर्योदय/अस्त और मुहूर्त।' : 'Tithi, nakshatra, yoga, karana, sunrise/sunset and muhurat.'}</p>
+                  <button type="button" onClick={() => switchMode('panchang')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'पंचांग खोलें' : 'Check today\'s Panchang'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'गुण मिलान – विवाह मिलान' : 'Guna Milan – marriage compatibility'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'दोनों की जन्म तारीख से अष्टकूट गुण मिलान और स्कोर।' : 'Ashtakoot Guna Milan from both birth details. Get total score and guna breakdown.'}</p>
+                  <button type="button" onClick={() => switchMode('matchmaking')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'गुण मिलान खोलें' : 'Try Guna Milan'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'प्रश्न कुंडली – प्रश्न के समय पर उत्तर' : 'Prashna Kundali – answer by question time'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'जन्म समय जरूरी नहीं। प्रश्न पूछने का समय दर्ज करें और उत्तर पाएं।' : 'No birth time needed. Enter when you asked the question and get an answer.'}</p>
+                  <button type="button" onClick={() => switchMode('prashna-kundali')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'प्रश्न कुंडली खोलें' : 'Try Prashna Kundali'}</button>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
+                  <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'मोबाइल नंबर अंक ज्योतिष' : 'Mobile number numerology – phone luck'}</h4>
+                  <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'नंबर की कंपन और व्यवसाय/भाग्य पर प्रभाव। मुफ्त विश्लेषण।' : 'Phone number vibration and impact on business and luck. Free analysis.'}</p>
+                  <button type="button" onClick={() => switchMode('mobile-numerology')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'मोबाइल अंक ज्योतिष खोलें' : 'Try mobile numerology'}</button>
+                </div>
+              </div>
+            </section>
+
+            {/* How it works & FAQ – after modules, compact and attractive */}
+            <section className="animate-fade-in-up mt-10">
+              <div className="rounded-2xl border border-amber-500/20 bg-gradient-to-br from-slate-800/60 to-slate-900/60 overflow-visible shadow-xl">
+                <div className="p-5 md:p-6 border-b border-slate-700/50">
+                  <h3 className="text-base font-serif font-bold text-amber-200 flex items-center gap-2">
+                    <span className="text-xl">✨</span>
+                    {language === 'hi' ? 'यह कैसे काम करता है' : 'How it works'}
+                  </h3>
+                  <p className="text-slate-400 text-sm mt-2 leading-relaxed">
+                    {language === 'hi'
+                      ? 'कुंडली, गुण मिलान, राशिफल और पंचांग – सही जन्म तारीख व समय दर्ज करें। मनोरंजन व शैक्षिक उद्देश्य के लिए; महत्वपूर्ण निर्णय के लिए कुशल ज्योतिषी से सलाह लें।'
+                      : 'Kundali, Guna Milan, Horoscope & Panchang – enter correct birth details for accuracy. For entertainment and education; consult an astrologer for important decisions.'}
+                  </p>
+                </div>
+                <div className="p-5 md:p-6">
+                  <FAQSection language={language} inline compact />
+                </div>
+              </div>
+            </section>
             
             <InviteFriendBanner language={language} karmaBalance={karmaBalance} onKarmaUpdate={() => setKarmaBalance(getKarma())} />
 
@@ -1450,9 +1628,18 @@ const App: React.FC = () => {
         {mode === 'gemstones' && <GemstoneLab language={language} />}
         {mode === 'cosmic-health' && <CosmicHealthAI language={language} />}
         {mode === 'palm-reading' && <PalmReading language={language} />}
+        {mode === 'ashta-siddhis' && <AshtaSiddhis language={language} onBack={() => setMode('hub')} />}
+        {mode === 'rasa-shastra' && <RasaShastra language={language} onBack={() => setMode('hub')} />}
+        {mode === 'sadesati-dasha' && <SadesatiDashaCalculator language={language} onBack={() => setMode('hub')} />}
+        {mode === 'about' && <AboutUs language={language} onBack={() => setMode('hub')} />}
+        {mode === 'contact' && <ContactUs language={language} onBack={() => setMode('hub')} />}
         {mode === 'face-reading' && <FaceReading language={language} />}
         {mode === 'tarot' && <TarotReading language={language}  />}
         {mode === 'numerology' && <Numerology language={language} />}
+        {mode === 'loshu' && <LoshuGrid language={language} />}
+        {mode === 'i-ching' && <IChing language={language} />}
+        {mode === 'runes' && <Runes language={language} />}
+        {mode === 'signature' && <SignatureAnalysis language={language} />}
         {mode === 'learning' && <LearningCenter language={language} />}
         {mode === 'planets-houses' && <PlanetsHouses language={language} />}
         {mode === 'zodiac-signs' && <ZodiacSignsGuide language={language} />}
@@ -1476,6 +1663,9 @@ const App: React.FC = () => {
         {mode === 'upay' && <UpayRemedies language={language} onBack={() => setMode('hub')} />}
         {mode === 'disha' && <Disha language={language} onBack={() => setMode('hub')} />}
         {mode === 'birthstone' && <BirthstoneByDob language={language} onBack={() => setMode('hub')} onOpenGemstones={() => setMode('gemstones')} />}
+        {mode === 'lal-kitab' && <LalKitab language={language} onBack={() => setMode('hub')} />}
+        {mode === 'prashna-kundali' && <PrashnaKundali language={language} onBack={() => setMode('hub')} />}
+        {mode === 'mobile-numerology' && <MobileNumerology language={language} onBack={() => setMode('hub')} />}
         
         {mode !== 'hub' && !loading && (
           <button onClick={() => {setMode('hub'); setError(null);}} className="mt-12 mx-auto flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-amber-400 uppercase tracking-[0.4em] bg-slate-900/50 px-10 py-3 rounded-full border border-slate-800 transition-all shadow-lg">
@@ -1525,6 +1715,18 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
               <h3 className="text-amber-300 font-serif font-bold text-base sm:text-lg uppercase tracking-wider mb-2">Quick Links</h3>
               <div className="flex flex-col gap-3">
+                <button type="button" onClick={() => switchMode('about')} className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base text-left">
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {language === 'hi' ? 'हमारे बारे में' : 'About Us'}
+                </button>
+                <button type="button" onClick={() => switchMode('contact')} className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base text-left">
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                  {language === 'hi' ? 'संपर्क करें' : 'Contact Us'}
+                </button>
                 <a 
                   href="/privacy-policy.html" 
                   className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base"

@@ -5,6 +5,7 @@ import { askRishiWithFallback } from '../services/geminiService';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
 import { canSendMessage, getRemainingMessages, incrementChatUsage } from '../utils/chatLimitService';
+import { ModuleIntro } from './common';
 
 const VASTU_CHIPS_EN = [
   'Best direction for main entrance?',
@@ -92,6 +93,13 @@ const VastuLab: React.FC<VastuLabProps> = ({ language, onWatchAdForChat, chatRef
 
   return (
     <div className="w-full max-w-3xl mx-auto animate-fade-in-up flex flex-col min-h-[70vh]">
+      <ModuleIntro
+        language={language}
+        subtitleEn="Vastu Shastra – home and office direction, placement tips; entrance, kitchen, bedroom, pooja room."
+        subtitleHi="वास्तु शास्त्र – घर और ऑफिस दिशा, स्थान टिप्स; द्वार, रसोई, बेडरूम, पूजा कक्ष।"
+        descriptionEn="Chat with Rishi about Vastu. Ask best direction for entrance, kitchen, bedroom or study. Get practical Vastu tips for your space."
+        descriptionHi="वास्तु पर ऋषि से चैट करें। द्वार, रसोई, बेडरूम के लिए सर्वोत्तम दिशा पूछें। व्यावहारिक वास्तु सुझाव।"
+      />
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-2xl sm:text-3xl font-serif text-emerald-200">

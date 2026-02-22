@@ -6,6 +6,7 @@ import { generateAstroQuiz, generateAstroRiddles } from '../services/geminiServi
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 import { ZODIAC_SIGNS, PLANETS_INFO } from '../constants';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface AstroGamesProps {
   language: Language;
@@ -183,7 +184,13 @@ const AstroGames: React.FC<AstroGamesProps> = ({ language }) => {
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up min-h-[60vh]">
       <div className="bg-slate-800/80 backdrop-blur-md border border-indigo-500/30 rounded-[2.5rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-5 text-9xl">🎲</div>
-        
+        <ModuleIntro
+          language={language}
+          subtitleEn="Astrology games – celestial trivia, riddles and harmony match; test your Vedic knowledge."
+          subtitleHi="ज्योतिष गेम्स – सेलेस्टियल ट्रिविया, पहेलियाँ और हार्मनी मैच; वैदिक ज्ञान की जांच।"
+          descriptionEn="Play trivia quizzes, solve riddles and match signs or planets. Fun and educational; for entertainment only."
+          descriptionHi="ट्रिविया क्विज खेलें, पहेलियाँ सुलझाएं और राशि/ग्रह मैच करें। मनोरंजन के लिए।"
+        />
         <div className="text-center mb-10 relative z-10">
           <h2 className="text-4xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-white to-indigo-200 mb-2">
             {t.games}

@@ -7,6 +7,7 @@ import { generateConjunctionAnalysis } from '../services/geminiService';
 import { calculateLifePath, calculateBirthday } from '../utils/numerologyUtils';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
+import { ModuleIntro } from './common';
 
 interface LearningCenterProps {
   language: Language;
@@ -145,6 +146,15 @@ const LearningCenter: React.FC<LearningCenterProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Learn Vedic astrology – planets, houses, zodiac signs, nakshatras, Kundali basics, palmistry, numerology and planetary yoga."
+          subtitleHi="वैदिक ज्योतिष सीखें – ग्रह, भाव, राशि, नक्षत्र, कुंडली बेसिक्स, हस्तरेखा, अंक ज्योतिष और योग।"
+          descriptionEn="Cosmic Academy: explore foundations of Vedic astrology, divisional charts, Nakshatras and interactive tools. For education and self-study."
+          descriptionHi="कॉस्मिक अकादमी: वैदिक ज्योतिष की नींव, विभाजन चार्ट, नक्षत्र और इंटरैक्टिव टूल। शिक्षा और स्व-अध्ययन।"
+        />
+      </div>
       <div className="text-center mb-16">
         <span className="text-[10px] uppercase font-bold tracking-[1em] text-amber-500 mb-2 block">Vishwa Vidya</span>
         <h2 className="text-5xl md:text-7xl font-serif text-amber-100 drop-shadow-lg">Cosmic Academy</h2>

@@ -7,13 +7,9 @@
 import type { HoroscopeResponse, TransitResponse, PlanetaryPosition } from '../types';
 import type { Language } from '../types';
 import { getNextPerplexityKey, getAllPerplexityKeys } from '../utils/perplexityApiKeys';
+import { getLanguageDisplayName } from '../utils/languageNames';
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
-
-const LANGUAGE_NAMES: Record<Language, string> = {
-  en: 'English',
-  hi: 'Hindi',
-};
 
 function getApiKey(): string {
   const key = getNextPerplexityKey();
@@ -75,7 +71,7 @@ export async function generateHoroscopeFromPerplexity(
     month: 'long',
     day: 'numeric',
   });
-  const langName = LANGUAGE_NAMES[language] || 'English';
+  const langName = getLanguageDisplayName(language) || 'English';
 
   const systemPrompt = `You are an expert Vedic astrologer. Search the web for today's (${today}) daily horoscope for the ${signName} zodiac sign. 
 Provide a concise, accurate horoscope prediction based on current planetary transits and reputable astrology sources.
@@ -128,7 +124,7 @@ export async function generatePersonalizedDailyForecast(
     month: 'long',
     day: 'numeric',
   });
-  const langName = LANGUAGE_NAMES[language] || 'English';
+  const langName = getLanguageDisplayName(language) || 'English';
   const namePart = context.name ? ` for ${context.name}` : '';
 
   const systemPrompt = `You are an expert Vedic astrologer. Search the web for today's (${today}) personalized daily horoscope based on the following birth chart details:
@@ -245,7 +241,7 @@ export async function generateGenericTransitsFromPerplexity(
     month: 'long',
     day: 'numeric',
   });
-  const langName = LANGUAGE_NAMES[language] || 'English';
+  const langName = getLanguageDisplayName(language) || 'English';
   const refSignId = SIGN_MAP[rashi] || 1;
 
   const systemPrompt = `You are a Vedic astrology expert. For TODAY (${today}) at location ${location}, provide CURRENT sidereal positions of all 9 planets (Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn, Rahu, Ketu).

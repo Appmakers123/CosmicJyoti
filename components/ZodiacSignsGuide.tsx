@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { ZODIAC_SIGNS_DETAILED } from '../constants';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface ZodiacSignsGuideProps {
   language: Language;
@@ -13,6 +14,15 @@ const ZodiacSignsGuide: React.FC<ZodiacSignsGuideProps> = ({ language }) => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 pb-24 animate-fade-in-up">
+      <div className="mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Zodiac signs guide – all 12 signs; strengths, qualities and traits (Vedic and Western)."
+          subtitleHi="राशि चक्र गाइड – सभी 12 राशियाँ; शक्तियाँ, गुण और लक्षण।"
+          descriptionEn="Explore Aries to Pisces. Each sign has distinct qualities and planetary rulers. Useful for understanding personality and compatibility."
+          descriptionHi="मेष से मीन तक देखें। प्रत्येक राशि के अलग गुण और ग्रह। व्यक्तित्व और अनुकूलता के लिए।"
+        />
+      </div>
       <div className="text-center mb-16">
         <span className="text-[10px] uppercase font-bold tracking-[1em] text-amber-500 mb-2 block">Zodiac Knowledge</span>
         <h2 className="text-5xl md:text-7xl font-serif text-amber-100 drop-shadow-lg">

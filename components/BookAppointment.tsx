@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Language } from '../types';
 import Logo from './Logo';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 import { openExternalLink, getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
 import { PLAY_STORE_URL } from '../constants';
 import AdBanner from './AdBanner';
@@ -220,7 +220,16 @@ const BookAppointment: React.FC<BookAppointmentProps> = ({ language, onBack }) =
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-8 animate-fade-in-up">
       <BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} />
-      <div className="mt-6 text-center mb-8">
+      <div className="mt-6 mb-6">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Book astrology consultation – Kundali, compatibility, numerology, Tarot, palmistry, Vastu; Google Meet, pay during session."
+          subtitleHi="ज्योतिष परामर्श बुक करें – कुंडली, मिलान, अंक ज्योतिष, टैरो, हस्तरेखा, वास्तु; Google Meet, सत्र के दौरान भुगतान।"
+          descriptionEn="Choose service, date and time. Send details via WhatsApp to confirm and receive your Google Meet link. Pay during the session."
+          descriptionHi="सेवा, तारीख और समय चुनें। WhatsApp से भेजें – पुष्टि और Google Meet लिंक। सत्र के दौरान भुगतान।"
+        />
+      </div>
+      <div className="text-center mb-8">
         <Logo className="w-14 h-14 mx-auto mb-4" />
         <h1 className="text-2xl md:text-3xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-amber-500">
           {language === 'hi' ? 'अपॉइंटमेंट बुक करें' : 'Book an Appointment'}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface Yantra {
   id: string;
@@ -218,7 +219,13 @@ const YantraLab: React.FC<{ language: Language }> = ({ language }) => {
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-12 sm:pb-24 animate-fade-in-up">
       <div className="bg-slate-900/80 backdrop-blur-3xl border border-purple-500/30 rounded-3xl sm:rounded-[4rem] p-6 sm:p-8 md:p-16 shadow-2xl">
-        
+        <ModuleIntro
+          language={language}
+          subtitleEn="Yantras – sacred geometry; Sri Yantra, planetary and deity yantras for meditation and energy."
+          subtitleHi="यंत्र – पवित्र ज्यामिति; श्री यंत्र, ग्रह और देवता यंत्र ध्यान और ऊर्जा के लिए।"
+          descriptionEn="Browse yantras with meaning, deity and benefits. Use for meditation, placement and activating positive energy at home or office."
+          descriptionHi="अर्थ, देवता और लाभ के साथ यंत्र देखें। ध्यान, स्थापना और घर/ऑफिस में सकारात्मक ऊर्जा।"
+        />
         <div className="text-center mb-8 sm:mb-12">
           <span className="text-[10px] sm:text-xs uppercase font-bold tracking-[1em] sm:tracking-[1.5em] text-purple-400 mb-3 sm:mb-4 block">
             {language === 'hi' ? 'पवित्र ज्यामिति' : 'Sacred Geometry'}

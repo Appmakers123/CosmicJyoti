@@ -4,6 +4,7 @@ import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 const DreamInterpreter: React.FC<{ language: Language }> = ({ language }) => {
@@ -34,6 +35,13 @@ const DreamInterpreter: React.FC<{ language: Language }> = ({ language }) => {
   return (
     <div className="w-full max-w-3xl mx-auto animate-fade-in-up">
       <div className="bg-slate-800/80 border border-indigo-500/30 rounded-2xl p-8 shadow-2xl">
+        <ModuleIntro
+          language={language}
+          subtitleEn="Dream interpretation – meanings of dreams and symbols (Vedic and universal)."
+          subtitleHi="सपनों की व्याख्या – सपनों और प्रतीकों के अर्थ (वैदिक और सार्वभौम)।"
+          descriptionEn="Describe your dream and get an AI analysis. Covers common symbols, emotions and possible messages for reflection."
+          descriptionHi="सपना बताएं और AI विश्लेषण पाएं। प्रतीक, भावनाएं और संदेश।"
+        />
         <div className="text-center mb-8">
             <h2 className="text-3xl font-serif text-indigo-200 mb-2">{t.dreamMeaning}</h2>
             <p className="text-slate-400 text-sm">{t.dreamSubtitle}</p>

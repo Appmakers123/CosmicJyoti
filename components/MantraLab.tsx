@@ -5,6 +5,7 @@ import { useTranslation } from '../utils/translations';
 import { generateMantraTts } from '../utils/sarvamTts';
 import { getCachedMantraAudio, setCachedMantraAudio } from '../utils/mantraAudioCache';
 import AdBanner from './AdBanner';
+import { ModuleIntro } from './common';
 
 interface Mantra {
   id: string;
@@ -839,6 +840,15 @@ const MantraLab: React.FC<{ language: Language }> = ({ language }) => {
         <div className={`absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br ${selected.bgGlow} via-transparent to-transparent blur-[150px] transition-all duration-1000 opacity-40`}></div>
         <div className={`absolute bottom-0 left-0 w-[500px] h-[500px] bg-gradient-to-tr ${selected.bgGlow} via-transparent to-transparent blur-[120px] transition-all duration-1000 opacity-20`}></div>
 
+        <div className="relative z-10 w-full mb-6">
+          <ModuleIntro
+            language={language}
+            subtitleEn="Mantra lab – Vedic mantras for obstacles, planetary, wealth, health; listen and chant."
+            subtitleHi="मंत्र लैब – बाधाएं, ग्रह, धन, स्वास्थ्य के लिए वैदिक मंत्र; सुनें और जपें।"
+            descriptionEn="Browse mantras by category. Each mantra includes Sanskrit text, meaning and benefit. Audio playback for correct pronunciation."
+            descriptionHi="श्रेणी के अनुसार मंत्र देखें। संस्कृत, अर्थ और लाभ। उच्चारण के लिए ऑडियो।"
+          />
+        </div>
         <div className="text-center mb-8 sm:mb-12 relative z-10 px-1">
             <span className="text-[10px] uppercase font-bold tracking-[1em] sm:tracking-[1.5em] text-orange-400 mb-4 block">{t.dhvaniSanctuary}</span>
             <h2 className="text-3xl sm:text-5xl md:text-8xl font-serif text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-100 to-slate-500 drop-shadow-sm">{t.mantraLabTitle}</h2>

@@ -90,6 +90,35 @@ export const calculateBirthday = (dob: string): number => {
     return reduceNumber(day);
 };
 
+/** Personal Year: life path + reduced (month + day + year) for the given date. */
+export const calculatePersonalYear = (dob: string, forDate: Date): number => {
+  if (!dob) return 0;
+  const lifePath = calculateLifePath(dob);
+  const y = forDate.getFullYear();
+  const m = forDate.getMonth() + 1;
+  const d = forDate.getDate();
+  const yearReduced = reduceNumber(y);
+  const monthReduced = reduceNumber(m);
+  const dayReduced = reduceNumber(d);
+  return reduceNumber(lifePath + yearReduced + monthReduced + dayReduced);
+};
+
+/** Personal Month: personal year + current month (1–12) reduced. */
+export const calculatePersonalMonth = (dob: string, forDate: Date): number => {
+  if (!dob) return 0;
+  const py = calculatePersonalYear(dob, forDate);
+  const m = forDate.getMonth() + 1;
+  return reduceNumber(py + reduceNumber(m));
+};
+
+/** Personal Day: personal month + current day reduced. */
+export const calculatePersonalDay = (dob: string, forDate: Date): number => {
+  if (!dob) return 0;
+  const pm = calculatePersonalMonth(dob, forDate);
+  const d = forDate.getDate();
+  return reduceNumber(pm + reduceNumber(d));
+};
+
 export const getSunSign = (dateStr: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);

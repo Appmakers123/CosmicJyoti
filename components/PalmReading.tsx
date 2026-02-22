@@ -4,11 +4,12 @@ import { useTranslation } from '../utils/translations';
 import { getExternalLinkProps } from '../utils/linkHandler';
 import { setErrorSafely } from '../utils/errorHandler';
 import { Language, PalmPrediction } from '../types';
-import { generatePalmInterpretation } from '../services/geminiService';
+import { generatePalmInterpretation, generatePalmReadingFromImage } from '../services/geminiService';
 import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
+import { ModuleIntro } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 
 interface PalmReadingProps {
@@ -37,7 +38,7 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
 
   const handleAnalyze = async () => {
     if (!imageFile) return;
-    const cacheInput = { palm: 'default', lang: language };
+    const cacheInput = { palm: imageFile.name + imageFile.size, lang: language };
     const cached = getCachedAI<string>('palm', cacheInput);
     if (cached) {
       setReading(cached);
@@ -46,9 +47,19 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
     setLoading(true);
     setError(null);
     try {
-      // Pass standard palm lines for Gemini to interpret (full line detection coming soon)
-      const detectedLines = ["Life Line", "Heart Line", "Head Line"];
-      const interpretation = await generatePalmInterpretation(detectedLines, language);
+      let interpretation: string;
+      const mime = (imageFile.type === 'image/png' ? 'image/png' : imageFile.type === 'image/webp' ? 'image/webp' : 'image/jpeg') as 'image/jpeg' | 'image/png' | 'image/webp';
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(imageFile);
+      });
+      interpretation = await generatePalmReadingFromImage(base64, mime, language);
       setCachedAI('palm', cacheInput, interpretation);
       setReading(interpretation);
       // Show interstitial ad after reading (Android only)
@@ -74,6 +85,13 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">
         <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-8 shadow-2xl relative">
+            <ModuleIntro
+              language={language}
+              subtitleEn="Palmistry – palm reading; life line, heart line, fate line and hand analysis."
+              subtitleHi="हस्तरेखा – हाथ की रेखाएं; जीवन रेखा, हृदय रेखा, भाग्य रेखा और विश्लेषण।"
+              descriptionEn="Upload a clear photo of your palm for an AI interpretation. Learn about major lines and what they may suggest (for entertainment and self-reflection)."
+              descriptionHi="हथेली की स्पष्ट फोटो अपलोड करें – AI व्याख्या। मुख्य रेखाएं और अर्थ (मनोरंजन और आत्म-चिंतन)।"
+            />
             <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
                 <div className="flex-1">
                     <h2 className="text-3xl font-serif text-amber-200 mb-2">{t.palmReading}</h2>

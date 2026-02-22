@@ -4,7 +4,7 @@ import { generateVarshphal } from '../services/geminiService';
 import { setErrorSafely } from '../utils/errorHandler';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { BackButton } from './common';
+import { BackButton, ModuleIntro } from './common';
 
 export default function Varshphal({ language, onBack }: { language: Language; onBack?: () => void }) {
   const [name, setName] = useState('');
@@ -36,8 +36,14 @@ export default function Varshphal({ language, onBack }: { language: Language; on
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">
       <div className="bg-slate-800/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-8 shadow-2xl">
         {onBack && <div className="mb-6"><BackButton onClick={onBack} label={language === 'hi' ? 'वापस' : 'Back'} /></div>}
+        <ModuleIntro
+          language={language}
+          subtitleEn="Varshphal – yearly horoscope; year ahead forecast by birth date (Vedic annual prediction)."
+          subtitleHi="वर्षफल – वार्षिक राशिफल; जन्म तारीख के आधार पर साल भर का पूर्वानुमान।"
+          descriptionEn="Enter name, birth date and the year you want. Get a personalised yearly forecast for career, health, finance and relationships."
+          descriptionHi="नाम, जन्म तारीख और वर्ष डालें। करियर, स्वास्थ्य, धन और रिश्तों के लिए वार्षिक पूर्वानुमान।"
+        />
         <h2 className="text-3xl font-serif text-amber-200 mb-2">Varshphal Yearly Horoscope</h2>
-        <p className="text-slate-400 text-sm mb-6">Year ahead forecast based on birth date</p>
         {!result ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div><label className="block text-slate-400 text-xs uppercase mb-1">Name</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-slate-100" /></div>

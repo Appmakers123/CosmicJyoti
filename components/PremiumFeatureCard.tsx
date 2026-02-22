@@ -38,10 +38,10 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`group relative flex flex-col items-start rounded-xl sm:rounded-2xl transition-all text-left overflow-hidden shadow-xl h-full touch-manipulation active:scale-[0.98] ${
+      className={`group relative flex flex-col items-start rounded-xl sm:rounded-2xl transition-all text-left overflow-visible shadow-xl w-full touch-manipulation active:scale-[0.98] min-w-0 h-full min-h-[140px] ${
         isFeatured
-          ? 'p-5 sm:p-6 md:p-7 min-h-[140px] sm:min-h-[160px] md:min-h-[180px] bg-slate-800/50 backdrop-blur-md border-2 border-slate-700/50 hover:bg-slate-700/60 hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)]'
-          : 'p-4 sm:p-5 md:p-5 min-h-[120px] sm:min-h-[130px] md:min-h-[140px] bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:bg-slate-700/60 hover:border-amber-500/50'
+          ? 'min-h-[164px] sm:min-h-[180px] md:min-h-[188px] p-5 sm:p-6 md:p-7 bg-slate-800/50 backdrop-blur-md border-2 border-slate-700/50 hover:bg-slate-700/60 hover:border-amber-500/40 hover:shadow-[0_0_30px_rgba(251,191,36,0.1)]'
+          : 'p-4 sm:p-5 md:p-5 bg-slate-800/40 backdrop-blur-md border border-slate-700/50 hover:bg-slate-700/60 hover:border-amber-500/50'
       }`}
     >
       <div className={`absolute top-0 right-0 w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br ${color} opacity-5 group-hover:opacity-10 transition-opacity rounded-bl-full`}></div>
@@ -101,12 +101,12 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
       </div>
       
       {/* Content area with flex-grow to push footer to bottom - padding to avoid badge overlap */}
-      <div className="flex-1 flex flex-col w-full pr-14 sm:pr-16">
-        <div className={`mb-2 sm:mb-3 ${isFeatured ? 'text-4xl sm:text-5xl' : 'text-3xl'}`}>{icon}</div>
-        <h3 className={`font-serif font-bold text-white mb-0.5 group-hover:text-amber-300 ${isFeatured ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`}>
+      <div className="flex-1 flex flex-col w-full min-h-0 min-w-0 pr-14 sm:pr-16 overflow-visible">
+        <div className={`mb-2 sm:mb-3 flex-shrink-0 ${isFeatured ? 'text-4xl sm:text-5xl' : 'text-3xl'}`}>{icon}</div>
+        <h3 className={`font-serif font-bold text-white mb-0.5 group-hover:text-amber-300 line-clamp-2 break-words ${isFeatured ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`} title={label}>
           {label}
         </h3>
-        <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight tracking-wider mb-auto line-clamp-2">{desc}</p>
+        <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight tracking-wider mb-auto line-clamp-2 break-words min-w-0" title={desc}>{desc}</p>
       </div>
       
       {/* Footer section - always at bottom with consistent alignment */}

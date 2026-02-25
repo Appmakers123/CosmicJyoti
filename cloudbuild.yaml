@@ -1,0 +1,36 @@
+# Google Cloud Build - CosmicJyoti Backend
+# Build context: repo root. Dockerfile: server/Dockerfile
+# Run from repo root: gcloud builds submit --config cloudbuild.yaml .
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-f'
+      - 'server/Dockerfile'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/cosmicjyoti-api:$SHORT_SHA'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/cosmicjyoti-api:latest'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cosmicjyoti-api:$SHORT_SHA']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cosmicjyoti-api:latest']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'cosmicjyoti-api'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/cosmicjyoti-api:$SHORT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+images:
+  - 'gcr.io/$PROJECT_ID/cosmicjyoti-api:$SHORT_SHA'
+  - 'gcr.io/$PROJECT_ID/cosmicjyoti-api:latest'
+options:
+  logging: CLOUD_LOGGING_ONLY

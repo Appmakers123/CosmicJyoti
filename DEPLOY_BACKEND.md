@@ -55,6 +55,16 @@ The backend is pure Node.js – it does NOT use Vite or Rollup.
 
 ---
 
+## Google Cloud (Cloud Run)
+
+If you use **Google Cloud** and have Gemini Pro access, deploy the backend to **Cloud Run**:
+
+- **Full guide:** [docs/DEPLOY_GOOGLE_CLOUD.md](docs/DEPLOY_GOOGLE_CLOUD.md)
+- From repo root: `gcloud builds submit --config cloudbuild.yaml .` then set env vars (e.g. `GEMINI_API_KEY`, `CORS_ORIGIN`) on the Cloud Run service.
+- Set `VITE_API_BASE_URL` to your Cloud Run URL when building the frontend.
+
+---
+
 ## Alternative: Railway, Fly.io, or Vercel
 
 - **Railway:** Same steps, use `server` as root, add env vars

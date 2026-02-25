@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: CosmicJyoti Vedic Astrology API
+  description: Free Kundali, horoscope, Panchang, muhurat, matchmaking, tarot, and AI astrologer (Ask Rishi). For use with ChatGPT Actions or any API client.
+  version: 1.0.0
+
+servers:
+  - url: https://cosmicjyoti-api-265360069232.europe-west1.run.app
+    description: CosmicJyoti Cloud Run API
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Service is healthy
+
+  /api/panchang:
+    post:
+      summary: Get daily Panchang (Vedic almanac) for a date and location
+      operationId: getPanchang
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, location]
+              properties:
+                date: { type: string, description: "Date YYYY-MM-DD" }
+                location: { type: string, description: "City/location e.g. New Delhi, India" }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Panchang with tithi, nakshatra, sunrise, sunset, muhurat, etc.
+
+  /api/horoscope:
+    post:
+      summary: Get daily horoscope (rashifal) for a zodiac sign
+      operationId: getHoroscope
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sign, date]
+              properties:
+                sign: { type: string, description: "Zodiac sign e.g. Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces" }
+                date: { type: string, description: "Date YYYY-MM-DD" }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Horoscope text and metadata
+
+  /api/kundali:
+    post:
+      summary: Generate Vedic birth chart (Kundali) with optional AI predictions
+      operationId: getKundali
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, date, time, location]
+              properties:
+                name: { type: string }
+                date: { type: string, description: "Birth date YYYY-MM-DD" }
+                time: { type: string, description: "Birth time HH:MM or HH:MM:SS" }
+                location: { type: string, description: "Birth place/city" }
+                language: { type: string, enum: [en, hi], default: en }
+                includePredictions: { type: boolean, default: true }
+      responses:
+        "200":
+          description: Full Kundali with chart, dasha, and predictions
+
+  /api/ask-rishi:
+    post:
+      summary: Ask Rishi - AI Vedic astrologer (general, career, love, health)
+      operationId: askRishi
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt]
+              properties:
+                prompt: { type: string, description: "User question for the astrologer" }
+                language: { type: string, enum: [en, hi], default: en }
+                context: { type: string, description: "Optional context e.g. Kundali, Compatibility" }
+                persona: { type: string, enum: [general, career, love, health], default: general }
+      responses:
+        "200":
+          description: AI response with text and optional sources
+
+  /api/muhurat:
+    post:
+      summary: Get auspicious timings (muhurat) for a date and location
+      operationId: getMuhurat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, location]
+              properties:
+                date: { type: string, description: "Date YYYY-MM-DD" }
+                location: { type: string }
+                activity: { type: string, default: "general", description: "e.g. marriage, travel, general" }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Muhurat timings and recommendations
+
+  /api/tarot:
+    post:
+      summary: Get a Tarot card reading
+      operationId: getTarot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question: { type: string, description: "Question or focus for the reading" }
+                spread: { type: string, default: "three-card", description: "e.g. three-card, single-card" }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Tarot reading result
+
+  /api/matchmaking:
+    post:
+      summary: Marriage compatibility (Kundali Milan) between two birth charts
+      operationId: getMatchmaking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [boy, girl]
+              properties:
+                boy: { type: object, required: [name, date, time, location], properties: { name: { type: string }, date: { type: string }, time: { type: string }, location: { type: string } } }
+                girl: { type: object, required: [name, date, time, location], properties: { name: { type: string }, date: { type: string }, time: { type: string }, location: { type: string } } }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Matchmaking report and score
+
+  /api/cosmic-health:
+    post:
+      summary: Vedic health analysis from birth chart (doshas, remedies)
+      operationId: getCosmicHealth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [date, time, city]
+              properties:
+                date: { type: string }
+                time: { type: string }
+                city: { type: string }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Health issues, chart summary, and remedies
+
+  /api/transits/generic:
+    post:
+      summary: Generic planetary transits by Moon sign (no full birth chart)
+      operationId: getTransitsGeneric
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location, rashi]
+              properties:
+                location: { type: string }
+                rashi: { type: string, description: "Moon sign / rashi e.g. Aries, Taurus" }
+                currentDate: { type: string, description: "YYYY-MM-DD optional" }
+                language: { type: string, enum: [en, hi], default: en }
+      responses:
+        "200":
+          description: Transit positions and impact

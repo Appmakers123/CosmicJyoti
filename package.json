@@ -26,6 +26,8 @@
     "blog:generate:12pm": "node scripts/generate-daily-blog.mjs 12pm",
     "blog:generate:6pm": "node scripts/generate-daily-blog.mjs 6pm",
     "blog:generate:9pm": "node scripts/generate-daily-blog.mjs 9pm",
+    "blog:refresh-sitemaps": "node scripts/generate-daily-blog.mjs refresh-sitemaps",
+    "logo:rectangular": "node scripts/export-rectangular-logo.mjs",
     "export-en-locale": "tsx scripts/exportEnLocale.ts",
     "pre-translate": "node scripts/preTranslate.mjs",
     "audit": "npm audit",
@@ -64,6 +66,7 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5.2.2",
-    "vite": "5.4.21"
+    "vite": "5.4.21",
+    "sharp": "^0.33.5"
   }
 }

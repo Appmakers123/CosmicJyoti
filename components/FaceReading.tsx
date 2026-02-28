@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../utils/translations';
 import { getExternalLinkProps } from '../utils/linkHandler';
 import { setErrorSafely } from '../utils/errorHandler';
@@ -6,10 +6,12 @@ import { Language } from '../types';
 import { generateFaceReading } from '../services/geminiService';
 import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { ModuleIntro } from './common';
+import { ModuleIntro, SaveShareBar } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 
 interface FaceReadingProps {
   language: Language;
@@ -22,6 +24,30 @@ const FaceReading: React.FC<FaceReadingProps> = ({ language }) => {
   const [reading, setReading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (reading) requestScrollToMain();
+  }, [reading]);
+
+  useEffect(() => {
+    if (!reading || !imageFile) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const key = `face-${imageFile.name}-${imageFile.size}-${language}`;
+    const fi = { key, lang: language };
+    const sr = getReportByForm('face', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [reading, imageFile, language]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -179,6 +205,24 @@ const FaceReading: React.FC<FaceReadingProps> = ({ language }) => {
 
         {reading && (
           <div className="mt-12 animate-fade-in space-y-6">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+              <SaveShareBar
+                language={language}
+                onSave={() => {
+                  if (!imageFile) return;
+                  const key = `face-${imageFile.name}-${imageFile.size}-${language}`;
+                  const id = saveReport('face', { reading }, { key, lang: language }, 'Face Reading');
+                  setIsSaved(true);
+                  setSavedReportId(id);
+                }}
+                onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                isSaved={isSaved}
+                savedReportId={savedReportId}
+                shareContent={`Face Reading. ${reading.replace(/<[^>]*>/g, '').slice(0, 300)}... – CosmicJyoti`}
+                shareTitle="Face Reading – CosmicJyoti"
+                contentType="face"
+              />
+            </div>
             <AdBanner variant="leaderboard" />
             <div className="bg-slate-900/60 p-8 rounded-2xl border border-amber-500/20 shadow-inner">
               <h3 className="text-xl font-serif text-amber-100 mb-4">

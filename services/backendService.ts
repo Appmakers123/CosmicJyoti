@@ -83,6 +83,11 @@ const getApiBaseUrl = (): string | null => {
 
 const API_BASE_URL = getApiBaseUrl();
 
+/** True when frontend is configured to use a backend (e.g. VITE_API_BASE_URL or dev localhost). */
+export function isBackendConfigured(): boolean {
+  return API_BASE_URL !== null;
+}
+
 export interface KundaliFormData {
   name: string;
   date: string;
@@ -361,7 +366,8 @@ export async function generateGocharaFromBackend(
 export async function generateHoroscopeFromBackend(
   sign: string,
   date: string,
-  language: string = 'en'
+  language: string = 'en',
+  period: 'day' | 'week' | 'month' | 'year' = 'day'
 ): Promise<any> {
   // If no backend URL (Android or not configured), throw error to trigger fallback
   if (!API_BASE_URL) {
@@ -378,6 +384,7 @@ export async function generateHoroscopeFromBackend(
         sign,
         date,
         language,
+        period,
       }),
     });
 

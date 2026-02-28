@@ -10,8 +10,10 @@ import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { ModuleIntro } from './common';
+import { ModuleIntro, SaveShareBar } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { requestScrollToMain } from '../utils/scrollToMain';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 
 type LuckStatus = 'Very Lucky' | 'Lucky' | 'Neutral' | 'Avoid' | '-';
 
@@ -75,6 +77,8 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
   const t = useTranslation(language);
   const [formData, setFormData] = useState<NumerologyInput>({ name: '', dob: '' });
   const [report, setReport] = useState<NumerologyResponse | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
 
   // Pre-fill from global profile on mount
   useEffect(() => {
@@ -88,6 +92,28 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
       else if (profile.self.gender === 'female') setGender('F');
     }
   }, []);
+
+  useEffect(() => {
+    if (report) requestScrollToMain();
+  }, [report]);
+
+  useEffect(() => {
+    if (!report || !formData.name || !formData.dob) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const fi = { name: formData.name, dob: formData.dob };
+    const sr = getReportByForm('numerology', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [report, formData.name, formData.dob]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -418,9 +444,9 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
         </div>
       ) : (
         <div className="space-y-8">
-           <div className="flex justify-between items-center">
+           <div className="flex flex-wrap justify-between items-center gap-3">
               <button 
-                onClick={() => setReport(null)}
+                onClick={() => { setReport(null); setIsSaved(false); setSavedReportId(null); }}
                 className="flex items-center text-teal-400 hover:text-white transition-colors text-sm font-bold tracking-wide uppercase"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -429,6 +455,21 @@ const Numerology: React.FC<NumerologyProps> = ({ language }) => {
                 {t.return}
               </button>
               <h2 className="text-2xl font-serif text-teal-100">{formData.name}</h2>
+              <SaveShareBar
+                language={language}
+                onSave={() => {
+                  const fi = { name: formData.name, dob: formData.dob };
+                  const id = saveReport('numerology', report, fi, `Numerology: ${formData.name}`);
+                  setIsSaved(true);
+                  setSavedReportId(id);
+                }}
+                onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                isSaved={isSaved}
+                savedReportId={savedReportId}
+                shareContent={`Numerology ${formData.name}: Life Path ${report.lifePath.number}, Destiny ${report.destiny.number}. ${report.lifePath.description.slice(0, 200)}... – CosmicJyoti`}
+                shareTitle={`Numerology ${formData.name} – CosmicJyoti`}
+                contentType="numerology"
+              />
            </div>
 
            <AdBanner variant="leaderboard" />

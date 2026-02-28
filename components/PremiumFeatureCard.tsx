@@ -15,6 +15,8 @@ interface PremiumFeatureCardProps {
   language?: Language;
   mustRead?: boolean;
   isFeatured?: boolean;
+  /** e.g. "India", "Europe" – shown as "Famous in: {region}" */
+  region?: string;
 }
 
 const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
@@ -31,6 +33,7 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
   language = 'en',
   mustRead = false,
   isFeatured = false,
+  region,
 }) => {
   const showSubscribeBadge = false; // Subscription removed - ads only
   // Ad-unlock badge/footer removed: ads are shown in every module now
@@ -106,7 +109,12 @@ const PremiumFeatureCard: React.FC<PremiumFeatureCardProps> = ({
         <h3 className={`font-serif font-bold text-white mb-0.5 group-hover:text-amber-300 line-clamp-2 break-words ${isFeatured ? 'text-lg sm:text-xl' : 'text-base sm:text-lg'}`} title={label}>
           {label}
         </h3>
-        <p className="text-[10px] sm:text-[11px] text-slate-400 leading-tight tracking-wider mb-auto line-clamp-2 break-words min-w-0" title={desc}>{desc}</p>
+        <p className={`text-[10px] sm:text-[11px] text-slate-400 leading-tight tracking-wider line-clamp-2 break-words min-w-0 ${!region ? 'mb-auto' : ''}`} title={desc}>{desc}</p>
+        {region && (
+          <p className="text-[9px] sm:text-[10px] text-amber-500/80 mt-1 mb-auto font-medium" title={region}>
+            {language === 'hi' ? 'प्रसिद्ध: ' : 'Famous in: '}{region}
+          </p>
+        )}
       </div>
       
       {/* Footer section - always at bottom with consistent alignment */}

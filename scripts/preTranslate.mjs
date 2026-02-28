@@ -90,7 +90,7 @@ async function geminiTranslate(text, langName) {
   const key = getKey('GEMINI_API_KEY') || getKey('VITE_GEMINI_API_KEY') || getKey('API_KEY');
   if (!key) return null;
   try {
-    const res = await fetch(GEMINI_URL('gemini-2.0-flash'), {
+    const res = await fetch(GEMINI_URL('gemini-3-flash-preview'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
       body: JSON.stringify({

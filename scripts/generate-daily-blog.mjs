@@ -138,7 +138,7 @@ function getGeminiKey() {
 }
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+const GEMINI_MODELS = ['gemini-3-flash-preview', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -201,7 +201,7 @@ async function generateWithGemini(prompt, contextDate, postCount = 2) {
   throw new Error('Gemini failed (all models and retries exhausted).');
 }
 
-const BLOG_DIR = path.join(__dirname, '../public/blog');
+const BLOG_DIR = path.resolve(__dirname, '../public/blog');
 const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
 const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
@@ -332,20 +332,119 @@ const SLOT_ALIASES = {
   '9pm': '9pm', night: '9pm',
 };
 
+const REFRESH_SITEMAPS = 'refresh-sitemaps';
+
 function parseSlot() {
   const arg = (process.argv[2] || '').toLowerCase().trim();
+  if (arg === 'refresh-sitemaps') return REFRESH_SITEMAPS;
   const slot = SLOT_ALIASES[arg];
   if (slot) return slot;
   if (!arg) {
     console.error('Usage: node scripts/generate-daily-blog.mjs <slot>');
     console.error('  slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)');
+    console.error('  Or: node scripts/generate-daily-blog.mjs refresh-sitemaps  (regenerate feed + sitemaps from existing daily-posts.json, no API)');
     process.exit(1);
   }
-  console.error(`Unknown slot: ${arg}. Use 6am, 12pm, 6pm, or 9pm.`);
+  console.error(`Unknown slot: ${arg}. Use 6am, 12pm, 6pm, 9pm, or refresh-sitemaps.`);
   process.exit(1);
 }
 
+/** Write feed.xml, sitemap-blog.xml, sitemap-news.xml from allPosts. today = YYYY-MM-DD for fallbacks. */
+function writeFeedAndSitemaps(allPosts, today) {
+  if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
+
+  const rssItems = allPosts.slice(0, 30).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const pubDateStr = p.date || today;
+    const pubDate = new Date(pubDateStr + 'T00:30:00.000Z').toUTCString();
+    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const desc = (p.excerpt || p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `    <item><title>${title}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${pubDate}</pubDate><description><![CDATA[${desc}]]></description></item>`;
+  }).join('\n');
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CosmicJyoti Blog</title>
+    <link>${BASE_URL}/blog.html</link>
+    <description>Daily Vedic astrology articles – Kundali, Horoscope, Panchang, and more.</description>
+    <language>en-in</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${BASE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+${rssItems}
+  </channel>
+</rss>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'feed.xml'), rss, 'utf8');
+
+  const blogUrls = allPosts.slice(0, 50).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const lastmod = p.date || today;
+    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
+  }).join('\n');
+  const sitemapBlog = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${blogUrls}
+</urlset>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-blog.xml'), sitemapBlog, 'utf8');
+
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const cutoff = twoDaysAgo.toISOString().split('T')[0];
+  const newsPosts = allPosts.filter((p) => {
+    const d = p.date || p.articleId?.slice(0, 10) || '';
+    return d >= cutoff;
+  }).slice(0, 100);
+  const newsUrls = newsPosts.map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const pubDate = p.date || today;
+    const isoDate = `${pubDate}T06:00:00+05:30`;
+    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return `  <url>
+    <loc>${loc}</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>${isoDate}</news:publication_date>
+      <news:title>${title}</news:title>
+    </news:news>
+  </url>`;
+  }).join('\n');
+  const sitemapNews = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+${newsUrls}
+</urlset>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-news.xml'), sitemapNews, 'utf8');
+  console.log(`[DONE] Wrote feed.xml, sitemap-blog.xml, sitemap-news.xml. News sitemap: ${newsPosts.length} articles (last 2 days).`);
+}
+
 async function main() {
+  const slot = parseSlot();
+  const today = new Date().toISOString().split('T')[0];
+
+  if (slot === REFRESH_SITEMAPS) {
+    let allPosts = [];
+    try {
+      const raw = fs.readFileSync(OUTPUT_PATH, 'utf8');
+      const data = JSON.parse(raw);
+      allPosts = Array.isArray(data.posts) ? data.posts : [];
+    } catch (e) {
+      console.error('No public/blog/daily-posts.json found. Run the blog script with a slot (e.g. 12pm) first to generate posts.');
+      process.exit(1);
+    }
+    if (allPosts.length === 0) {
+      console.error('daily-posts.json has no posts. Run the blog script with a slot first.');
+      process.exit(1);
+    }
+    console.log(`Refreshing feed and sitemaps from ${allPosts.length} existing posts...`);
+    writeFeedAndSitemaps(allPosts, today);
+    return;
+  }
+
   const hasPerplexity = getPerplexityKeys().length > 0;
   const hasGemini = !!getGeminiKey();
   if (!hasPerplexity && !hasGemini) {
@@ -354,8 +453,6 @@ async function main() {
   }
   if (hasPerplexity && getPerplexityKeys().length > 1) console.log(`Using ${getPerplexityKeys().length} Perplexity API key(s) in rotation.`);
 
-  const slot = parseSlot();
-  const today = new Date().toISOString().split('T')[0];
   const tomorrowDate = new Date();
   tomorrowDate.setDate(tomorrowDate.getDate() + 1);
   const tomorrow = tomorrowDate.toISOString().split('T')[0];
@@ -465,41 +562,7 @@ async function main() {
   if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
 
-  // RSS (latest 30)
-  const rssItems = allPosts.slice(0, 30).map((p) => {
-    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-    const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
-    const pubDate = p.date ? new Date(p.date).toUTCString() : new Date().toUTCString();
-    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    const desc = (p.excerpt || p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    return `    <item><title>${title}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${pubDate}</pubDate><description><![CDATA[${desc}]]></description></item>`;
-  }).join('\n');
-  const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>CosmicJyoti Blog</title>
-    <link>${BASE_URL}/blog.html</link>
-    <description>Daily Vedic astrology articles – Kundali, Horoscope, Panchang, and more.</description>
-    <language>en-in</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${BASE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
-${rssItems}
-  </channel>
-</rss>`;
-  fs.writeFileSync(path.join(BLOG_DIR, 'feed.xml'), rss, 'utf8');
-
-  const blogUrls = allPosts.slice(0, 50).map((p) => {
-    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
-    const lastmod = p.date || today;
-    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
-  }).join('\n');
-  const sitemapBlog = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${blogUrls}
-</urlset>`;
-  fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-blog.xml'), sitemapBlog, 'utf8');
-
+  writeFeedAndSitemaps(allPosts, today);
   console.log(`[DONE] Appended 2 posts (slot: ${slot}). Total: ${allPosts.length}.`);
   console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
 }

@@ -12,6 +12,7 @@ import RichText from './RichText';
 import CompatibilityAskAI from './CompatibilityAskAI';
 import { setErrorSafely } from '../utils/errorHandler';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { requestScrollToMain } from '../utils/scrollToMain';
 
 interface CompatibilityTabProps {
   language: Language;
@@ -191,6 +192,10 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
       }));
     }
   }, []);
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

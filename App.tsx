@@ -47,16 +47,14 @@ import UserProfileModal from './components/UserProfileModal';
 import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
 import DashboardConsentBanner from './components/DashboardConsentBanner';
-import DailyDoDonts from './components/DailyDoDonts';
 import DailyAIBlog from './components/DailyAIBlog';
-import DailyLuckScore from './components/DailyLuckScore';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
 import HamburgerMenu from './components/HamburgerMenu';
 import KarmaStore from './components/KarmaStore';
 import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, ViewMode, AppViewMode, User } from './types';
 import { ZODIAC_SIGNS, PLAY_STORE_URL } from './constants';
-import { generateHoroscope, generateKundali, generateDailyPanchang } from './services/geminiService';
+import { generateHoroscope, generateKundali, generateDailyPanchang, type HoroscopePeriod } from './services/geminiService';
 import { generatePersonalizedDailyForecast } from './services/perplexityService';
 import { useTranslation, UI_LANGUAGES } from './utils/translations';
 import { TranslationProvider, useTranslationContext } from './contexts/TranslationContext';
@@ -89,7 +87,7 @@ import MySavedReports from './components/MySavedReports';
 import LoshuGrid from './components/LoshuGrid';
 import IChing from './components/IChing';
 import Runes from './components/Runes';
-import TodaysOccultWidget from './components/TodaysOccultWidget';
+import TodayUnified from './components/TodayUnified';
 import SignatureAnalysis from './components/SignatureAnalysis';
 import LalKitab from './components/LalKitab';
 import PrashnaKundali from './components/PrashnaKundali';
@@ -102,7 +100,7 @@ type CapacitorAppType = {
 };
 
 // Categorized modules for user-friendly hub
-type ModuleDef = { mode: AppViewMode; labelEn: string; labelHi: string; icon: string; descEn: string; descHi: string; isPremium: boolean };
+type ModuleDef = { mode: AppViewMode; labelEn: string; labelHi: string; icon: string; descEn: string; descHi: string; isPremium: boolean; regionEn?: string; regionHi?: string };
 type CategoryDef = { id: string; labelEn: string; labelHi: string; icon: string; color: string; modules: ModuleDef[] };
 
 const MODULE_CATEGORIES: CategoryDef[] = [
@@ -113,11 +111,11 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     icon: '⭐',
     color: 'from-amber-500/20 to-orange-500/10',
     modules: [
-      { mode: 'kundali', labelEn: 'Birth Chart', labelHi: 'जन्म कुंडली', icon: '🧭', descEn: 'Your cosmic blueprint', descHi: 'आपका आकाशीय नक्शा', isPremium: false },
-      { mode: 'matchmaking', labelEn: 'Guna Milan', labelHi: 'गुण मिलान', icon: '💒', descEn: 'Ashtakoot match score', descHi: 'अष्टकूट मिलान', isPremium: false },
+      { mode: 'kundali', labelEn: 'Birth Chart', labelHi: 'जन्म कुंडली', icon: '🧭', descEn: 'Your cosmic blueprint', descHi: 'आपका आकाशीय नक्शा', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'matchmaking', labelEn: 'Guna Milan', labelHi: 'गुण मिलान', icon: '💒', descEn: 'Ashtakoot match score', descHi: 'अष्टकूट मिलान', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
       { mode: 'daily', labelEn: 'Horoscope', labelHi: 'राशिफल', icon: '🌞', descEn: 'Today\'s predictions', descHi: 'आज का भविष्य', isPremium: false },
-      { mode: 'panchang', labelEn: 'Panchang', labelHi: 'पंचांग', icon: '📅', descEn: 'Celestial almanac', descHi: 'दैनिक पंचांग', isPremium: false },
-      { mode: 'muhurat', labelEn: 'Muhurat', labelHi: 'मुहूर्त', icon: '🕐', descEn: 'Auspicious timing', descHi: 'शुभ समय', isPremium: false },
+      { mode: 'panchang', labelEn: 'Panchang', labelHi: 'पंचांग', icon: '📅', descEn: 'Celestial almanac', descHi: 'दैनिक पंचांग', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'muhurat', labelEn: 'Muhurat', labelHi: 'मुहूर्त', icon: '🕐', descEn: 'Auspicious timing', descHi: 'शुभ समय', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
       { mode: 'compatibility', labelEn: 'Compatibility', labelHi: 'कुंडली मिलान', icon: '❤️', descEn: 'Match & harmony', descHi: 'मिलान और सामंजस्य', isPremium: false },
       { mode: 'varshphal', labelEn: 'Varshphal', labelHi: 'वार्षिक फल', icon: '📆', descEn: 'Yearly horoscope', descHi: 'साल भर का भविष्य', isPremium: false },
       { mode: 'disha', labelEn: 'Disha', labelHi: 'दिशा शूल', icon: '🧭', descEn: 'Lucky direction today', descHi: 'आज की शुभ दिशा', isPremium: false },
@@ -130,16 +128,16 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     icon: '🔮',
     color: 'from-purple-500/20 to-indigo-500/10',
     modules: [
-      { mode: 'tarot', labelEn: 'Tarot', labelHi: 'टैरो', icon: '🃏', descEn: 'Card readings', descHi: 'कार्ड पाठ', isPremium: true },
-      { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'AI palm reading from photo', descHi: 'फोटो से AI हस्तरेखा', isPremium: true },
-      { mode: 'face-reading', labelEn: 'Face Reading', labelHi: 'चेहरा पढ़ना', icon: '👤', descEn: 'Samudrik Shastra', descHi: 'समुद्रिक शास्त्र', isPremium: true },
-      { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false },
-      { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true },
-      { mode: 'loshu', labelEn: 'Lo Shu Grid', labelHi: 'लो शू ग्रिड', icon: '🔳', descEn: 'Magic square numerology', descHi: 'अंक ज्योतिष ग्रिड', isPremium: false },
-      { mode: 'i-ching', labelEn: 'I Ching', labelHi: 'ई चिंग', icon: '☰', descEn: 'Chinese hexagram wisdom', descHi: 'चीनी हेक्साग्राम', isPremium: false },
-      { mode: 'runes', labelEn: 'Runes', labelHi: 'रून्स', icon: 'ᚠ', descEn: 'Norse rune draw', descHi: 'नॉर्स रून', isPremium: false },
+      { mode: 'tarot', labelEn: 'Tarot', labelHi: 'टैरो', icon: '🃏', descEn: 'Card readings', descHi: 'कार्ड पाठ', isPremium: true, regionEn: 'Europe', regionHi: 'यूरोप' },
+      { mode: 'palm-reading', labelEn: 'Palmistry', labelHi: 'हस्तरेखा', icon: '✋', descEn: 'AI palm reading from photo', descHi: 'फोटो से AI हस्तरेखा', isPremium: true, regionEn: 'India / Global', regionHi: 'भारत / वैश्विक' },
+      { mode: 'face-reading', labelEn: 'Face Reading', labelHi: 'चेहरा पढ़ना', icon: '👤', descEn: 'Samudrik Shastra', descHi: 'समुद्रिक शास्त्र', isPremium: true, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'dreams', labelEn: 'Dreams', labelHi: 'स्वप्न शास्त्र', icon: '🌙', descEn: 'Dream meanings', descHi: 'स्वप्न अर्थ', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'numerology', labelEn: 'Numerology', labelHi: 'अंक ज्योतिष', icon: '🔢', descEn: 'Numbers & destiny', descHi: 'अंक और भाग्य', isPremium: true, regionEn: 'Global', regionHi: 'वैश्विक' },
+      { mode: 'loshu', labelEn: 'Lo Shu Grid', labelHi: 'लो शू ग्रिड', icon: '🔳', descEn: 'Magic square numerology', descHi: 'अंक ज्योतिष ग्रिड', isPremium: false, regionEn: 'China', regionHi: 'चीन' },
+      { mode: 'i-ching', labelEn: 'I Ching', labelHi: 'ई चिंग', icon: '☰', descEn: 'Chinese hexagram wisdom', descHi: 'चीनी हेक्साग्राम', isPremium: false, regionEn: 'China', regionHi: 'चीन' },
+      { mode: 'runes', labelEn: 'Runes', labelHi: 'रून्स', icon: 'ᚠ', descEn: 'Norse rune draw', descHi: 'नॉर्स रून', isPremium: false, regionEn: 'Nordic', regionHi: 'नॉर्डिक' },
       { mode: 'signature', labelEn: 'Signature Meaning', labelHi: 'हस्ताक्षर अर्थ', icon: '✍️', descEn: 'Draw or upload, AI analysis', descHi: 'बनाएं या अपलोड, AI विश्लेषण', isPremium: false },
-      { mode: 'prashna-kundali', labelEn: 'Prashna Kundali', labelHi: 'प्रश्न कुंडली', icon: '❓', descEn: 'Horary – answer by question time', descHi: 'प्रश्न के समय पर उत्तर', isPremium: false },
+      { mode: 'prashna-kundali', labelEn: 'Prashna Kundali', labelHi: 'प्रश्न कुंडली', icon: '❓', descEn: 'Horary – answer by question time', descHi: 'प्रश्न के समय पर उत्तर', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
       { mode: 'mobile-numerology', labelEn: 'Mobile Numerology', labelHi: 'मोबाइल अंक ज्योतिष', icon: '📱', descEn: 'Phone number vibration & luck', descHi: 'नंबर कंपन और भाग्य', isPremium: false },
       { mode: 'name-suggestions', labelEn: 'Name Suggestions', labelHi: 'नाम सुझाव', icon: '✏️', descEn: 'Baby & business names', descHi: 'बच्चा और व्यवसाय नाम', isPremium: false },
     ],
@@ -153,12 +151,12 @@ const MODULE_CATEGORIES: CategoryDef[] = [
     modules: [
       { mode: 'mantra', labelEn: 'Mantra', labelHi: 'मंत्र', icon: '🕉️', descEn: 'Sacred chants', descHi: 'पवित्र मंत्र', isPremium: false },
       { mode: 'gemstones', labelEn: 'Gemstones', labelHi: 'रत्न शास्त्र', icon: '💎', descEn: 'Planetary gems', descHi: 'ग्रह रत्न', isPremium: false },
-      { mode: 'vastu', labelEn: 'Vastu', labelHi: 'वास्तु', icon: '🏠', descEn: 'Sacred space', descHi: 'पवित्र स्थान', isPremium: false },
-      { mode: 'rudraksh', labelEn: 'Rudraksh', labelHi: 'रुद्राक्ष', icon: '📿', descEn: 'Sacred beads', descHi: 'पवित्र माला', isPremium: false },
-      { mode: 'yantra', labelEn: 'Yantra', labelHi: 'यंत्र', icon: '🔺', descEn: 'Sacred geometry', descHi: 'पवित्र ज्यामिति', isPremium: false },
-      { mode: 'cosmic-health', labelEn: 'Cosmic Health', labelHi: 'कॉस्मिक हेल्थ', icon: '🏥', descEn: 'Vedic wellness', descHi: 'वैदिक स्वास्थ्य', isPremium: false },
-      { mode: 'upay', labelEn: 'Upay Remedies', labelHi: 'उपाय', icon: '🪔', descEn: 'Quick Vedic remedies', descHi: 'ज्योतिषीय उपाय', isPremium: false },
-      { mode: 'lal-kitab', labelEn: 'Lal Kitab', labelHi: 'लाल किताब', icon: '📕', descEn: 'Simple totkas & remedies', descHi: 'सरल टोटके और उपाय', isPremium: false },
+      { mode: 'vastu', labelEn: 'Vastu', labelHi: 'वास्तु', icon: '🏠', descEn: 'Sacred space', descHi: 'पवित्र स्थान', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'rudraksh', labelEn: 'Rudraksh', labelHi: 'रुद्राक्ष', icon: '📿', descEn: 'Sacred beads', descHi: 'पवित्र माला', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'yantra', labelEn: 'Yantra', labelHi: 'यंत्र', icon: '🔺', descEn: 'Sacred geometry', descHi: 'पवित्र ज्यामिति', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'cosmic-health', labelEn: 'Cosmic Health', labelHi: 'कॉस्मिक हेल्थ', icon: '🏥', descEn: 'Vedic wellness', descHi: 'वैदिक स्वास्थ्य', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'upay', labelEn: 'Upay Remedies', labelHi: 'उपाय', icon: '🪔', descEn: 'Quick Vedic remedies', descHi: 'ज्योतिषीय उपाय', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
+      { mode: 'lal-kitab', labelEn: 'Lal Kitab', labelHi: 'लाल किताब', icon: '📕', descEn: 'Simple totkas & remedies', descHi: 'सरल टोटके और उपाय', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
       { mode: 'birthstone', labelEn: 'Birthstone by DOB', labelHi: 'राशि रत्न', icon: '💎', descEn: 'Your rashi gemstone', descHi: 'जन्म तिथि से रत्न', isPremium: false },
     ],
   },
@@ -173,7 +171,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'kundali-basics', labelEn: 'Kundali Basics', labelHi: 'कुंडली मूल', icon: '📖', descEn: 'Chart fundamentals', descHi: 'चार्ट मूल', isPremium: false },
       { mode: 'planets-houses', labelEn: 'Planets & Houses', labelHi: 'ग्रह और भाव', icon: '🪐', descEn: 'Planetary wisdom', descHi: 'ग्रह ज्ञान', isPremium: false },
       { mode: 'zodiac-signs', labelEn: 'Zodiac Signs', labelHi: 'राशि चक्र', icon: '♈', descEn: '12 signs guide', descHi: '12 राशि गाइड', isPremium: false },
-      { mode: 'nakshatra-library', labelEn: 'Nakshatra', labelHi: 'नक्षत्र', icon: '✨', descEn: '27 lunar mansions', descHi: '27 चंद्र निवास', isPremium: false },
+      { mode: 'nakshatra-library', labelEn: 'Nakshatra', labelHi: 'नक्षत्र', icon: '✨', descEn: '27 lunar mansions', descHi: '27 चंद्र निवास', isPremium: false, regionEn: 'India', regionHi: 'भारत' },
       { mode: 'palmistry-guide', labelEn: 'Palmistry Guide', labelHi: 'हस्तरेखा गाइड', icon: '✋', descEn: 'Hand lines', descHi: 'हाथ की रेखाएं', isPremium: false },
       { mode: 'numerology-guide', labelEn: 'Numerology Guide', labelHi: 'अंक गाइड', icon: '🔢', descEn: 'Number meanings', descHi: 'अंक अर्थ', isPremium: false },
       { mode: 'star-legends', labelEn: 'Star Legends', labelHi: 'तारा कथाएं', icon: '🌟', descEn: 'Cosmic stories', descHi: 'आकाशीय कथाएं', isPremium: false },
@@ -224,8 +222,12 @@ const App: React.FC = () => {
   const [hamburgerOpen, setHamburgerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>('popular');
+  const [guidesExpanded, setGuidesExpanded] = useState(false);
   const modeHistoryRef = React.useRef<AppViewMode[]>(['hub']);
   const isPopStateRef = React.useRef(false);
+  const hubScrollPositionRef = React.useRef(0);
+  const justReturnedToHubRef = React.useRef(false);
 
   const [language, setLanguageState] = useState<Language>(() => {
     try {
@@ -365,6 +367,7 @@ const App: React.FC = () => {
   const [kundaliFormData, setKundaliFormData] = useState<KundaliFormData | null>(null);
   const [savedKundaliCharts, setSavedKundaliCharts] = useState<KundaliFormData[]>([]);
   const [panchangData, setPanchangData] = useState<DailyPanchangResponse | null>(null);
+  const [panchangCachedAt, setPanchangCachedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
@@ -405,9 +408,11 @@ const App: React.FC = () => {
     localStorage.setItem('cosmicjyoti_app_download_seen', String(Date.now()));
   }, []);
 
-  const getCachedHoroscope = (signName: string, lang: Language): HoroscopeResponse | null => {
+  const [horoscopePredictionPeriod, setHoroscopePredictionPeriod] = useState<HoroscopePeriod>('day');
+
+  const getCachedHoroscope = (signName: string, lang: Language, period: HoroscopePeriod): HoroscopeResponse | null => {
     const today = new Date().toDateString();
-    const cacheKey = `horoscope_${signName}_${lang}_${today}`;
+    const cacheKey = `horoscope_${signName}_${lang}_${period}_${today}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
       try { return JSON.parse(cached); } catch (e) { return null; }
@@ -415,30 +420,64 @@ const App: React.FC = () => {
     return null;
   };
 
-  const setCachedHoroscope = (signName: string, lang: Language, data: HoroscopeResponse) => {
+  const setCachedHoroscope = (signName: string, lang: Language, data: HoroscopeResponse, period: HoroscopePeriod) => {
     const today = new Date().toDateString();
-    const cacheKey = `horoscope_${signName}_${lang}_${today}`;
+    const cacheKey = `horoscope_${signName}_${lang}_${period}_${today}`;
     localStorage.setItem(cacheKey, JSON.stringify(data));
   };
+
+  const [horoscopeCachedAt, setHoroscopeCachedAt] = useState<string | null>(null);
 
   const handleSelectSign = useCallback(async (sign: ZodiacSignData) => {
     setSelectedSign(sign);
     setDailyForecastPersonalizedName(null);
+    setHoroscopeCachedAt(null);
     setMode('daily');
-    const cached = getCachedHoroscope(sign.name, language);
+    const cached = getCachedHoroscope(sign.name, language, horoscopePredictionPeriod);
     if (cached) {
       setHoroscopeData(cached);
       return;
     }
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      const lastHoroscopes = listReports('horoscope');
+      if (lastHoroscopes.length > 0) {
+        const report = getReport<HoroscopeResponse>(lastHoroscopes[0].id);
+        const signName = report?.meta?.formInput && typeof report.meta.formInput === 'object' && (report.meta.formInput as Record<string, unknown>)?.sign;
+        const fallbackSign = typeof signName === 'string' ? ZODIAC_SIGNS.find((z) => z.name === signName) : null;
+        if (report?.data && fallbackSign) {
+          setSelectedSign(fallbackSign);
+          setHoroscopeData(report.data);
+          setHoroscopeCachedAt(report.meta.createdAt);
+          return;
+        }
+      }
+      setErrorSafely(setError, new Error('Offline'), language, 'Horoscope');
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const data = await generateHoroscope(sign.name, language);
+      const data = await generateHoroscope(sign.name, language, horoscopePredictionPeriod);
       setHoroscopeData(data);
-      setCachedHoroscope(sign.name, language, data);
+      setCachedHoroscope(sign.name, language, data, horoscopePredictionPeriod);
     } catch (err) { 
       setErrorSafely(setError, err, language, 'Horoscope');
     } finally { setLoading(false); }
-  }, [language, t]);
+  }, [language, t, horoscopePredictionPeriod]);
+
+  const refetchHoroscopeWithPeriod = useCallback((period: HoroscopePeriod) => {
+    if (!selectedSign) return;
+    setHoroscopePredictionPeriod(period);
+    setLoading(true);
+    setError(null);
+    generateHoroscope(selectedSign.name, language, period)
+      .then((data) => {
+        setHoroscopeData(data);
+        setCachedHoroscope(selectedSign.name, language, data, period);
+      })
+      .catch((err) => setErrorSafely(setError, err, language, 'Horoscope'))
+      .finally(() => setLoading(false));
+  }, [selectedSign, language]);
 
   const loadSavedKundaliCharts = useCallback(() => {
     const reports = listReports('kundali');
@@ -494,6 +533,7 @@ const App: React.FC = () => {
     const nakshatra = data?.basicDetails?.nakshatra || 'Unknown';
     setSelectedSign(sign);
     setDailyForecastPersonalizedName(chart.name);
+    setHoroscopeCachedAt(null);
     setMode('daily');
     const cacheKey = `horoscope_personalized_${chart.name}_${lagna}_${moonSign}_${sunSign}_${nakshatra}_${language}_${new Date().toDateString()}`;
     const cached = localStorage.getItem(cacheKey);
@@ -608,6 +648,7 @@ const App: React.FC = () => {
   const fetchPanchang = useCallback(async () => {
       setLoading(true);
       setError(null);
+      setPanchangCachedAt(null);
       try {
           const profile = getGlobalProfile();
           const location = profile?.self?.location || "New Delhi, India";
@@ -621,6 +662,17 @@ const App: React.FC = () => {
             return;
           }
           if (typeof navigator !== 'undefined' && !navigator.onLine) {
+            const lastPanchangs = listReports('panchang');
+            if (lastPanchangs.length > 0) {
+              const report = getReport<DailyPanchangResponse>(lastPanchangs[0].id);
+              if (report?.data) {
+                setPanchangData(report.data);
+                setPanchangCachedAt(report.meta.createdAt);
+                setMode('panchang');
+                setLoading(false);
+                return;
+              }
+            }
             setErrorSafely(setError, new Error('Offline'), language, 'Panchang');
             setLoading(false);
             return;
@@ -641,6 +693,11 @@ const App: React.FC = () => {
   }, []);
 
   const switchMode = useCallback((newMode: AppViewMode) => {
+    // Save hub scroll position when leaving dashboard so we can restore it on back
+    if (mode === 'hub' && newMode !== 'hub') {
+      const el = scrollContainerRef.current;
+      if (el) hubScrollPositionRef.current = el.scrollTop;
+    }
     // Track history for back navigation (push current before navigating)
     if (newMode !== mode) {
       modeHistoryRef.current = [...modeHistoryRef.current, mode].slice(-20);
@@ -653,8 +710,8 @@ const App: React.FC = () => {
     }
     if (newMode === 'panchang') fetchPanchang();
     else setMode(newMode);
-    scrollToTop();
     setError(null);
+    // Scroll to top is done in useEffect after module content renders (so module is visible, not footer)
     
     // Track mode switches for AdMob interstitial ads
     if (newMode !== mode && mode !== 'hub' && isCapacitor()) {
@@ -685,7 +742,87 @@ const App: React.FC = () => {
         }
       }, 500);
     }
-  }, [mode, fetchPanchang, scrollToTop]);
+  }, [mode, fetchPanchang]);
+
+  const openSavedReport = useCallback((targetMode: AppViewMode, reportId: string) => {
+    if (targetMode === 'daily') {
+      const report = getReport<HoroscopeResponse>(reportId);
+      if (!report || report.meta.type !== 'horoscope') {
+        switchMode(targetMode);
+        return;
+      }
+      const signName = report.meta.formInput && typeof report.meta.formInput === 'object' && 'sign' in report.meta.formInput
+        ? String((report.meta.formInput as { sign?: string }).sign)
+        : null;
+      const sign = signName ? ZODIAC_SIGNS.find((z) => z.name === signName) : null;
+      if (!sign) {
+        switchMode(targetMode);
+        return;
+      }
+      setSelectedSign(sign);
+      setHoroscopeData(report.data);
+      setDailyForecastPersonalizedName(null);
+      setHoroscopeCachedAt(null);
+      setMode('daily');
+      setError(null);
+      return;
+    }
+    switchMode(targetMode);
+  }, [switchMode]);
+
+  // When entering any module: scroll to top so main section is visible (not footer). Double rAF + delayed fallback for slow/heavy modules.
+  useEffect(() => {
+    if (mode === 'hub') return;
+    const el = scrollContainerRef.current;
+    const doScroll = () => {
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    requestAnimationFrame(() => requestAnimationFrame(doScroll));
+    const t = window.setTimeout(doScroll, 120);
+    return () => window.clearTimeout(t);
+  }, [mode]);
+
+  // When module content appears asynchronously (e.g. Horoscope: sign selected → result loads), focus main section (scroll to top)
+  useEffect(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const doScroll = () => el.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mode === 'daily' && selectedSign && horoscopeData) {
+      requestAnimationFrame(() => requestAnimationFrame(doScroll));
+    }
+    if (mode === 'kundali' && kundaliData) {
+      requestAnimationFrame(() => requestAnimationFrame(doScroll));
+    }
+    if (mode === 'panchang' && panchangData) {
+      requestAnimationFrame(() => requestAnimationFrame(doScroll));
+    }
+  }, [mode, selectedSign, horoscopeData, kundaliData, panchangData]);
+
+  // Global: any module can request scroll to main (e.g. when form → result)
+  useEffect(() => {
+    const handler = () => {
+      const el = scrollContainerRef.current;
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+    window.addEventListener('cosmicjyoti-scroll-to-top', handler);
+    return () => window.removeEventListener('cosmicjyoti-scroll-to-top', handler);
+  }, []);
+
+  // When returning to hub (back from module): restore scroll position so user stays at the section they clicked from
+  useEffect(() => {
+    if (mode !== 'hub') return;
+    if (!justReturnedToHubRef.current) return;
+    justReturnedToHubRef.current = false;
+    const pos = hubScrollPositionRef.current;
+    const el = scrollContainerRef.current;
+    if (el && pos > 0) {
+      requestAnimationFrame(() => {
+        el.scrollTo({ top: pos, behavior: 'auto' });
+      });
+    }
+  }, [mode]);
 
   // Handle navigation to learning center with specific tab
   useEffect(() => {
@@ -726,11 +863,12 @@ const App: React.FC = () => {
         setSelectedSign(null);
       }
       if (panchangData && mode === 'panchang') setPanchangData(null);
+      justReturnedToHubRef.current = prevMode === 'hub';
       setMode(prevMode);
       setError(null);
-      scrollToTop();
+      // Do not scroll to top — restore hub scroll position in useEffect
     }
-  }, [mode, kundaliData, horoscopeData, panchangData, scrollToTop]);
+  }, [mode, kundaliData, horoscopeData, panchangData]);
 
   // Android back button + browser history back — go to previous screen
   const handleBackNavigation = useCallback(() => {
@@ -838,13 +976,14 @@ const App: React.FC = () => {
         setSelectedSign(null);
       }
       if (panchangData && mode === 'panchang') setPanchangData(null);
+      justReturnedToHubRef.current = targetMode === 'hub';
       setMode(targetMode);
       setError(null);
-      scrollToTop();
+      // Do not scroll to top when returning to hub — restore scroll in useEffect
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [mode, kundaliData, horoscopeData, panchangData, scrollToTop]);
+  }, [mode, kundaliData, horoscopeData, panchangData]);
 
   // Android back button via Capacitor App plugin (when available)
   useEffect(() => {
@@ -897,7 +1036,7 @@ const App: React.FC = () => {
     return null;
   };
 
-  const FeatureCard = ({ target, label, icon, desc, category, color, isPremium = false, isSubscriptionOnly = false, mustRead = false, isFeatured = false, isFavorite = false, onToggleFavorite }: any) => (
+  const FeatureCard = ({ target, label, icon, desc, category, color, isPremium = false, isSubscriptionOnly = false, mustRead = false, isFeatured = false, isFavorite = false, onToggleFavorite, region }: any) => (
     <div className="relative w-full h-full flex flex-col min-h-0">
       {onToggleFavorite && (
         <button
@@ -928,6 +1067,7 @@ const App: React.FC = () => {
           mustRead={mustRead}
           isFeatured={isFeatured}
           language={language}
+          region={region}
         />
       </div>
     </div>
@@ -986,6 +1126,7 @@ const App: React.FC = () => {
           }
           switchMode(m);
         }}
+        onOpenReport={openSavedReport}
         language={language}
         onOpenProfile={() => { setShowProfile(true); setHamburgerOpen(false); }}
         user={user}
@@ -1234,12 +1375,26 @@ const App: React.FC = () => {
 
         {mode === 'hub' && !loading && (
           <div className="animate-fade-in-up space-y-10 md:space-y-14 pb-8">
-            {/* Hero */}
-            <div className="text-center space-y-2">
+            {/* Hero + primary CTA – one clear action for new users */}
+            <div className="text-center space-y-4">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-white to-amber-200">CosmicJyoti</h2>
-              <p className="text-slate-400 italic tracking-[0.3em] sm:tracking-[0.5em] uppercase text-xs">{t.subtitle}</p>
+              <p className="text-slate-400 italic tracking-[0.2em] sm:tracking-[0.4em] uppercase text-xs">{t.subtitle}</p>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => switchMode('daily')}
+                  className="px-6 py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-bold text-sm shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98]"
+                >
+                  {language === 'hi' ? "आज का राशिफल" : "Today's Horoscope"}
+                </button>
+                <button
+                  onClick={() => switchMode('kundali')}
+                  className="px-6 py-3.5 rounded-xl border-2 border-amber-500/50 bg-amber-500/10 hover:bg-amber-500/20 text-amber-200 font-bold text-sm transition-all active:scale-[0.98]"
+                >
+                  {language === 'hi' ? "मेरी कुंडली" : "Get my Kundali"}
+                </button>
+              </div>
             </div>
-            
+
             <ThoughtOfTheDay language={language} />
 
             {/* Favorites – quick access at top */}
@@ -1281,7 +1436,39 @@ const App: React.FC = () => {
 
             <CheckTodayOnboardingHint language={language} />
 
-            {/* Search results – show matching modules above "Check today" when user searches */}
+            {/* Quick access – top tools in one row so users don't scroll forever */}
+            {!searchQuery.trim() && (
+              <section className="animate-fade-in-up rounded-2xl border border-amber-500/20 bg-slate-800/40 p-4 md:p-5">
+                <h3 className="text-xs font-serif font-bold text-amber-200/90 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <span>⚡</span>
+                  {language === 'hi' ? 'जल्दी खोलें' : 'Quick access'}
+                </h3>
+                <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2">
+                  {[
+                    { mode: 'kundali' as AppViewMode, icon: '🧭', labelEn: 'Kundali', labelHi: 'कुंडली' },
+                    { mode: 'daily' as AppViewMode, icon: '🌞', labelEn: 'Horoscope', labelHi: 'राशिफल' },
+                    { mode: 'panchang' as AppViewMode, icon: '📅', labelEn: 'Panchang', labelHi: 'पंचांग' },
+                    { mode: 'matchmaking' as AppViewMode, icon: '💒', labelEn: 'Guna Milan', labelHi: 'गुण मिलान' },
+                    { mode: 'muhurat' as AppViewMode, icon: '🕐', labelEn: 'Muhurat', labelHi: 'मुहूर्त' },
+                    { mode: 'compatibility' as AppViewMode, icon: '❤️', labelEn: 'Match', labelHi: 'मिलान' },
+                    { mode: 'tarot' as AppViewMode, icon: '🃏', labelEn: 'Tarot', labelHi: 'टैरो' },
+                    { mode: 'learning' as AppViewMode, icon: '📚', labelEn: 'Learning', labelHi: 'सीखें' },
+                  ].map(({ mode, icon, labelEn, labelHi }) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => handleFeatureClick(mode)}
+                      className="flex flex-col items-center justify-center gap-1 min-h-[44px] min-w-[44px] p-3 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/40 hover:bg-slate-700/50 transition-all active:scale-95 touch-manipulation"
+                    >
+                      <span className="text-xl">{icon}</span>
+                      <span className="text-[10px] font-medium text-slate-300 text-center leading-tight line-clamp-2">{language === 'hi' ? labelHi : labelEn}</span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Search results – show matching modules above Today when user searches */}
             {searchQuery.trim() && (() => {
               const q = searchQuery.toLowerCase().trim();
               const searchMatches: { m: ModuleDef; cat: CategoryDef }[] = [];
@@ -1308,6 +1495,7 @@ const App: React.FC = () => {
                         icon={m.icon}
                         desc={language === 'hi' ? m.descHi : m.descEn}
                         category={language === 'hi' ? cat.labelHi : cat.labelEn}
+                        region={m.regionEn && m.regionHi ? (language === 'hi' ? m.regionHi : m.regionEn) : undefined}
                         color="from-amber-500 to-orange-500"
                         isPremium={m.isPremium}
                         isSubscriptionOnly={false}
@@ -1321,82 +1509,8 @@ const App: React.FC = () => {
               );
             })()}
 
-            {/* Today – daily habit: Horoscope, Panchang, AI Articles */}
-            <section className="animate-fade-in-up rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-orange-500/5 p-5 md:p-6">
-              <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider mb-4 flex items-center gap-2">
-                <span>☀</span>
-                {language === 'hi' ? 'आज देखें' : 'Check today'}
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  onClick={() => switchMode('daily')}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
-                >
-                  <span className="text-2xl">🌞</span>
-                  <div className="min-w-0">
-                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'राशिफल' : "Today's Horoscope"}</span>
-                    <span className="text-xs text-slate-500">{language === 'hi' ? 'दैनिक भविष्यवाणी' : 'Daily predictions'}</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => switchMode('panchang')}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
-                >
-                  <span className="text-2xl">📅</span>
-                  <div className="min-w-0">
-                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'पंचांग' : "Today's Panchang"}</span>
-                    <span className="text-xs text-slate-500">{language === 'hi' ? 'तिथि, मुहूर्त' : 'Tithi, Muhurat'}</span>
-                  </div>
-                </button>
-                <button
-                  onClick={() => switchMode('ai-blog')}
-                  className="flex items-center gap-3 p-4 rounded-xl bg-slate-800/80 border border-slate-600 hover:border-amber-500/50 text-left transition-all group"
-                >
-                  <span className="text-2xl">📝</span>
-                  <div className="min-w-0">
-                    <span className="block font-semibold text-amber-100 group-hover:text-amber-200">{language === 'hi' ? 'आज के लेख' : "Today's Articles"}</span>
-                    <span className="text-xs text-slate-500">{language === 'hi' ? 'नए ज्योतिष लेख' : 'Fresh astrology reads'}</span>
-                  </div>
-                </button>
-              </div>
-              <div className="mt-4 pt-4 border-t border-slate-600/50">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    const url = typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname || '/').replace(/\/?$/, '/')) : 'https://www.cosmicjyoti.com/';
-                    const text = language === 'hi'
-                      ? `आज अपना राशिफल देखें – CosmicJyoti (मुफ्त कुंडली, पंचांग)। ${url}`
-                      : `Check your daily horoscope – CosmicJyoti (free Kundali & Panchang). ${url}`;
-                    if (navigator.share) {
-                      try { await navigator.share({ title: 'CosmicJyoti', text, url }); } catch (e) {
-                        if ((e as Error).name !== 'AbortError') window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                      }
-                    } else window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-                  }}
-                  className="inline-flex items-center gap-2 text-slate-400 hover:text-amber-300 text-xs font-medium transition-colors"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                  {language === 'hi' ? "आज का राशिफल शेयर करें" : "Share today's horoscope"}
-                </button>
-              </div>
-            </section>
-
-            <TodaysOccultWidget language={language} onNavigate={switchMode} />
-
-            {/* Daily Luck Score - KundaliCard style */}
-            <section className="animate-fade-in-up">
-              <DailyLuckScore
-                language={language}
-                onViewHoroscope={() => switchMode('daily')}
-              />
-            </section>
-
-            {/* Daily Do's & Don'ts - Co-Star style */}
-            <section className="animate-fade-in-up">
-              <DailyDoDonts language={language} />
-            </section>
+            {/* Today – one card: Quick access, vibe, luck score, do's & don'ts, share */}
+            <TodayUnified language={language} onNavigate={switchMode} />
 
             {/* Daily Forecast - personalized if Kundali saved, else CTA */}
             <section className="animate-fade-in-up bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-2xl p-6 md:p-8">
@@ -1440,58 +1554,83 @@ const App: React.FC = () => {
               )}
             </section>
 
-            {/* Categorized modules - user-friendly sections */}
-            {MODULE_CATEGORIES.map((cat, catIdx) => {
-              const filteredModules = cat.modules.filter((m) => {
-                if (!searchQuery.trim()) return true;
-                const q = searchQuery.toLowerCase().trim();
-                return m.labelEn.toLowerCase().includes(q) || m.labelHi.includes(q) || m.mode.toLowerCase().includes(q) || cat.labelEn.toLowerCase().includes(q) || cat.labelHi.includes(q);
-              });
-              if (filteredModules.length === 0) return null;
-              const isPopular = cat.id === 'popular';
-              return (
-                <section key={cat.id} className="animate-fade-in-up" style={{ animationDelay: `${catIdx * 80}ms`, animationFillMode: 'both' }}>
-                  {/* Category header */}
-                  <div className={`flex items-center gap-3 mb-4 px-1 rounded-xl py-2 bg-gradient-to-r ${cat.color} border border-slate-700/30`}>
-                    <span className="text-2xl">{cat.icon}</span>
-                    <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider">
-                      {language === 'hi' ? cat.labelHi : cat.labelEn}
-                    </h3>
-                    <div className="h-px flex-1 bg-slate-600/50 rounded-full"></div>
+            {/* Browse all by category – collapsible to reduce overwhelm */}
+            <section className="animate-fade-in-up mt-6" aria-label={language === 'hi' ? 'सभी श्रेणियाँ' : 'Browse all categories'}>
+              <h3 className="text-xs font-serif font-bold text-slate-500 uppercase tracking-wider mb-3">
+                {language === 'hi' ? 'सभी टूल देखें' : 'Browse all tools'}
+              </h3>
+              {MODULE_CATEGORIES.map((cat, catIdx) => {
+                const filteredModules = cat.modules.filter((m) => {
+                  if (!searchQuery.trim()) return true;
+                  const q = searchQuery.toLowerCase().trim();
+                  return m.labelEn.toLowerCase().includes(q) || m.labelHi.includes(q) || m.mode.toLowerCase().includes(q) || cat.labelEn.toLowerCase().includes(q) || cat.labelHi.includes(q);
+                });
+                if (filteredModules.length === 0) return null;
+                const hasSearch = searchQuery.trim().length > 0;
+                const isExpanded = expandedCategoryId === cat.id || (hasSearch && filteredModules.length > 0);
+                const isPopular = cat.id === 'popular';
+                return (
+                  <div key={cat.id} className="mb-3 rounded-xl border border-slate-700/50 overflow-hidden bg-slate-800/30">
+                    <button
+                      type="button"
+                      onClick={() => setExpandedCategoryId(isExpanded ? null : cat.id)}
+                      className={`w-full flex items-center gap-3 min-h-[44px] px-4 py-3 text-left bg-gradient-to-r ${cat.color} border-b border-slate-700/30 hover:bg-slate-700/20 transition-colors touch-manipulation`}
+                      aria-expanded={isExpanded}
+                    >
+                      <span className="text-xl">{cat.icon}</span>
+                      <span className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider flex-1">
+                        {language === 'hi' ? cat.labelHi : cat.labelEn}
+                      </span>
+                      <span className="text-xs text-slate-400">{filteredModules.length}</span>
+                      <svg className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isExpanded && (
+                      <div className="p-3 pt-2">
+                        <div className={`grid items-stretch ${isPopular ? 'grid-cols-2 sm:grid-cols-4 gap-3' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2'}`}>
+                          {filteredModules.map((m) => (
+                            <FeatureCard
+                              key={m.mode}
+                              target={m.mode}
+                              label={language === 'hi' ? m.labelHi : m.labelEn}
+                              icon={m.icon}
+                              desc={language === 'hi' ? m.descHi : m.descEn}
+                              category={language === 'hi' ? cat.labelHi : cat.labelEn}
+                              color={isPopular ? 'from-amber-500 to-orange-500' : 'from-amber-500 to-transparent'}
+                              isPremium={m.isPremium}
+                              isSubscriptionOnly={false}
+                              isFeatured={isPopular}
+                              isFavorite={favoriteModules.includes(m.mode)}
+                              onToggleFavorite={handleToggleFavorite}
+                              region={m.regionEn && m.regionHi ? (language === 'hi' ? m.regionHi : m.regionEn) : undefined}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {/* Module grid - larger for Popular */}
-                  <div className={`grid items-stretch ${isPopular ? 'grid-cols-2 sm:grid-cols-4 gap-4' : 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'}`}>
-                    {filteredModules.map((m) => (
-                      <FeatureCard
-                        key={m.mode}
-                        target={m.mode}
-                        label={language === 'hi' ? m.labelHi : m.labelEn}
-                        icon={m.icon}
-                        desc={language === 'hi' ? m.descHi : m.descEn}
-                        category={language === 'hi' ? cat.labelHi : cat.labelEn}
-                        color={isPopular ? 'from-amber-500 to-orange-500' : 'from-amber-500 to-transparent'}
-                        isPremium={m.isPremium}
-                        isSubscriptionOnly={false}
-                        isFeatured={isPopular}
-                        isFavorite={favoriteModules.includes(m.mode)}
-                        onToggleFavorite={handleToggleFavorite}
-                      />
-                    ))}
-                  </div>
-                </section>
-              );
-            })}
+                );
+              })}
+            </section>
 
-            {/* Guides – How to use our tools (SEO: keyword-rich content + internal links to tools) */}
-            <section className="animate-fade-in-up mt-8" aria-label={language === 'hi' ? 'टूल गाइड' : 'Tool guides'}>
-              <div className="flex items-center gap-3 mb-4 px-1 rounded-xl py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/10 border border-slate-700/30">
-                <span className="text-2xl">📖</span>
-                <h3 className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider">
+            {/* Guides – collapsible to keep hub simple */}
+            <section className="animate-fade-in-up mt-6" aria-label={language === 'hi' ? 'टूल गाइड' : 'Tool guides'}>
+              <button
+                type="button"
+                onClick={() => setGuidesExpanded(!guidesExpanded)}
+                className="w-full flex items-center gap-3 min-h-[44px] px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/5 border border-slate-700/50 hover:bg-slate-700/20 transition-colors text-left touch-manipulation"
+              >
+                <span className="text-xl">📖</span>
+                <span className="text-sm font-serif font-bold text-amber-200 uppercase tracking-wider flex-1">
                   {language === 'hi' ? 'गाइड – टूल कैसे इस्तेमाल करें' : 'Guides – How to use our tools'}
-                </h3>
-                <div className="h-px flex-1 bg-slate-600/50 rounded-full" />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                </span>
+                <svg className={`w-5 h-5 text-slate-400 transition-transform ${guidesExpanded ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {guidesExpanded && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3 pl-1">
                 <div className="p-4 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-amber-500/40 transition-colors">
                   <h4 className="font-serif font-bold text-amber-200 text-sm mb-1">{language === 'hi' ? 'साढ़े साती कैसे जांचें' : 'How to check Sade Sati by Moon sign'}</h4>
                   <p className="text-slate-400 text-xs mb-3">{language === 'hi' ? 'चंद्र राशि दर्ज करें या जन्म से ढूंढें। 12वाँ, 1ला, 2रा भाव तारीखें और AI व्याख्या मिलती है।' : 'Enter your Moon sign or find it from birth details. Get dates for 12th, 1st, 2nd house phase and AI interpretation.'}</p>
@@ -1528,6 +1667,7 @@ const App: React.FC = () => {
                   <button type="button" onClick={() => switchMode('mobile-numerology')} className="text-amber-400 hover:text-amber-300 text-xs font-medium">{language === 'hi' ? 'मोबाइल अंक ज्योतिष खोलें' : 'Try mobile numerology'}</button>
                 </div>
               </div>
+              )}
             </section>
 
             {/* How it works & FAQ – after modules, compact and attractive */}
@@ -1577,9 +1717,37 @@ const App: React.FC = () => {
 
         {mode === 'daily' && (
           !selectedSign ? (
-            <ZodiacGrid onSelect={handleSelectSign} language={language} />
+            <div className="animate-fade-in space-y-6">
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <span className="text-slate-500 text-xs sm:text-sm font-medium uppercase tracking-wider mr-1">{language === 'hi' ? 'अवधि' : 'Period'}</span>
+                {(['day', 'week', 'month', 'year'] as HoroscopePeriod[]).map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setHoroscopePredictionPeriod(p)}
+                    className={`min-h-[44px] px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                      horoscopePredictionPeriod === p
+                        ? 'bg-amber-600 text-white border border-amber-500'
+                        : 'bg-slate-800/60 text-slate-400 border border-slate-600 hover:border-amber-500/50 hover:text-amber-200'
+                    }`}
+                  >
+                    {language === 'hi' ? (p === 'day' ? 'दिन' : p === 'week' ? 'सप्ताह' : p === 'month' ? 'महीना' : 'साल') : (p === 'day' ? 'Day' : p === 'week' ? 'Week' : p === 'month' ? 'Month' : 'Year')}
+                  </button>
+                ))}
+              </div>
+              <ZodiacGrid onSelect={handleSelectSign} language={language} />
+            </div>
           ) : horoscopeData && selectedSign ? (
-            <HoroscopeCard data={horoscopeData} sign={selectedSign} language={language} personalizedName={dailyForecastPersonalizedName} onBack={() => {setSelectedSign(null); setHoroscopeData(null); setDailyForecastPersonalizedName(null); setError(null); setMode('hub');}}  />
+            <HoroscopeCard
+              data={horoscopeData}
+              sign={selectedSign}
+              language={language}
+              personalizedName={dailyForecastPersonalizedName}
+              onBack={() => { setSelectedSign(null); setHoroscopeData(null); setHoroscopeCachedAt(null); setDailyForecastPersonalizedName(null); setError(null); setMode('hub'); }}
+              cachedAt={horoscopeCachedAt}
+              predictionPeriod={horoscopePredictionPeriod}
+              onPeriodChange={refetchHoroscopeWithPeriod}
+            />
           ) : (
             <div className="animate-fade-in space-y-6 max-w-md mx-auto px-4 py-12 text-center">
               {loading ? (
@@ -1610,7 +1778,7 @@ const App: React.FC = () => {
           )
         )}
         {mode === 'kundali' && (kundaliData ? <KundaliResult data={kundaliData} name={kundaliFormData?.name || 'Seeker'} formInput={kundaliFormData ? { name: kundaliFormData.name, date: kundaliFormData.date, time: kundaliFormData.time, location: kundaliFormData.location } : undefined} language={language} onBack={() => { setKundaliData(null); setKundaliFormData(null); loadSavedKundaliCharts(); }}  /> : <KundaliForm onSubmit={handleGenerateKundali} isLoading={loading} language={language} savedCharts={savedKundaliCharts} onLoadChart={handleLoadChart} onDeleteChart={handleDeleteChart} onGetDaily={handleGetDaily} />)}
-        {mode === 'panchang' && panchangData && <DailyPanchang data={panchangData} language={language} onBack={() => { setPanchangData(null); setMode('hub'); }} formInput={{ date: panchangData.date, location: panchangData.location }} />}
+        {mode === 'panchang' && panchangData && <DailyPanchang data={panchangData} language={language} onBack={() => { setPanchangData(null); setPanchangCachedAt(null); setMode('hub'); }} formInput={{ date: panchangData.date, location: panchangData.location }} cachedAt={panchangCachedAt} />}
         {mode === 'mantra' && <MantraLab language={language} />}
         {mode === 'rudraksh' && <RudrakshLab language={language} />}
         {mode === 'yantra' && <YantraLab language={language} />}
@@ -1668,7 +1836,7 @@ const App: React.FC = () => {
         {mode === 'mobile-numerology' && <MobileNumerology language={language} onBack={() => setMode('hub')} />}
         
         {mode !== 'hub' && !loading && (
-          <button onClick={() => {setMode('hub'); setError(null);}} className="mt-12 mx-auto flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-amber-400 uppercase tracking-[0.4em] bg-slate-900/50 px-10 py-3 rounded-full border border-slate-800 transition-all shadow-lg">
+          <button onClick={() => { justReturnedToHubRef.current = true; setMode('hub'); setError(null); }} className="mt-12 mx-auto flex items-center justify-center gap-2 text-[10px] font-bold text-slate-500 hover:text-amber-400 uppercase tracking-[0.4em] bg-slate-900/50 px-10 py-3 rounded-full border border-slate-800 transition-all shadow-lg">
             {t.return}
           </button>
         )}
@@ -1686,6 +1854,8 @@ const App: React.FC = () => {
                 <span className="text-xl sm:text-2xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-200 to-amber-100 tracking-widest uppercase">CosmicJyoti</span>
               </div>
               <p className="text-slate-400 text-sm sm:text-base max-w-sm italic leading-relaxed">{t.footer}</p>
+              <p className="text-slate-500 text-xs max-w-sm leading-relaxed">{t.disclaimerFooter}</p>
+              <p className="text-slate-500 text-xs max-w-sm leading-relaxed">{t.privacyFooter}</p>
               <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                 <a 
                   href="/landing.html"
@@ -1715,6 +1885,12 @@ const App: React.FC = () => {
             <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
               <h3 className="text-amber-300 font-serif font-bold text-base sm:text-lg uppercase tracking-wider mb-2">Quick Links</h3>
               <div className="flex flex-col gap-3">
+                <button type="button" onClick={() => { try { sessionStorage.setItem('learningActiveTab', 'accuracy'); } catch (_) {} switchMode('learning'); }} className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base text-left">
+                  <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  {language === 'hi' ? 'हम कैसे गणना करते हैं' : 'How we calculate'}
+                </button>
                 <button type="button" onClick={() => switchMode('about')} className="group inline-flex items-center gap-2 text-slate-400 hover:text-amber-400 transition-colors text-sm sm:text-base text-left">
                   <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import { ModuleIntro } from './common';
 
 const RUNES: { symbol: string; nameEn: string; nameHi: string; meaningEn: string; meaningHi: string }[] = [
@@ -42,6 +43,10 @@ const Runes: React.FC<RunesProps> = ({ language }) => {
   const [drawn, setDrawn] = useState<typeof RUNES[0][]>([]);
   const [shown, setShown] = useState(false);
   const isHi = language === 'hi';
+
+  useEffect(() => {
+    if (drawn.length > 0) requestScrollToMain();
+  }, [drawn.length]);
 
   const draw = () => {
     const count = spread === 'one' ? 1 : 3;

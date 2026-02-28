@@ -9,6 +9,8 @@ interface HamburgerMenuProps {
   onClose: () => void;
   currentMode: AppViewMode;
   onNavigate: (mode: AppViewMode) => void;
+  /** When opening a saved report (e.g. horoscope), open that report's result instead of just the module */
+  onOpenReport?: (mode: AppViewMode, reportId: string) => void;
   language: Language;
   onOpenProfile: () => void;
   user: User | null;
@@ -20,6 +22,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   onClose,
   currentMode,
   onNavigate,
+  onOpenReport,
   language,
   onOpenProfile,
   user,
@@ -149,6 +152,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
           <MySavedReports
             language={language}
             onOpenMode={(mode) => { onNavigate(mode); onClose(); }}
+            onOpenReport={onOpenReport ? (mode, reportId) => { onOpenReport(mode, reportId); onClose(); } : undefined}
             compact
           />
         </div>

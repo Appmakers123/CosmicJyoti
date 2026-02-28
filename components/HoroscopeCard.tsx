@@ -1,12 +1,13 @@
 
 import React, { useState, useMemo } from 'react';
 import { HoroscopeResponse, ZodiacSignData, Language } from '../types';
+import type { HoroscopePeriod } from '../services/geminiService';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import ModuleAskAI from './ModuleAskAI';
 import { BackButton, SaveShareBar } from './common';
-import { saveReport, getReportByForm } from '../utils/reportStorageService';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 import { trackRemind } from '../utils/dataLayer';
 
 interface HoroscopeCardProps {
@@ -15,10 +16,24 @@ interface HoroscopeCardProps {
   language: Language;
   personalizedName?: string | null;
   onBack: () => void;
+  /** When set, show banner that this is cached/offline data from this date */
+  cachedAt?: string | null;
+  /** Current prediction period (day/week/month/year) */
+  predictionPeriod?: HoroscopePeriod;
+  /** When user changes period, refetch with new period */
+  onPeriodChange?: (period: HoroscopePeriod) => void;
 }
 
-const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, personalizedName, onBack }) => {
+const PERIOD_LABELS: Record<HoroscopePeriod, { en: string; hi: string }> = {
+  day: { en: 'Day', hi: 'दिन' },
+  week: { en: 'Week', hi: 'सप्ताह' },
+  month: { en: 'Month', hi: 'महीना' },
+  year: { en: 'Year', hi: 'साल' },
+};
+
+const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, personalizedName, onBack, cachedAt, predictionPeriod = 'day', onPeriodChange }) => {
   const t = useTranslation(language);
+  const cachedDate = cachedAt ? (() => { try { return new Date(cachedAt).toLocaleDateString(undefined, { dateStyle: 'medium' }); } catch { return cachedAt; } })() : null;
   // Format date based on language
   const getLocaleForLanguage = (lang: Language): string => {
     const localeMap: Record<Language, string> = {
@@ -30,7 +45,9 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
   const today = new Date().toLocaleDateString(getLocaleForLanguage(language), { weekday: 'long', month: 'long', day: 'numeric' });
   const todayStr = new Date().toISOString().slice(0, 10);
   const formInput = { sign: sign.name, date: todayStr, language };
-  const [isSaved, setIsSaved] = useState(() => !!getReportByForm('horoscope', formInput));
+  const savedReport = getReportByForm('horoscope', formInput);
+  const [isSaved, setIsSaved] = useState(!!savedReport);
+  const savedReportId = savedReport?.meta?.id ?? null;
   const displayTitle = personalizedName
     ? (language === 'hi' ? `${personalizedName} का दैनिक राशिफल` : `Daily Forecast for ${personalizedName}`)
     : (language === 'hi' ? sign.hindiName : sign.name);
@@ -49,6 +66,12 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
   const handleSave = () => {
     saveReport('horoscope', data, formInput, personalizedName ? `Daily Forecast for ${personalizedName}` : `${sign.name} Horoscope`);
     setIsSaved(true);
+  };
+  const handleUnsave = () => {
+    if (savedReportId) {
+      deleteReport(savedReportId);
+      setIsSaved(false);
+    }
   };
   const [notifEnabled, setNotifEnabled] = useState(() => {
     return localStorage.getItem('cosmic_notifications') === 'true';
@@ -97,9 +120,34 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
               shareContent={shareContent}
               shareTitle={personalizedName ? `Daily Forecast for ${personalizedName}` : `${sign.name} Horoscope`}
               contentType="horoscope"
+              savedReportId={savedReportId}
+              onUnsave={handleUnsave}
+              savedLocationLabel={language === 'hi' ? 'मेरी रिपोर्ट' : 'My Reports'}
             />
             </div>
           </div>
+          {cachedDate && (
+            <div className="mb-4 py-2 px-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm">
+              {language === 'hi' ? 'ऑफ़लाइन – सहेजा गया डेटा: ' : 'Offline – showing saved data from '}{cachedDate}.
+            </div>
+          )}
+          {onPeriodChange && (
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-slate-500 text-xs uppercase tracking-wider">{language === 'hi' ? 'अवधि' : 'Period'}</span>
+              {(['day', 'week', 'month', 'year'] as HoroscopePeriod[]).map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => onPeriodChange(p)}
+                  className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    predictionPeriod === p ? 'bg-amber-600 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-amber-200'
+                  }`}
+                >
+                  {language === 'hi' ? PERIOD_LABELS[p].hi : PERIOD_LABELS[p].en}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex flex-col md:flex-row items-center gap-8 mb-12 border-b border-slate-700/50 pb-8">
             <div className="w-32 h-32 text-amber-500 p-6 bg-slate-900/80 rounded-full border border-amber-500/30 shadow-[0_0_30px_rgba(245,158,11,0.15)] flex-shrink-0">
               {sign.symbol}

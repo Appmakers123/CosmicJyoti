@@ -8,8 +8,10 @@ import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import ModuleAskAI from './ModuleAskAI';
-import { ModuleIntro } from './common';
+import { ModuleIntro, SaveShareBar } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { requestScrollToMain } from '../utils/scrollToMain';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 
 interface TarotReadingProps {
   language: Language;
@@ -43,6 +45,26 @@ const TarotReading: React.FC<TarotReadingProps> = ({ language }) => {
   const [reading, setReading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(() => localStorage.getItem('cosmic_notifications') === 'true');
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!reading || selectedIndices.length !== 3 || deck.length === 0) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const cardsKey = selectedIndices.map(i => deck[i]).sort().join(',');
+    const fi = { cards: cardsKey, lang: language };
+    const sr = getReportByForm('tarot', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [reading, selectedIndices, deck, language]);
 
   const handleNotifySub = () => {
     localStorage.setItem('cosmic_notifications', 'true');
@@ -57,6 +79,10 @@ const TarotReading: React.FC<TarotReadingProps> = ({ language }) => {
   useEffect(() => {
     setDeck(generateDeck());
   }, []);
+
+  useEffect(() => {
+    if (reading) requestScrollToMain();
+  }, [reading]);
 
   const handleShuffle = () => {
     setGameState('shuffling');
@@ -269,6 +295,25 @@ const TarotReading: React.FC<TarotReadingProps> = ({ language }) => {
 
                 {!loading && reading && (
                     <>
+                    <div className="w-full max-w-4xl flex flex-col gap-4">
+                        <div className="flex flex-wrap items-center justify-end">
+                            <SaveShareBar
+                              language={language}
+                              onSave={() => {
+                                const cardsKey = selectedIndices.map(i => deck[i]).sort().join(',');
+                                const cards = selectedIndices.map(i => deck[i]);
+                                const id = saveReport('tarot', { reading, cards }, { cards: cardsKey, lang: language }, `Tarot: ${cards.join(', ')}`);
+                                setIsSaved(true);
+                                setSavedReportId(id);
+                              }}
+                              onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                              isSaved={isSaved}
+                              savedReportId={savedReportId}
+                              shareContent={`Tarot: ${selectedIndices.map(i => deck[i]).join(', ')}. ${reading.replace(/<[^>]*>/g, '').slice(0, 300)}... – CosmicJyoti`}
+                              shareTitle="Tarot Reading – CosmicJyoti"
+                              contentType="tarot"
+                            />
+                        </div>
                     <div className="w-full max-w-4xl bg-slate-900/80 border border-purple-500/30 p-8 rounded-2xl shadow-2xl relative overflow-hidden animate-fade-in">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
                         <h3 className="text-2xl font-serif text-purple-200 mb-6 text-center">{t.yourReading}</h3>
@@ -278,10 +323,11 @@ const TarotReading: React.FC<TarotReadingProps> = ({ language }) => {
                         </div>
                         
                         <div className="mt-8 flex justify-center">
-                             <button onClick={reset} className="px-6 py-2 border border-slate-600 hover:border-purple-500 text-slate-300 hover:text-white rounded-full transition-colors text-sm uppercase tracking-wide">
+                             <button onClick={() => { reset(); setIsSaved(false); setSavedReportId(null); }} className="px-6 py-2 border border-slate-600 hover:border-purple-500 text-slate-300 hover:text-white rounded-full transition-colors text-sm uppercase tracking-wide">
                                  {t.reshuffle}
                              </button>
                         </div>
+                    </div>
                     </div>
 
                     {!notifEnabled && (

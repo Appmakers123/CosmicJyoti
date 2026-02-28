@@ -4,7 +4,7 @@ import { DailyPanchangResponse, Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import AdBanner from './AdBanner';
 import { BackButton, SaveShareBar, ModuleIntro } from './common';
-import { saveReport, getReportByForm } from '../utils/reportStorageService';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 import { trackRemind } from '../utils/dataLayer';
 
 interface DailyPanchangProps {
@@ -12,11 +12,16 @@ interface DailyPanchangProps {
   language: Language;
   onBack?: () => void;
   formInput?: { date: string; location: string };
+  /** When set, show a banner that this is cached/offline data from this date */
+  cachedAt?: string | null;
 }
 
-const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, formInput }) => {
+const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, formInput, cachedAt }) => {
   const t = useTranslation(language);
-  const [isSaved, setIsSaved] = React.useState(() => formInput ? !!getReportByForm('panchang', formInput) : false);
+  const savedReport = formInput ? getReportByForm<DailyPanchangResponse>('panchang', formInput) : null;
+  const [isSaved, setIsSaved] = React.useState(!!savedReport);
+  const savedReportId = savedReport?.meta?.id ?? null;
+  const cachedDate = cachedAt ? (() => { try { return new Date(cachedAt).toLocaleDateString(undefined, { dateStyle: 'medium' }); } catch { return cachedAt; } })() : null;
 
   const shareContent = useMemo(() => {
     const lines = [
@@ -36,6 +41,12 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
     if (formInput) {
       saveReport('panchang', data, formInput, `Panchang ${data.date}`);
       setIsSaved(true);
+    }
+  };
+  const handleUnsave = () => {
+    if (savedReportId) {
+      deleteReport(savedReportId);
+      setIsSaved(false);
     }
   };
 
@@ -78,8 +89,16 @@ const DailyPanchang: React.FC<DailyPanchangProps> = ({ data, language, onBack, f
               shareContent={shareContent}
               shareTitle={`Panchang ${data.date}`}
               contentType="panchang"
+              savedReportId={savedReportId}
+              onUnsave={formInput ? handleUnsave : undefined}
+              savedLocationLabel={language === 'hi' ? 'मेरी रिपोर्ट' : 'My Reports'}
             />
             </div>
+          </div>
+        )}
+        {cachedDate && (
+          <div className="mb-4 py-2 px-4 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm">
+            {language === 'hi' ? 'ऑफ़लाइन – सहेजा गया डेटा: ' : 'Offline – showing saved data from '}{cachedDate}.
           </div>
         )}
         {/* Background Decorative */}

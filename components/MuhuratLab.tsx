@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language, MuhuratItem } from '../types';
 import { useTranslation } from '../utils/translations';
 import { generateMuhuratPlanner } from '../services/geminiService';
 import { getGlobalProfile } from '../utils/profileStorageService';
-import { BackButton, ModuleIntro } from './common';
+import { requestScrollToMain } from '../utils/scrollToMain';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
+import { BackButton, ModuleIntro, SaveShareBar } from './common';
 import Logo from './Logo';
 import AdBanner from './AdBanner';
 
@@ -40,6 +42,26 @@ const MuhuratLab: React.FC<MuhuratLabProps> = ({ language, onBack }) => {
   const [items, setItems] = useState<MuhuratItem[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
+
+  const formInput = items && items.length > 0 ? { date, location, activity } : undefined;
+  useEffect(() => {
+    if (!items?.length) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const fi = { date, location, activity };
+    const sr = getReportByForm('muhurat', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [items, date, location, activity]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +77,10 @@ const MuhuratLab: React.FC<MuhuratLabProps> = ({ language, onBack }) => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (items && items.length > 0) requestScrollToMain();
+  }, [items]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">
@@ -133,8 +159,27 @@ const MuhuratLab: React.FC<MuhuratLabProps> = ({ language, onBack }) => {
 
         {items && items.length > 0 && (
           <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-end gap-3 mb-2">
+              <SaveShareBar
+                language={language}
+                onSave={() => {
+                  const fi = { date, location, activity };
+                  const id = saveReport('muhurat', { date, location, activity, items }, fi, `Muhurat ${date} – ${activity}`);
+                  setIsSaved(true);
+                  setSavedReportId(id);
+                }}
+                onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                isSaved={isSaved}
+                savedReportId={savedReportId}
+                shareContent={`Muhurat ${date} (${activity}): ${items.map(i => `${i.activity} ${i.timeRange} (${i.status})`).join('; ')} – CosmicJyoti`}
+                shareTitle={`Muhurat ${date} – CosmicJyoti`}
+                contentType="muhurat"
+              />
+            </div>
             <h3 className="text-lg font-serif text-amber-200">
-              {language === 'hi' ? 'आज के शुभ समय' : "Today's Auspicious Times"}
+              {date === today
+                ? (language === 'hi' ? 'आज के शुभ समय' : "Today's Auspicious Times")
+                : (language === 'hi' ? `${date} के शुभ समय` : `Auspicious times for ${date}`)}
             </h3>
             {items.map((item, idx) => (
               <div

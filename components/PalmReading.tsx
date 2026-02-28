@@ -9,8 +9,10 @@ import { isCapacitor } from '../utils/linkHandler';
 import admobService from '../services/admobService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { ModuleIntro } from './common';
+import { ModuleIntro, SaveShareBar } from './common';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { requestScrollToMain } from '../utils/scrollToMain';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 
 interface PalmReadingProps {
   language: Language;
@@ -23,8 +25,31 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
   const [reading, setReading] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
 
   const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    if (!reading || !imageFile) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const fi = { palm: imageFile.name + imageFile.size, lang: language };
+    const sr = getReportByForm('palm', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [reading, imageFile, language]);
+
+  useEffect(() => {
+    if (reading) requestScrollToMain();
+  }, [reading]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -161,6 +186,24 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
 
             {reading && (
                 <div className="mt-12 animate-fade-in space-y-6">
+                     <div className="flex flex-wrap items-center justify-end gap-3">
+                        <SaveShareBar
+                          language={language}
+                          onSave={() => {
+                            if (!imageFile) return;
+                            const fi = { palm: imageFile.name + imageFile.size, lang: language };
+                            const id = saveReport('palm', { reading }, fi, 'Palm Reading');
+                            setIsSaved(true);
+                            setSavedReportId(id);
+                          }}
+                          onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                          isSaved={isSaved}
+                          savedReportId={savedReportId}
+                          shareContent={`Palm Reading. ${reading.replace(/<[^>]*>/g, '').slice(0, 300)}... – CosmicJyoti`}
+                          shareTitle="Palm Reading – CosmicJyoti"
+                          contentType="palm"
+                        />
+                     </div>
                      <AdBanner variant="leaderboard" />
                      <div className="bg-slate-900/60 p-8 rounded-2xl border border-amber-500/20 shadow-inner">
                         <h3 className="text-xl font-serif text-amber-100 mb-4">Vedic Interpretation</h3>

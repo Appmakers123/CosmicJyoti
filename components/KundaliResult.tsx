@@ -10,7 +10,7 @@ import KundaliAskAI from './KundaliAskAI';
 import SouthIndianChart from './SouthIndianChart';
 import NorthIndianChart from './NorthIndianChart';
 import { BackButton, InfoCard, PredictionCard, TabButton, SaveShareBar } from './common';
-import { saveReport, getReportByForm } from '../utils/reportStorageService';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 import { sanitizeSvg } from '../utils/sanitize';
 
 interface KundaliResultProps {
@@ -25,7 +25,9 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
   const t = useTranslation(language);
   const [activeChart, setActiveChart] = useState<'d1' | 'd9'>('d1'); 
   const [chartStyle, setChartStyle] = useState<'north' | 'south'>('north');
-  const [isSaved, setIsSaved] = useState(() => formInput ? !!getReportByForm('kundali', formInput) : false);
+  const savedReport = formInput ? getReportByForm<KundaliResponse>('kundali', formInput) : null;
+  const [isSaved, setIsSaved] = useState(!!savedReport);
+  const savedReportId = savedReport?.meta?.id ?? null;
 
   const shareContent = useMemo(() => {
     const b = data.basicDetails;
@@ -52,6 +54,12 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
       setIsSaved(true);
     }
   };
+  const handleUnsave = () => {
+    if (savedReportId) {
+      deleteReport(savedReportId);
+      setIsSaved(false);
+    }
+  };
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 pb-16 animate-fade-in-up">
@@ -66,6 +74,9 @@ const KundaliResult: React.FC<KundaliResultProps> = ({ data, name, language, onB
             shareContent={shareContent}
             shareTitle={`Kundali for ${name}`}
             contentType="kundali"
+            savedReportId={savedReportId}
+            onUnsave={formInput ? handleUnsave : undefined}
+            savedLocationLabel={language === 'hi' ? 'मेरी रिपोर्ट' : 'My Reports'}
           />
           <a
             href="#"

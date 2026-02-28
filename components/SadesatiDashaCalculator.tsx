@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { getMoonSignFromBirthDetails, generateSadeSatiInterpretation } from '../services/geminiService';
 import type { KundaliFormData } from '../types';
 import { setErrorSafely } from '../utils/errorHandler';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import ModuleAskAI from './ModuleAskAI';
 import RichText from './RichText';
 import { BackButton, ModuleIntro } from './common';
@@ -200,6 +201,10 @@ export default function SadesatiDashaCalculator({ language, onBack }: SadesatiDa
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">

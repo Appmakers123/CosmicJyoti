@@ -90,15 +90,20 @@
                 body.innerHTML = '<p class="text-slate-500">Article not found. <a href="/" class="text-amber-400">Back to Dashboard</a></p>';
                 return;
             }
+            var articleId = post.articleId || post.id || (post.date && post.slug ? post.date + '-' + post.slug : post.slug);
+            var baseUrl = 'https://www.cosmicjyoti.com';
+            var articleUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
+            var pubDate = post.date || data.lastGenerated || data.date;
+            var datePublishedISO = pubDate ? pubDate + 'T06:00:00+05:30' : null;
+            var dateModifiedISO = pubDate ? pubDate + 'T06:00:00+05:30' : null;
             function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
             var desc = (post.excerpt || post.title || '').replace(/"/g, '&quot;').slice(0, 160);
             document.title = post.title + ' – CosmicJyoti | Vedic Astrology';
-            var canonicalUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
             var metaDesc = document.querySelector('meta[name="description"]');
             if (!metaDesc) { metaDesc = document.createElement('meta'); metaDesc.name = 'description'; document.head.appendChild(metaDesc); }
             metaDesc.content = desc;
             var linkCanon = document.querySelector('link[rel="canonical"]');
-            if (linkCanon) linkCanon.href = canonicalUrl; else { linkCanon = document.createElement('link'); linkCanon.rel = 'canonical'; linkCanon.href = canonicalUrl; document.head.appendChild(linkCanon); }
+            if (linkCanon) linkCanon.href = articleUrl; else { linkCanon = document.createElement('link'); linkCanon.rel = 'canonical'; linkCanon.href = articleUrl; document.head.appendChild(linkCanon); }
             var ogTitle = document.querySelector('meta[property="og:title"]');
             if (!ogTitle) { ogTitle = document.createElement('meta'); ogTitle.setAttribute('property', 'og:title'); document.head.appendChild(ogTitle); }
             ogTitle.content = post.title + ' – CosmicJyoti';
@@ -107,13 +112,9 @@
             ogDesc.content = desc;
             var ogUrl = document.querySelector('meta[property="og:url"]');
             if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
-            ogUrl.content = canonicalUrl;
-            var pubDate = post.date || data.lastGenerated || data.date;
+            ogUrl.content = articleUrl;
             var serviceMode = post.serviceMode;
             var serviceLabel = post.serviceLabel || post.topic || 'Try this tool';
-            var articleId = post.articleId || post.id || (post.date && post.slug ? post.date + '-' + post.slug : post.slug);
-            var baseUrl = 'https://www.cosmicjyoti.com';
-            var articleUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
             var ctaHtml = '';
             var appMode = serviceMode;
             var tryHref = (window.location.origin || baseUrl) + '/?mode=' + encodeURIComponent(appMode || 'hub');
@@ -133,13 +134,25 @@
                 });
                 relatedHtml += '</ul></div>';
             }
-            var schema = { '@context': 'https://schema.org', '@type': 'Article', headline: post.title, description: post.excerpt || post.title, datePublished: pubDate || null, author: { '@type': 'Organization', name: 'CosmicJyoti' }, publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: baseUrl + '/app-logo.png' } }, mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl } };
+            var schema = {
+                '@context': 'https://schema.org',
+                '@type': 'NewsArticle',
+                headline: post.title,
+                description: post.excerpt || post.title,
+                datePublished: datePublishedISO,
+                dateModified: dateModifiedISO,
+                author: { '@type': 'Person', name: 'Nikesh Maurya', url: baseUrl + '/about.html' },
+                publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: baseUrl + '/app-logo.png' } },
+                mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
+                image: baseUrl + '/app-logo.png'
+            };
             var schemaEl = document.createElement('script');
             schemaEl.type = 'application/ld+json';
             schemaEl.textContent = JSON.stringify(schema);
             document.head.appendChild(schemaEl);
+            var visibleDateStr = pubDate ? new Date(pubDate + 'T06:00:00+05:30').toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '';
             body.innerHTML = '<h1 class="gradient-text text-2xl sm:text-3xl mb-4">' + esc(post.title) + '</h1>' +
-                '<p class="text-slate-400 text-sm mb-6">Published: ' + (pubDate ? new Date(pubDate).toLocaleDateString('en-IN', { dateStyle: 'long' }) : '') + ' | ' + (post.readingTime || '5 min read') + '</p>' +
+                '<p class="text-slate-400 text-sm mb-6"><time datetime="' + (datePublishedISO || '') + '">Published: ' + visibleDateStr + '</time> | By Nikesh Maurya | ' + (post.readingTime || '5 min read') + '</p>' +
                 '<div class="article-body">' + post.content + '</div>' +
                 ctaHtml +
                 relatedHtml +

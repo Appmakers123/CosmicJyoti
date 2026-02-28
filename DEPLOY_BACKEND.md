@@ -63,6 +63,14 @@ If you use **Google Cloud** and have Gemini Pro access, deploy the backend to **
 - From repo root: `gcloud builds submit --config cloudbuild.yaml .` then set env vars (e.g. `GEMINI_API_KEY`, `CORS_ORIGIN`) on the Cloud Run service.
 - Set `VITE_API_BASE_URL` to your Cloud Run URL when building the frontend.
 
+**If the API works when you hit it directly (Postman/curl) but fails from the app:** the browser is blocking the request due to **CORS**. The backend only allows origins listed in `CORS_ORIGIN`. On Cloud Run, set the **`CORS_ORIGIN`** environment variable to your frontend URL(s), for example:
+- Production: `CORS_ORIGIN=https://www.cosmicjyoti.com,https://cosmicjyoti.com`
+- Local dev (frontend at localhost calling Cloud Run): `CORS_ORIGIN=http://localhost:5173,http://127.0.0.1:5173`
+- Both: `CORS_ORIGIN=https://www.cosmicjyoti.com,https://cosmicjyoti.com,http://localhost:5173,http://127.0.0.1:5173`  
+No spaces; comma-separated. Redeploy the Cloud Run service after changing it.
+
+**Cloud Run secret → env var:** The server reads `GEMINI_API_KEY` or `API_KEY`. When you add a secret in Cloud Run, **expose it as an environment variable** with the **exact name** `GEMINI_API_KEY` (or `API_KEY`). In Cloud Run: **Edit & deploy** → **Variables & secrets** → Add variable / reference secret → **Name:** `GEMINI_API_KEY`, **Value:** your secret reference. If the name doesn’t match, the backend will log "Gemini API key not found" and Ask Rishi will return "AI key is missing there".
+
 ---
 
 ## Alternative: Railway, Fly.io, or Vercel

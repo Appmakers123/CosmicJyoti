@@ -13,7 +13,7 @@ interface LearningCenterProps {
   language: Language;
 }
 
-type Category = 'vedic' | 'zodiac' | 'nakshatra' | 'kundali' | 'palmistry' | 'numerology' | 'lab';
+type Category = 'vedic' | 'zodiac' | 'nakshatra' | 'kundali' | 'palmistry' | 'numerology' | 'lab' | 'accuracy';
 
 const LearningCenter: React.FC<LearningCenterProps> = ({ language }) => {
   const t = useTranslation(language);
@@ -21,7 +21,7 @@ const LearningCenter: React.FC<LearningCenterProps> = ({ language }) => {
   // Get initial tab from sessionStorage if navigating from a service
   const getInitialTab = (): Category => {
     const storedTab = sessionStorage.getItem('learningActiveTab');
-    if (storedTab && ['vedic', 'zodiac', 'nakshatra', 'kundali', 'palmistry', 'numerology', 'lab'].includes(storedTab)) {
+    if (storedTab && ['vedic', 'zodiac', 'nakshatra', 'kundali', 'palmistry', 'numerology', 'lab', 'accuracy'].includes(storedTab)) {
       sessionStorage.removeItem('learningActiveTab');
       return storedTab as Category;
     }
@@ -169,6 +169,7 @@ const LearningCenter: React.FC<LearningCenterProps> = ({ language }) => {
         <TabButton id="palmistry" label={language === 'hi' ? 'हस्तरेखा' : 'Palmistry'} icon="✋" />
         <TabButton id="numerology" label={language === 'hi' ? 'अंक' : 'Numbers'} icon="🔢" />
         <TabButton id="lab" label={language === 'hi' ? 'योग' : 'Yoga'} icon="🧪" />
+        <TabButton id="accuracy" label={language === 'hi' ? 'सटीकता' : 'Accuracy'} icon="📐" />
       </div>
 
       <div className="bg-slate-900/40 backdrop-blur-3xl border border-slate-800 rounded-[4rem] p-6 md:p-16 min-h-[700px] shadow-3xl relative overflow-hidden">
@@ -981,6 +982,84 @@ const LearningCenter: React.FC<LearningCenterProps> = ({ language }) => {
                         <RichText text={analysis} />
                     </div>
                 )}
+            </div>
+        )}
+
+        {/* --- ACCURACY & HOW WE CALCULATE --- */}
+        {activeTab === 'accuracy' && (
+            <div className="animate-fade-in max-w-4xl mx-auto space-y-8">
+                <div className="text-center mb-10">
+                    <h3 className="text-3xl sm:text-4xl font-serif text-amber-200">
+                        {language === 'hi' ? 'सटीकता और गणना विधि' : 'Accuracy & How We Calculate'}
+                    </h3>
+                    <p className="text-slate-400 text-sm sm:text-base mt-2">
+                        {language === 'hi' ? 'विश्वसनीय परिणामों के लिए हमारे मानक' : 'Our standards for trustworthy results'}
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-slate-950/60 p-6 sm:p-8 rounded-3xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="text-3xl">📐</span>
+                            <h4 className="text-xl font-serif text-amber-300">
+                                {language === 'hi' ? 'लाहिरी अयनांश' : 'Lahiri Ayanamsa'}
+                            </h4>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed">
+                            {language === 'hi'
+                                ? 'कुंडली और पंचांग गणना में हम लाहिरी अयनांश (भारतीय राष्ट्रीय पंचांग) का उपयोग करते हैं। यह वैदिक ज्योतिष में व्यापक रूप से स्वीकृत मानक है।'
+                                : 'We use Lahiri ayanamsa (Indian National Ephemeris standard) for Kundali and Panchang calculations. It is the widely accepted standard in Vedic astrology.'}
+                        </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-6 sm:p-8 rounded-3xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="text-3xl">📅</span>
+                            <h4 className="text-xl font-serif text-amber-300">
+                                {language === 'hi' ? 'पंचांग स्रोत' : 'Panchang Source'}
+                            </h4>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed">
+                            {language === 'hi'
+                                ? 'तिथि, वार, योग, करण और मुहूर्त सूर्योदय/अस्त और चंद्र स्थिति के आधार पर गणना किए जाते हैं।'
+                                : 'Tithi, Vara, Yoga, Karana and Muhurat are calculated from sunrise/sunset and lunar positions.'}
+                        </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-6 sm:p-8 rounded-3xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="text-3xl">💍</span>
+                            <h4 className="text-xl font-serif text-amber-300">
+                                {language === 'hi' ? 'गुण मिलान' : 'Guna Milan'}
+                            </h4>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed">
+                            {language === 'hi'
+                                ? 'गुण मिलान 36 गुणों के वैदिक मानक (वर्ण, वश्य, तारा, योनि, ग्रह मैत्री, गण, भकूट, नाड़ी) के अनुसार किया जाता है।'
+                                : 'Guna Milan follows the traditional 36-guna system (Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, Nadi).'}
+                        </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-6 sm:p-8 rounded-3xl border border-amber-500/20">
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="text-3xl">🔒</span>
+                            <h4 className="text-xl font-serif text-amber-300">
+                                {language === 'hi' ? 'आपका डेटा' : 'Your Data'}
+                            </h4>
+                        </div>
+                        <p className="text-slate-300 text-sm leading-relaxed">
+                            {language === 'hi'
+                                ? 'जन्म तिथि और समय केवल आपके डिवाइस पर सहेजे जाते हैं। हम इन्हें अपने सर्वर पर संग्रहीत नहीं करते।'
+                                : 'Birth date and time are saved only on your device. We do not store them on our servers.'}
+                        </p>
+                    </div>
+                </div>
+
+                <p className="text-slate-500 text-xs text-center italic max-w-xl mx-auto">
+                    {language === 'hi'
+                        ? 'सभी सामग्री मनोरंजन और शिक्षा के लिए है। महत्वपूर्ण निर्णयों के लिए योग्य ज्योतिषी से परामर्श लें।'
+                        : 'All content is for entertainment and education. Consult a qualified astrologer for important decisions.'}
+                </p>
             </div>
         )}
       </div>

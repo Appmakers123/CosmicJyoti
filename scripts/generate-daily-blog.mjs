@@ -138,7 +138,7 @@ function getGeminiKey() {
 }
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+const GEMINI_MODELS = ['gemini-3-flash-preview', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -465,11 +465,12 @@ async function main() {
   if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
 
-  // RSS (latest 30)
+  // RSS (latest 30) – pubDate with fixed time 06:00 IST (00:30 UTC) for consistency with News sitemap
   const rssItems = allPosts.slice(0, 30).map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
     const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
-    const pubDate = p.date ? new Date(p.date).toUTCString() : new Date().toUTCString();
+    const pubDateStr = p.date || today;
+    const pubDate = new Date(pubDateStr + 'T00:30:00.000Z').toUTCString();
     const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const desc = (p.excerpt || p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     return `    <item><title>${title}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${pubDate}</pubDate><description><![CDATA[${desc}]]></description></item>`;
@@ -500,7 +501,40 @@ ${blogUrls}
 </urlset>`;
   fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-blog.xml'), sitemapBlog, 'utf8');
 
-  console.log(`[DONE] Appended 2 posts (slot: ${slot}). Total: ${allPosts.length}.`);
+  // Google News sitemap: last 48 hours (or up to 100 articles) for Publisher Center / News discovery
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const cutoff = twoDaysAgo.toISOString().split('T')[0];
+  const newsPosts = allPosts.filter((p) => {
+    const d = p.date || p.articleId?.slice(0, 10) || '';
+    return d >= cutoff;
+  }).slice(0, 100);
+  const newsUrls = newsPosts.map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const pubDate = p.date || today;
+    const isoDate = `${pubDate}T06:00:00+05:30`;
+    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return `  <url>
+    <loc>${loc}</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>${isoDate}</news:publication_date>
+      <news:title>${title}</news:title>
+    </news:news>
+  </url>`;
+  }).join('\n');
+  const sitemapNews = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+${newsUrls}
+</urlset>`;
+  fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-news.xml'), sitemapNews, 'utf8');
+
+  console.log(`[DONE] Appended 2 posts (slot: ${slot}). Total: ${allPosts.length}. News sitemap: ${newsPosts.length} articles.`);
   console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
 }
 

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { generatePrashnaAnswer } from '../services/geminiService';
 import { setErrorSafely } from '../utils/errorHandler';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import { BackButton, ModuleIntro } from './common';
@@ -31,6 +32,10 @@ const PrashnaKundali: React.FC<{ language: Language; onBack?: () => void }> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">

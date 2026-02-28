@@ -5,7 +5,7 @@ import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
 import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
 import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
-import { askRishiFromBackend } from "./backendService";
+import { askRishiFromBackend, isBackendConfigured } from "./backendService";
 
 const getAI = () => {
   const apiKey = getNextGeminiKey();
@@ -271,7 +271,7 @@ export const generateLalKitabTotkas = async (topicOrPlanet: string, language: La
     generateInterpretativeReading(
         `Give Lal Kitab style totkas (remedies) for: ${topicOrPlanet}. Lal Kitab is known for simple, non-ritualistic, practical remedies—no complex rituals. Include 3–5 short totkas: everyday items, simple actions, charity, or dietary tips. Keep each 1–2 sentences.`,
         "Act as a Lal Kitab expert. Remedies must be simple, non-ritualistic, and practical. Popular in North India.",
-        "gemini-2.0-flash",
+        "gemini-3-flash-preview",
         language
     );
 
@@ -280,7 +280,7 @@ export const generatePrashnaAnswer = async (question: string, questionTimeIso: s
     generateInterpretativeReading(
         `Prashna Kundali (Horary Astrology): The seeker asked at ${questionTimeIso}: "${question}". Answer this specific question using horary principles—the moment of the question holds the answer. Give a clear, practical response in 150–250 words. Do not ask for birth details.`,
         "Act as a Prashna/Horary astrology expert. Answer based on the time the question was asked. Be direct and helpful.",
-        "gemini-2.0-flash",
+        "gemini-3-flash-preview",
         language
     );
 
@@ -295,7 +295,7 @@ export const getCurrentSaturnSignFromAI = async (): Promise<string | null> => {
         const today = new Date().toISOString().slice(0, 10);
         const ai = getAI();
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3-flash-preview',
             contents: `In Vedic (Lahiri sidereal) astrology, which zodiac sign is Saturn transiting today? Today's date: ${today}. Reply with exactly one word: the sign name. Choose only from: Aries, Taurus, Gemini, Cancer, Leo, Virgo, Libra, Scorpio, Sagittarius, Capricorn, Aquarius, Pisces.`,
             config: { systemInstruction: 'You are a Vedic astrologer. Answer only with the exact sign name, nothing else.' }
         });
@@ -317,7 +317,7 @@ export const generateSadeSatiInterpretation = async (moonSign: string, inSadeSat
             ? `Give a brief Vedic interpretation of Sade Sati for Moon sign (Chandra Rashi) ${moonSign}. The native is currently in the ${phase} house phase of Sade Sati (Saturn transiting ${phase} from Moon). Explain in 2–3 short paragraphs: what this phase means for this Moon sign, areas of life likely affected, and one or two simple remedies or mindfulness tips. Be supportive and practical.`
             : `Give a brief Vedic interpretation for Moon sign (Chandra Rashi) ${moonSign}. The native is NOT currently in Sade Sati. In 1–2 short paragraphs, explain what this means (relief from the Sade Sati cycle), and any general guidance for this Moon sign at this time. Be concise and uplifting.`,
         "Act as a Vedic astrologer expert in Shani Sade Sati (Saturn's 7.5-year transit over 12th, 1st, 2nd from Moon). Interpret according to Moon sign and phase. Be clear and compassionate.",
-        "gemini-2.0-flash",
+        "gemini-3-flash-preview",
         language
     );
 
@@ -326,16 +326,18 @@ export const generateMobileNumerologyAnalysis = async (mobileNumber: string, lan
     generateInterpretativeReading(
         `Analyze this mobile number for numerology (digit vibration): ${mobileNumber}. Consider: total sum, single-digit root, repeating digits, and popular methods (e.g. last 4 digits, full number). Give impact on business, luck, and personal energy. Suggest if the number is favourable or what to be mindful of. Keep 150–250 words.`,
         "Act as a numerology expert specializing in mobile number analysis. Be practical and positive.",
-        "gemini-2.0-flash",
+        "gemini-3-flash-preview",
         language
     );
 
 /**
  * Structured Data Services
  */
-export const generateHoroscope = async (signName: string, language: Language = 'en'): Promise<HoroscopeResponse> => {
-  // 1. Try Perplexity first (web-grounded, current-date horoscopes)
-  if (hasPerplexityKey()) {
+export type HoroscopePeriod = 'day' | 'week' | 'month' | 'year';
+
+export const generateHoroscope = async (signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> => {
+  // 1. Try Perplexity first (web-grounded) – only for daily; other periods use backend/Gemini
+  if (period === 'day' && hasPerplexityKey()) {
     try {
       return await generateHoroscopeFromPerplexity(signName, language);
     } catch (error: any) {
@@ -344,7 +346,7 @@ export const generateHoroscope = async (signName: string, language: Language = '
   }
   // 2. Try backend API
   try {
-    const backendResponse = await generateHoroscopeFromBackend(signName, new Date().toISOString().split('T')[0], language);
+    const backendResponse = await generateHoroscopeFromBackend(signName, new Date().toISOString().split('T')[0], language, period);
     const h = backendResponse.horoscope;
     const horoscope = typeof h === 'string' ? h : (typeof h?.general === 'string' ? h.general : (h ? String(h) : 'Horoscope analysis in progress...'));
     return {
@@ -356,19 +358,20 @@ export const generateHoroscope = async (signName: string, language: Language = '
     };
   } catch (error: any) {
     console.warn('Backend horoscope failed, using Gemini fallback:', error?.message);
-    return await generateHoroscopeDirect(signName, language);
+    return await generateHoroscopeDirect(signName, language, period);
   }
 };
 
-  async function generateHoroscopeDirect(signName: string, language: Language = 'en'): Promise<HoroscopeResponse> {
+  async function generateHoroscopeDirect(signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> {
       const today = new Date().toDateString();
+      const periodLabel = period === 'day' ? 'today' : period === 'week' ? 'this week' : period === 'month' ? 'this month' : 'this year';
       return (async () => {
         const ai = getAI();
       const languageName = getLanguageName(language);
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview", 
-        contents: `Planetary transits for ${signName} on ${today}. IMPORTANT: Respond in ${languageName} language.
-Format the horoscope field with: brief intro, then bullet points (* or -) for Career, Love, Health, Finance. Use **bold** for key words.`,
+        contents: `Give a ${period} horoscope (${periodLabel}) for ${signName}. Date: ${today}. IMPORTANT: Respond in ${languageName} language.
+Format the horoscope field with: brief intro, then bullet points (* or -) for Career, Love, Health, Finance. Use **bold** for key words. For week/month/year cover the overall theme and key dates or phases.`,
         config: {
           tools: [{ googleSearch: {} }],
           systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Use bullet points and **bold** for emphasis. Deterministic output.`,
@@ -1930,7 +1933,7 @@ CRITICAL OUTPUT RULES:
         return await (async () => {
                 const aiInstance = getAI();
                 const response = await aiInstance.models.generateContent({
-          model: "gemini-3-pro-preview", 
+          model: "gemini-3.1-pro-preview", 
                     contents: `Calculate Vedic Kundali for ${formData.name}, ${formData.date}, ${formData.time}, ${formData.location}. Language: ${language}.`,
           config: {
             tools: [{ googleSearch: {} }],
@@ -2189,7 +2192,7 @@ export const translateText = async (content: string, targetLanguageName: string)
   try {
     const ai = getAI();
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents: {
         parts: [
           {
@@ -2218,7 +2221,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
         // Try different TTS model names and API structures
         const attempts = [
             {
-                model: "gemini-2.0-flash",
+                model: "gemini-3-flash-preview",
                 config: {
                     responseModalities: [Modality.AUDIO],
                     speechConfig: {
@@ -2236,7 +2239,7 @@ export const generateMantraAudio = async (mantraText: string): Promise<string> =
             }
             },
             {
-                model: "gemini-2.0-flash",
+                model: "gemini-3-flash-preview",
                 config: {
                     responseModalities: [Modality.AUDIO]
                 }
@@ -2369,7 +2372,7 @@ export const generateFaceReading = async (base64Image: string, mimeType: 'image/
         ? `इस चेहरे की वैदिक समुद्रिक शास्त्र (Face Reading) के अनुसार विश्लेषण करें। चेहरे का आकार, माथा, आँखें, नाक, होंठ, कान, और समग्र अभिव्यक्ति देखें। व्यक्तित्व, स्वभाव, संभावित जीवन प्रवृत्तियाँ और सकारात्मक सलाह दें। उत्तर केवल ${langName} में दें।`
         : `Analyze this face using Vedic Samudrik Shastra (face reading). Consider face shape, forehead, eyes, nose, lips, ears, and overall expression. Provide insights on personality, temperament, potential life tendencies, and positive guidance. Respond only in ${langName}.`;
     const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: {
             parts: [
                 { inlineData: { mimeType, data: base64Image } },
@@ -2391,7 +2394,7 @@ export const generateSignatureAnalysis = async (base64Image: string, mimeType: '
         ? `इस हस्ताक्षर (signature) का ग्राफोलॉजी (हस्तलेखन विज्ञान) के आधार पर विश्लेषण करें। आकार, झुकाव, दबाव, लय, बड़े/छोटे अक्षर, अंतिम स्ट्रोक और समग्र प्रवाह देखें। व्यक्तित्व, आत्मविश्वास, सामाजिकता, महत्वाकांक्षा और सकारात्मक सलाह दें। उत्तर केवल ${langName} में दें।`
         : `Analyze this signature using graphology (handwriting/signature analysis). Consider size, slant, pressure, rhythm, use of capitals, ending strokes, and overall flow. Provide insights on personality, confidence, sociability, ambition, and positive guidance. Respond only in ${langName}.`;
     const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: {
             parts: [
                 { inlineData: { mimeType, data: base64Image } },
@@ -2413,7 +2416,7 @@ export const generatePalmReadingFromImage = async (base64Image: string, mimeType
         ? `इस हथेली की वैदिक हस्तरेखा (Palmistry) के अनुसार विश्लेषण करें। जीवन रेखा, हृदय रेखा, मस्तिष्क रेखा, भाग्य रेखा, पर्वत (ग्रह), और अन्य चिह्न देखें। व्यक्तित्व, स्वास्थ्य, करियर, प्रेम और सकारात्मक मार्गदर्शन दें। उत्तर केवल ${langName} में दें।`
         : `Analyze this palm using Vedic Palmistry (Hast Rekha Shastra). Look at life line, heart line, head line, fate line, mounts (planetary), and other markings. Provide insights on personality, health, career, love, and positive guidance. Respond only in ${langName}.`;
     const response = await ai.models.generateContent({
-        model: 'gemini-2.0-flash',
+        model: 'gemini-3-flash-preview',
         contents: {
             parts: [
                 { inlineData: { mimeType, data: base64Image } },
@@ -2470,7 +2473,7 @@ export const createChatSession = (language: Language, context?: string, persona:
     const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';
     const personaPrompt = PERSONA_PROMPTS[persona];
     return ai.chats.create({
-        model: "gemini-2.0-flash", 
+        model: "gemini-3-flash-preview", 
         config: { 
             systemInstruction: `${personaPrompt}\n\n${COMPREHENSIVE_AI_PROMPT}${contextInfo}\n\nIMPORTANT: Always respond in ${languageName} language. Be warm, helpful, and provide practical remedies. Use a mentor-like, human tone.` 
         }
@@ -2493,8 +2496,15 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
 
     // 2. Fallback: direct Gemini call only if we have a key (avoids GEMINI_API_KEY_NOT_CONFIGURED when backend not set)
     if (!hasGeminiKeys()) {
+        const backendSaysNoKey = (backendErr?.message || '').includes('API key missing') || (backendErr?.message || '').includes('not configured');
+        if (isBackendConfigured() && backendSaysNoKey) {
+            return {
+                text: "Rishi is configured to use your backend, but the AI key is missing there. Add GEMINI_API_KEY (or API_KEY) to your backend environment—e.g. in Cloud Run, set your secret as the environment variable GEMINI_API_KEY—then redeploy. See DEPLOY_BACKEND.md.",
+                sources: []
+            };
+        }
         return {
-            text: "Rishi needs either your backend URL (set VITE_API_BASE_URL to where your server/ backend runs, then redeploy) or a Gemini API key in .env. See DEPLOY.md.",
+            text: "Rishi needs either your backend URL (set VITE_API_BASE_URL to where your server runs, then redeploy) or a Gemini API key in .env. See DEPLOY.md.",
             sources: []
         };
     }
@@ -2503,7 +2513,7 @@ export const askRishiWithFallback = async (prompt: string, language: Language, c
         const contextInfo = context ? `\n\nModule context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : '';
         const personaPrompt = PERSONA_PROMPTS[persona];
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: 'gemini-3-flash-preview',
             contents: `${context ? "Module context: " + context + "\n\n" : ""}User: ${prompt}.`,
             config: {
                 systemInstruction: `${personaPrompt}\n\n${COMPREHENSIVE_AI_PROMPT}${contextInfo}\n\nIMPORTANT: Always respond in ${getLanguageName(language)} language. Be warm, mentor-like, and provide practical guidance.`
@@ -2573,7 +2583,7 @@ async function generateMatchMakingDirect(boy: MatchMakingInput, girl: MatchMakin
 return (async () => {
         const ai = getAI();
     const response = await ai.models.generateContent({
-        model: "gemini-3-pro-preview",
+        model: "gemini-3.1-pro-preview",
         contents: `Guna Milan for Boy: ${JSON.stringify(boy)}, Girl: ${JSON.stringify(girl)}. Language: ${language}.`,
         config: {
             tools: [{ googleSearch: {} }],
@@ -2902,7 +2912,7 @@ CRITICAL: Moon's current position must be accurate for TODAY. Use real-time astr
 Language: ${language}.`;
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-3-flash-preview",
                 contents: prompt,
         config: {
             responseMimeType: "application/json",

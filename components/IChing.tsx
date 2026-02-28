@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import { ModuleIntro } from './common';
 
 const HEXAGRAMS: { nameEn: string; nameHi: string; meaningEn: string; meaningHi: string }[] = [
@@ -68,6 +69,10 @@ const IChing: React.FC<IChingProps> = ({ language }) => {
   const [result, setResult] = useState<typeof HEXAGRAMS[0] | null>(null);
   const [drawn, setDrawn] = useState(false);
   const isHi = language === 'hi';
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   const draw = () => {
     setResult(HEXAGRAMS[Math.floor(Math.random() * 64)]);

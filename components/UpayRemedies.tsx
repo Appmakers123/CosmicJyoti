@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
 import { generateUpayRemedies } from '../services/geminiService';
 import { PLANETS_INFO } from '../constants';
 import { setErrorSafely } from '../utils/errorHandler';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import { BackButton, ModuleIntro } from './common';
@@ -35,6 +36,10 @@ const UpayRemedies: React.FC<{ language: Language; onBack?: () => void }> = ({ l
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 pb-12 animate-fade-in-up">

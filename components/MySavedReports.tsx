@@ -21,11 +21,13 @@ const TYPE_ORDER: string[] = ['kundali', 'horoscope', 'panchang', 'matchmaking',
 interface MySavedReportsProps {
   language: Language;
   onOpenMode: (mode: AppViewMode) => void;
+  /** When provided, opening a report row will call this with (mode, reportId) so the app can show the saved result */
+  onOpenReport?: (mode: AppViewMode, reportId: string) => void;
   /** When true, use compact styling for hamburger menu */
   compact?: boolean;
 }
 
-const MySavedReports: React.FC<MySavedReportsProps> = ({ language, onOpenMode, compact = false }) => {
+const MySavedReports: React.FC<MySavedReportsProps> = ({ language, onOpenMode, onOpenReport, compact = false }) => {
   const [reportList, setReportList] = useState<SavedReportMeta[]>(() => listReports());
   const isHi = language === 'hi';
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -107,7 +109,7 @@ const MySavedReports: React.FC<MySavedReportsProps> = ({ language, onOpenMode, c
                     <li key={r.id} className="flex items-center gap-1 group">
                       <button
                         type="button"
-                        onClick={() => onOpenMode(mode)}
+                        onClick={() => (onOpenReport ? onOpenReport(mode, r.id) : onOpenMode(mode))}
                         className={`flex-1 min-w-0 text-left text-slate-300 hover:bg-slate-700/40 hover:text-amber-100 transition-colors flex items-center gap-2 ${compact ? 'px-2.5 py-2 pl-5 text-xs' : 'px-3 py-2.5 pl-6 text-sm'}`}
                       >
                         <span className="text-slate-500 shrink-0">·</span>

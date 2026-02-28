@@ -307,17 +307,17 @@ app.post('/api/gochara', async (req, res) => {
 // Horoscope (Rashifal)
 app.post('/api/horoscope', async (req, res) => {
   try {
-    const { sign, date, language = 'en' } = req.body;
+    const { sign, date, language = 'en', period = 'day' } = req.body;
     
     if (!sign || !date) {
       return res.status(400).json({ error: 'Missing required fields: sign, date' });
     }
 
-    const cacheKey = `horoscope:${sign}:${date}:${language}`;
+    const cacheKey = `horoscope:${sign}:${date}:${language}:${period || 'day'}`;
     
     const result = await getCachedOrCompute(cacheKey, async () => {
-      return await generateHoroscope(sign, date, language);
-    }, 3600); // Cache for 1 hour (daily horoscope)
+      return await generateHoroscope(sign, date, language, period);
+    }, period === 'day' ? 3600 : 86400); // 1h for daily, 24h for week/month/year
 
     res.json(result);
   } catch (error) {
@@ -444,7 +444,7 @@ You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like 
 IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
 ${contextInfo}`;
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
       const fullPrompt = `${systemInstruction}\n\n---\n\n${safeContext ? 'Module context: ' + safeContext + '\n\n' : ''}User: ${trimmedPrompt}`;
       const result = await model.generateContent(fullPrompt);
       const response = result.response;

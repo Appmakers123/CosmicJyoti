@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateDreamAnalysis } from '../services/geminiService';
 import { Language } from '../types';
 import { useTranslation } from '../utils/translations';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
 import { ModuleIntro } from './common';
@@ -12,6 +13,10 @@ const DreamInterpreter: React.FC<{ language: Language }> = ({ language }) => {
   const [dream, setDream] = useState('');
   const [analysis, setAnalysis] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (analysis) requestScrollToMain();
+  }, [analysis]);
 
   const handleAnalyze = async () => {
     if (!dream.trim()) return;

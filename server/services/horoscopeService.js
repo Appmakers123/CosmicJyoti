@@ -17,11 +17,18 @@ const getLanguageName = (lang) => {
 
 /**
  * Generate Horoscope (Rashifal) for a specific sign and date
+ * @param {string} sign - Zodiac sign
+ * @param {string} date - Date string
+ * @param {string} language - 'en' | 'hi'
+ * @param {string} period - 'day' | 'week' | 'month' | 'year'
  */
-export async function generateHoroscope(sign, date, language = 'en') {
+export async function generateHoroscope(sign, date, language = 'en', period = 'day') {
+  const languageName = getLanguageName(language);
+  // For week/month/year use AI; external API is daily only
+  if (period && period !== 'day') {
+    return generateHoroscopeWithAI(sign, date, language, languageName, period);
+  }
   try {
-    const languageName = getLanguageName(language);
-
     const dateObj = new Date(date);
     const payload = {
       year: dateObj.getFullYear(),
@@ -75,26 +82,25 @@ export async function generateHoroscope(sign, date, language = 'en') {
 
 /**
  * Generate horoscope using AI for all languages
+ * @param {string} period - 'day' | 'week' | 'month' | 'year'
  */
-async function generateHoroscopeWithAI(sign, date, language, languageName) {
+async function generateHoroscopeWithAI(sign, date, language, languageName, period = 'day') {
   if (!GEMINI_API_KEY) {
     console.warn('Gemini API key not found, using basic horoscope');
-    return {
-      sign: sign,
-      date: date,
-      horoscope: generateBasicHoroscope(sign, date, language),
-      language: language
-    };
+    const basic = generateBasicHoroscope(sign, date, language);
+    const text = typeof basic === 'object' && basic.general ? basic.general : String(basic);
+    return { sign, date, horoscope: text, language };
   }
 
   try {
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
-    const prompt = `You are an expert Vedic astrologer. Generate a daily horoscope for ${sign} zodiac sign for ${date}. 
+    const periodLabel = period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : period === 'year' ? 'yearly' : 'daily';
+    const prompt = `You are an expert Vedic astrologer. Generate a ${periodLabel} horoscope for ${sign} zodiac sign. Date: ${date}. 
 Provide a detailed, accurate, and helpful horoscope prediction in ${languageName} language. 
 Include insights about career, love, health, finance, and general life aspects. 
-Make it specific, practical, and compassionate.`;
+Make it specific, practical, and compassionate.${period !== 'day' ? ` For ${periodLabel} cover the overall theme and key phases or dates.` : ''}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;

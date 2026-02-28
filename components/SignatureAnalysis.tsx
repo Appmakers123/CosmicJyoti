@@ -3,6 +3,7 @@ import { Language } from '../types';
 import { generateSignatureAnalysis } from '../services/geminiService';
 import { setErrorSafely } from '../utils/errorHandler';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
+import { requestScrollToMain } from '../utils/scrollToMain';
 import RichText from './RichText';
 import AdBanner from './AdBanner';
 import { ModuleIntro } from './common';
@@ -41,6 +42,10 @@ const SignatureAnalysis: React.FC<SignatureAnalysisProps> = ({ language }) => {
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }, [inputMode]);
+
+  useEffect(() => {
+    if (reading) requestScrollToMain();
+  }, [reading]);
 
   const toCanvasCoords = (clientX: number, clientY: number): [number, number] => {
     const canvas = getCanvas();

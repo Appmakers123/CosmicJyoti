@@ -3,7 +3,7 @@ import { Language, KundaliFormData, KundaliResponse } from "../types";
 import { getNextGeminiKey } from "../utils/geminiApiKeys";
 import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateKundali } from "./geminiService";
-import { generateChartBasedHealthAnalysisFromBackend } from "./backendService";
+import { generateChartBasedHealthAnalysisFromBackend, isBackendConfigured } from "./backendService";
 
 // Master System Prompt for Vedic Health Advisor
 const MASTER_HEALTH_SYSTEM_PROMPT = `You are CosmicHealth AI, an expert Vedic astrology-based health advisor with deep knowledge of:
@@ -109,8 +109,15 @@ export const generateChartBasedHealthAnalysis = async (
     // Try backend first (works when VITE_API_BASE_URL is set - local dev or deployed backend)
     return await generateChartBasedHealthAnalysisFromBackend(birthData, language);
   } catch (backendErr: any) {
-    // Fall through to direct call on any backend failure (not available, network, 5xx, etc.)
-    console.warn('Cosmic Health backend unavailable, trying direct:', backendErr?.message);
+    console.warn('Cosmic Health backend unavailable:', backendErr?.message);
+    // When backend is configured, don't fall back to direct Gemini (would need frontend key and throw GEMINI_API_KEY_NOT_CONFIGURED)
+    if (isBackendConfigured()) {
+      return {
+        healthIssues: [],
+        chartSummary: language === 'hi' ? 'बैकएंड पर AI कॉन्फ़िगर नहीं है' : 'AI is not configured on the backend. Add GEMINI_API_KEY to your server (e.g. Cloud Run secrets).',
+        remedies: getDefaultRemedies(language),
+      };
+    }
   }
 
   try {
@@ -166,7 +173,7 @@ EXISTING HEALTH PREDICTION: ${healthPred}
 Respond ONLY with valid JSON. Language: ${getLanguageName(language)}.`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     contents: chartContext + '\n\n' + prompt,
     config: {
       responseMimeType: 'application/json',
@@ -237,7 +244,7 @@ export const generateHealthAdvice = async (
     const contextInfo = `User Birth Details: Date: ${birthData.date}, Time: ${birthData.time}, City: ${birthData.city}. Approximate Sign: ${astrologyContext.sign}, Dominant Dosha: ${astrologyContext.dominantDosha}.`;
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents: `User Question: ${question}\n\n${contextInfo}`,
       config: {
         systemInstruction: `${MASTER_HEALTH_SYSTEM_PROMPT}\n\nIMPORTANT: Always respond in ${getLanguageName(language)} language. Provide detailed, practical health advice based on Vedic principles.`
@@ -267,7 +274,7 @@ export const generateDailyDoshaRemedies = async (
     const astrologyContext = calculateBasicAstrology(birthData);
     
     const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents: `Generate daily dosha remedies for user. Birth: ${birthData.date} ${birthData.time}, City: ${birthData.city}. Sign: ${astrologyContext.sign}, Dominant Dosha: ${astrologyContext.dominantDosha}. Return ONLY a valid JSON array of objects with dosha, description, and remedies (array of strings).`,
       config: {
         responseMimeType: "application/json",

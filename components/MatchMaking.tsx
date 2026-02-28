@@ -1,11 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MatchMakingInput, MatchMakingResponse, Language } from '../types';
 import { useTranslation } from '../utils/translations';
 import { generateMatchMaking, generateCompatibilityReport } from '../services/geminiService';
+import { requestScrollToMain } from '../utils/scrollToMain';
+import { saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
-import { ModuleIntro } from './common';
+import { ModuleIntro, SaveShareBar } from './common';
 
 interface MatchMakingProps {
   language: Language;
@@ -19,6 +21,27 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
+
+  const formInput = result ? { boy: { name: boy.name, date: boy.date, time: boy.time, location: boy.location }, girl: { name: girl.name, date: girl.date, time: girl.time, location: girl.location } } : undefined;
+  const savedReport = formInput ? getReportByForm('matchmaking', formInput) : null;
+  useEffect(() => {
+    if (!result) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const fi = { boy: { name: boy.name, date: boy.date, time: boy.time, location: boy.location }, girl: { name: girl.name, date: girl.date, time: girl.time, location: girl.location } };
+    const sr = getReportByForm('matchmaking', fi);
+    if (sr?.meta?.id) {
+      setIsSaved(true);
+      setSavedReportId(sr.meta.id);
+    } else {
+      setIsSaved(false);
+      setSavedReportId(null);
+    }
+  }, [result, boy.name, boy.date, boy.time, boy.location, girl.name, girl.date, girl.time, girl.location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault();
@@ -32,6 +55,10 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
       } catch (err) { setError("The stars are currently cloudy. Try again later."); }
       finally { setLoading(false); }
   };
+
+  useEffect(() => {
+    if (result) requestScrollToMain();
+  }, [result]);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 pb-12 animate-fade-in-up">
@@ -92,6 +119,23 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
             </div>
         ) : (
             <div className="space-y-8">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                  <SaveShareBar
+                    language={language}
+                    onSave={() => {
+                      if (!result || !formInput) return;
+                      const id = saveReport('matchmaking', { result, aiReport: aiReport || '' }, formInput, `Guna Milan: ${boy.name} & ${girl.name}`);
+                      setIsSaved(true);
+                      setSavedReportId(id);
+                    }}
+                    onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                    isSaved={isSaved}
+                    savedReportId={savedReportId}
+                    shareContent={`Guna Milan: ${result.ashtakoot_score?.total?.obtained_points ?? 0}/36. ${(aiReport || '').replace(/<[^>]*>/g, '').slice(0, 300)}... – CosmicJyoti`}
+                    shareTitle={`Guna Milan ${boy.name} & ${girl.name} – CosmicJyoti`}
+                    contentType="matchmaking"
+                  />
+                </div>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                      <div className="bg-slate-900 border border-pink-500/30 rounded-2xl p-8 text-center shadow-2xl">
                          <h3 className="text-slate-400 uppercase tracking-widest text-sm mb-2">{t.matchScore}</h3>
@@ -102,7 +146,7 @@ const MatchMaking: React.FC<MatchMakingProps> = ({ language }) => {
                          <RichText text={aiReport || ""} />
                      </div>
                 </div>
-                <button onClick={() => setResult(null)} className="px-6 py-2 border border-slate-600 text-slate-400 rounded-full text-xs uppercase font-bold">{t.return}</button>
+                <button onClick={() => { setResult(null); setAiReport(null); setIsSaved(false); setSavedReportId(null); }} className="px-6 py-2 border border-slate-600 text-slate-400 rounded-full text-xs uppercase font-bold">{t.return}</button>
                 <AdBanner variant="display" className="mt-8" />
             </div>
         )}

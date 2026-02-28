@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Language } from '../types';
+import { startNotificationScheduler, stopNotificationScheduler, getNotificationScheduleCopy } from '../utils/notificationScheduler';
 
 interface NotificationToggleProps {
   language: Language;
@@ -16,66 +16,42 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ language }) => 
       return;
     }
 
-    // Load saved preference
     const storedPref = localStorage.getItem('cosmic_notifications');
-    
-    // Check if permission is actually granted (user might have revoked it in browser settings)
     if (Notification.permission === 'granted' && storedPref === 'true') {
       setEnabled(true);
-      checkAndSendDaily(language);
+      startNotificationScheduler(language);
     } else {
-      // If permission revoked but local storage says true, sync it
       if (storedPref === 'true' && Notification.permission !== 'granted') {
-          setEnabled(false);
-          localStorage.setItem('cosmic_notifications', 'false');
+        setEnabled(false);
+        localStorage.setItem('cosmic_notifications', 'false');
       }
+      stopNotificationScheduler();
     }
+    return () => { stopNotificationScheduler(); };
   }, [language]);
-
-  const checkAndSendDaily = (lang: Language) => {
-    const lastSent = localStorage.getItem('last_notification_date');
-    const today = new Date().toLocaleDateString();
-
-    // If we haven't sent a notification today, send one now
-    if (lastSent !== today) {
-      const title = lang === 'hi' ? '🌟 CosmicJyoti — दैनिक पूर्वानुमान, राशिफल, टैरो, कॉस्मिक हेल्थ' : '🌟 CosmicJyoti — Daily Forecast, Horoscope, Tarot & Cosmic Health';
-      const body = lang === 'hi' 
-        ? 'आज का राशिफल, टैरो रीडिंग और कॉस्मिक हेल्थ जांचें। टैप करें।' 
-        : 'Check today\'s horoscope, tarot reading & cosmic health. Tap to open.';
-      
-      try {
-        new Notification(title, {
-          body,
-          icon: '/favicon.ico',
-          tag: 'daily-horoscope'
-        });
-        localStorage.setItem('last_notification_date', today);
-      } catch (e) {
-        console.error("Notification failed", e);
-      }
-    }
-  };
 
   const toggle = async () => {
     if (!isSupported) {
-      alert("Notifications are not supported in this browser.");
+      alert(language === 'hi' ? 'इस ब्राउज़र में सूचनाएं समर्थित नहीं हैं।' : 'Notifications are not supported in this browser.');
       return;
     }
 
     if (enabled) {
       setEnabled(false);
       localStorage.setItem('cosmic_notifications', 'false');
+      stopNotificationScheduler();
     } else {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         setEnabled(true);
         localStorage.setItem('cosmic_notifications', 'true');
-        
-        const title = language === 'hi' ? 'अधिसूचनाएं चालू हैं!' : 'Notifications Enabled!';
-        new Notification(title, {
-            body: language === 'hi' ? 'हम आपको प्रतिदिन याद दिलाएंगे।' : 'We will remind you to check your stars daily.',
-            icon: '/favicon.ico'
-        });
+        startNotificationScheduler(language);
+        const { title, body } = getNotificationScheduleCopy(language);
+        try {
+          new Notification(title, { body, icon: '/favicon.ico' });
+        } catch (e) {
+          console.warn('Welcome notification failed', e);
+        }
       } else {
         alert(language === 'hi' ? 'कृपया ब्राउज़र सेटिंग में सूचनाओं की अनुमति दें।' : 'Please allow notifications in your browser settings.');
       }
@@ -92,7 +68,7 @@ const NotificationToggle: React.FC<NotificationToggleProps> = ({ language }) => 
           ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.3)]' 
           : 'bg-slate-800/60 border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700'
       }`}
-      title={enabled ? (language === 'hi' ? "नक्षत्र सूचनाएं सक्रिय" : "Celestial Alerts Active") : (language === 'hi' ? "तारों का संदेश प्राप्त करें" : "Receive the Stars' Guidance")}
+      title={enabled ? (language === 'hi' ? "राशिफल 8 बजे, लेख 12 बजे (आपके समय)" : "Horoscope 8 AM, articles 12 PM (your time)") : (language === 'hi' ? "सुबह 8 बजे राशिफल, दोपहर 12 बजे लेख की याद" : "Get horoscope at 8 AM & reads at 12 PM")}
     >
       {enabled ? (
         <div className="relative">

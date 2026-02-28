@@ -101,7 +101,7 @@ When the user asks about today's Panchang or auspicious time, use get_today_panc
 ${context ? `Module context (answer using this scope only—e.g. Kundali, Compatibility, or current tool): ${context}` : ''}`;
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-3-flash-preview',
     systemInstruction,
     generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
     tools: [{ functionDeclarations: getFunctionDeclarations() }],

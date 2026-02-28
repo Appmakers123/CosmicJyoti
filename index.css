@@ -31,6 +31,10 @@ html, body, #root {
   overscroll-behavior-x: none;
   word-wrap: break-word;
   overflow-wrap: break-word;
+  /* Safe area: content not hidden behind home indicator (e.g. iPhone) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Global touch-action rules for all devices - ensures single-finger scrolling */
@@ -119,6 +123,21 @@ button, a {
   html, body, #root {
     touch-action: auto;
   }
+}
+
+/* Respect user preference for reduced motion (accessibility) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Touch target utility: ensure minimum 44px for tap areas (WCAG / Apple HIG) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Custom animations */

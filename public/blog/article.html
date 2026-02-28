@@ -73,6 +73,14 @@
     (function() {
         var params = new URLSearchParams(window.location.search);
         var slug = params.get('id');
+        var pathname = window.location.pathname || '';
+        if (slug && (pathname.endsWith('article.html') || pathname.endsWith('/article'))) {
+            var newPath = '/blog/' + encodeURIComponent(slug) + '/';
+            if (window.location.pathname !== newPath) {
+                window.location.replace(newPath);
+                return;
+            }
+        }
         var body = document.getElementById('article-body');
         if (!slug) {
             body.innerHTML = '<p class="text-slate-500">Article not found. <a href="../blog.html" class="text-amber-400">Back to Blog</a></p>';
@@ -92,7 +100,7 @@
             }
             var articleId = post.articleId || post.id || (post.date && post.slug ? post.date + '-' + post.slug : post.slug);
             var baseUrl = 'https://www.cosmicjyoti.com';
-            var articleUrl = baseUrl + '/blog/article.html?id=' + encodeURIComponent(articleId);
+            var articleUrl = baseUrl + '/blog/' + encodeURIComponent(articleId) + '/';
             var pubDate = post.date || data.lastGenerated || data.date;
             var datePublishedISO = pubDate ? pubDate + 'T06:00:00+05:30' : null;
             var dateModifiedISO = pubDate ? pubDate + 'T06:00:00+05:30' : null;
@@ -113,6 +121,15 @@
             var ogUrl = document.querySelector('meta[property="og:url"]');
             if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
             ogUrl.content = articleUrl;
+            var articleUrlHi = baseUrl + '/hi/blog/' + encodeURIComponent(articleId) + '/';
+            [ { hreflang: 'en', href: articleUrl }, { hreflang: 'hi', href: articleUrlHi }, { hreflang: 'x-default', href: articleUrl } ].forEach(function(alt) {
+                var link = document.createElement('link');
+                link.rel = 'alternate';
+                link.hreflang = alt.hreflang;
+                link.href = alt.href;
+                document.head.appendChild(link);
+            });
+            document.documentElement.lang = 'en';
             var serviceMode = post.serviceMode;
             var serviceLabel = post.serviceLabel || post.topic || 'Try this tool';
             var ctaHtml = '';
@@ -130,7 +147,7 @@
                 relatedHtml = '<div class="mt-10 pt-8 border-t border-slate-700"><h3 class="text-amber-200 font-serif text-lg mb-4">More to read</h3><ul class="space-y-2">';
                 related.forEach(function(p) {
                     var aid = p.articleId || p.id || (p.date && p.slug ? p.date + '-' + p.slug : p.slug);
-                    relatedHtml += '<li><a href="/blog/article.html?id=' + encodeURIComponent(aid) + '" class="text-amber-400 hover:text-amber-300 underline">' + esc(p.title) + '</a></li>';
+                    relatedHtml += '<li><a href="/blog/' + encodeURIComponent(aid) + '/" class="text-amber-400 hover:text-amber-300 underline">' + esc(p.title) + '</a></li>';
                 });
                 relatedHtml += '</ul></div>';
             }

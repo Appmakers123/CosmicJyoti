@@ -44,11 +44,12 @@ Prioritised by impact and feasibility.
 
 ### High impact
 
-1. **Permanent URLs for every article**  
+1. **Permanent URLs for every article** ✅ *Implemented*  
    - Move from `article.html?id=...` to **one URL per article**, e.g.  
-     `https://www.cosmicjyoti.com/blog/2026-02-25-daily-horoscope-february-25-2026`  
+     `https://www.cosmicjyoti.com/blog/2026-02-25-daily-horoscope-february-25-2026/`  
    - Same for daily Panchang, Muhurat, “Key astrological events”, etc.  
-   - Needed for Google News and better SEO (unique, shareable links).
+   - Needed for Google News and better SEO (unique, shareable links).  
+   - *Done: static pages at `/blog/{YYYY-MM-DD-slug}/`, feed/sitemaps and article.html use these URLs; old `?id=` links redirect to the permanent URL.*
 
 2. **Visible publication date on every article**  
    - Show **date and time** (e.g. “25 Feb 2026, 6:00 AM IST”) between headline and body.  
@@ -69,9 +70,10 @@ Prioritised by impact and feasibility.
    - Stable section URLs that list latest articles (e.g. `/blog/`, `/horoscope/`, `/panchang/`) with **HTML links** to each article (no JS-only navigation).  
    - Section pages that don’t change URL daily so Googlebot-News can crawl “latest” reliably.
 
-6. **More languages**  
+6. **More languages** ✅ *One language per article implemented*  
    - You already have English + Hindi. Add at least one more (e.g. Spanish, or another Indian language).  
-   - Separate **section or subpath per language** (e.g. `/hi/`, `/es/`) and **one language per article** (required for Google News).
+   - Separate **section or subpath per language** (e.g. `/hi/`, `/es/`) and **one language per article** (required for Google News).  
+   - *Done: English at `/blog/{id}/`, Hindi at `/hi/blog/{id}/`; each URL serves one language only. Full Hindi content: run `node scripts/generate-daily-blog.mjs translate-hindi` (uses Gemini; writes daily-posts-hi.json and full Hindi static pages). Stubs used until translated; hreflang and Hindi feed/sitemap at hi/blog/.*
 
 ### Medium impact
 

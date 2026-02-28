@@ -201,8 +201,75 @@ async function generateWithGemini(prompt, contextDate, postCount = 2) {
   throw new Error('Gemini failed (all models and retries exhausted).');
 }
 
+/** Call Gemini with one prompt; expect JSON back. Used for translation. */
+async function callGeminiJson(prompt, apiKey, model = 'gemini-2.0-flash') {
+  const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        maxOutputTokens: 8192,
+        temperature: 0.2,
+        responseMimeType: 'application/json',
+      },
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Gemini API ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('Empty response from Gemini');
+  return JSON.parse(text);
+}
+
+/** Translate one post to Hindi. Returns { titleHi, excerptHi, contentHi } or null on failure. */
+async function translatePostToHindi(post) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) return null;
+  const title = post.title || '';
+  const excerpt = (post.excerpt || post.title || '').slice(0, 500);
+  const content = (post.content || '').slice(0, 28000);
+  const prompt = `You are a professional translator. Translate the following English Vedic astrology blog content into Hindi (Devanagari). Keep the same tone and preserve any HTML tags and structure in the content exactly (only translate the text between tags, not attribute values or tag names).
+
+Return a single JSON object with exactly these three string fields:
+- "titleHi": Hindi translation of the title
+- "excerptHi": Hindi translation of the excerpt/summary
+- "contentHi": Hindi translation of the article body (preserve all HTML tags and structure)
+
+English title:
+${title}
+
+English excerpt:
+${excerpt}
+
+English content (HTML):
+${content}`;
+
+  for (const model of GEMINI_MODELS) {
+    try {
+      const out = await callGeminiJson(prompt, apiKey, model);
+      if (out && typeof out.titleHi === 'string' && typeof out.contentHi === 'string') {
+        return {
+          titleHi: out.titleHi,
+          excerptHi: typeof out.excerptHi === 'string' ? out.excerptHi : out.titleHi,
+          contentHi: out.contentHi,
+        };
+      }
+    } catch (e) {
+      console.warn(`Gemini ${model} translation failed: ${e?.message || e}. Trying next...`);
+    }
+  }
+  return null;
+}
+
 const BLOG_DIR = path.resolve(__dirname, '../public/blog');
+const HI_BLOG_DIR = path.resolve(__dirname, '../public/hi/blog');
 const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
+const TRANSLATIONS_HI_PATH = path.join(BLOG_DIR, 'daily-posts-hi.json');
 const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
 
@@ -333,19 +400,50 @@ const SLOT_ALIASES = {
 };
 
 const REFRESH_SITEMAPS = 'refresh-sitemaps';
+const TRANSLATE_HINDI = 'translate-hindi';
+
+function loadHiTranslations() {
+  try {
+    const data = JSON.parse(fs.readFileSync(TRANSLATIONS_HI_PATH, 'utf8'));
+    return data.byArticleId || {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function saveHiTranslations(byArticleId) {
+  if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
+  fs.writeFileSync(
+    TRANSLATIONS_HI_PATH,
+    JSON.stringify({ lastUpdated: new Date().toISOString(), byArticleId }, null, 2),
+    'utf8'
+  );
+}
+
+/** Permanent URL for an article (English): /blog/YYYY-MM-DD-slug/ */
+function articlePermalink(id) {
+  return `${BASE_URL}/blog/${encodeURIComponent(id)}/`;
+}
+
+/** Permanent URL for Hindi version: /hi/blog/YYYY-MM-DD-slug/ — one language per URL. */
+function articlePermalinkHi(id) {
+  return `${BASE_URL}/hi/blog/${encodeURIComponent(id)}/`;
+}
 
 function parseSlot() {
   const arg = (process.argv[2] || '').toLowerCase().trim();
   if (arg === 'refresh-sitemaps') return REFRESH_SITEMAPS;
+  if (arg === 'translate-hindi') return TRANSLATE_HINDI;
   const slot = SLOT_ALIASES[arg];
   if (slot) return slot;
   if (!arg) {
     console.error('Usage: node scripts/generate-daily-blog.mjs <slot>');
     console.error('  slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)');
     console.error('  Or: node scripts/generate-daily-blog.mjs refresh-sitemaps  (regenerate feed + sitemaps from existing daily-posts.json, no API)');
+    console.error('  Or: node scripts/generate-daily-blog.mjs translate-hindi  (translate missing articles to Hindi via Gemini, then write full Hindi pages)');
     process.exit(1);
   }
-  console.error(`Unknown slot: ${arg}. Use 6am, 12pm, 6pm, 9pm, or refresh-sitemaps.`);
+  console.error(`Unknown slot: ${arg}. Use 6am, 12pm, 6pm, 9pm, refresh-sitemaps, or translate-hindi.`);
   process.exit(1);
 }
 
@@ -355,7 +453,7 @@ function writeFeedAndSitemaps(allPosts, today) {
 
   const rssItems = allPosts.slice(0, 30).map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-    const link = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const link = articlePermalink(id);
     const pubDateStr = p.date || today;
     const pubDate = new Date(pubDateStr + 'T00:30:00.000Z').toUTCString();
     const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -378,7 +476,7 @@ ${rssItems}
 
   const blogUrls = allPosts.slice(0, 50).map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const loc = articlePermalink(id);
     const lastmod = p.date || today;
     return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>`;
   }).join('\n');
@@ -397,7 +495,7 @@ ${blogUrls}
   }).slice(0, 100);
   const newsUrls = newsPosts.map((p) => {
     const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-    const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+    const loc = articlePermalink(id);
     const pubDate = p.date || today;
     const isoDate = `${pubDate}T06:00:00+05:30`;
     const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -420,6 +518,341 @@ ${newsUrls}
 </urlset>`;
   fs.writeFileSync(path.join(BLOG_DIR, 'sitemap-news.xml'), sitemapNews, 'utf8');
   console.log(`[DONE] Wrote feed.xml, sitemap-blog.xml, sitemap-news.xml. News sitemap: ${newsPosts.length} articles (last 2 days).`);
+
+  if (!fs.existsSync(HI_BLOG_DIR)) fs.mkdirSync(HI_BLOG_DIR, { recursive: true });
+  const hiRssItems = allPosts.slice(0, 30).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const link = articlePermalinkHi(id);
+    const pubDateStr = p.date || today;
+    const pubDate = new Date(pubDateStr + 'T00:30:00.000Z').toUTCString();
+    const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const desc = (p.excerpt || p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return `    <item><title>${title}</title><link>${link}</link><guid isPermaLink="true">${link}</guid><pubDate>${pubDate}</pubDate><description><![CDATA[${desc}]]></description></item>`;
+  }).join('\n');
+  const rssHi = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>CosmicJyoti Blog (हिंदी)</title>
+    <link>${BASE_URL}/hi/blog/</link>
+    <description>Daily Vedic astrology – Hindi. Kundali, Horoscope, Panchang.</description>
+    <language>hi-in</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${BASE_URL}/hi/blog/feed.xml" rel="self" type="application/rss+xml"/>
+${hiRssItems}
+  </channel>
+</rss>`;
+  fs.writeFileSync(path.join(HI_BLOG_DIR, 'feed.xml'), rssHi, 'utf8');
+  const hiBlogUrls = allPosts.slice(0, 50).map((p) => {
+    const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+    const loc = articlePermalinkHi(id);
+    const lastmod = p.date || today;
+    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>`;
+  }).join('\n');
+  const sitemapBlogHi = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${hiBlogUrls}
+</urlset>`;
+  fs.writeFileSync(path.join(HI_BLOG_DIR, 'sitemap-blog.xml'), sitemapBlogHi, 'utf8');
+  console.log(`[DONE] Wrote hi/blog/feed.xml, hi/blog/sitemap-blog.xml (one language per article).`);
+}
+
+function escapeHtml(s) {
+  if (s == null || s === '') return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Generate static HTML at public/blog/{articleId}/index.html for each post. */
+function writeStaticArticlePages(allPosts) {
+  if (!fs.existsSync(BLOG_DIR)) fs.mkdirSync(BLOG_DIR, { recursive: true });
+  const templatePath = path.join(BLOG_DIR, 'article.html');
+  let navFragment = '';
+  try {
+    const template = fs.readFileSync(templatePath, 'utf8');
+    const navMatch = template.match(/<nav[\s\S]*?<\/nav>/);
+    if (navMatch) {
+      navFragment = navMatch[0]
+        .replace(/href="\.\.\//g, 'href="../../')
+        .replace(/href="\.\.\/blog\.html/g, 'href="../../blog.html');
+    }
+  } catch (_) {}
+  if (!navFragment) {
+    navFragment = `<nav class="fixed top-0 w-full z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 py-2 sm:py-2.5 px-3 sm:px-4">
+        <div class="container mx-auto flex items-center justify-between max-w-7xl">
+            <a href="../../landing.html" class="flex items-center gap-1.5 sm:gap-2"><span class="text-2xl sm:text-3xl">☀</span><span class="text-lg sm:text-xl md:text-2xl font-serif font-bold gradient-text">CosmicJyoti</span></a>
+            <div class="hidden lg:flex items-center gap-3 xl:gap-4">
+                <a href="../../landing.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Home</a>
+                <a href="../../tools.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Tools</a>
+                <a href="../../blog.html#todays-horoscope" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Horoscope</a>
+                <a href="../../blog.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Blog</a>
+                <a href="../../about.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">About</a>
+                <a href="../../contact.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded transition-all duration-200 text-sm xl:text-base">Contact</a>
+            </div>
+            <button id="mobile-menu-btn" class="lg:hidden text-amber-400 text-xl p-2 rounded hover:bg-slate-800 transition" aria-label="Menu">☰</button>
+        </div>
+        <div id="mobile-menu" class="lg:hidden hidden bg-slate-900/95 border-t border-slate-800 px-4 py-3 space-y-1">
+            <a href="../../landing.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">Home</a>
+            <a href="../../tools.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">Tools</a>
+            <a href="../../blog.html#todays-horoscope" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">Horoscope</a>
+            <a href="../../blog.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">Blog</a>
+            <a href="../../about.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">About</a>
+            <a href="../../contact.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded transition">Contact</a>
+        </div>
+    </nav>`;
+  }
+  const styles = `* { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Lato', sans-serif; background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%); color: #e2e8f0; line-height: 1.6; }
+        h1, h2, h3, h4 { font-family: 'Cinzel', serif; }
+        .gradient-text { background: linear-gradient(135deg, #fbbf24 0%, #ffffff 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .navbar-space { padding-top: 80px; }
+        .article-content { max-width: 800px; margin: 0 auto; padding: 2rem; }
+        .article-body { line-height: 1.75; }
+        .article-body h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #fbbf24; font-weight: 700; }
+        .article-body h2:first-child { margin-top: 0; }
+        .article-body h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #fcd34d; font-weight: 600; }
+        .article-body h4 { font-size: 1.1rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+        .article-body p { margin-bottom: 1.25rem; color: #cbd5e1; }
+        .article-body ul, .article-body ol { margin: 1rem 0 1rem 2rem; color: #cbd5e1; }
+        .article-body li { margin-bottom: 0.5rem; }
+        .article-body ul { list-style-type: disc; }
+        .article-body ol { list-style-type: decimal; }
+        .article-body strong { color: #fbbf24; font-weight: 600; }
+        .article-body em { color: #e2e8f0; font-style: italic; }
+        .article-body a { color: #f59e0b; text-decoration: underline; }
+        .article-body a:hover { color: #fcd34d; }
+        .article-body blockquote { margin: 1.5rem 0; padding-left: 1.5rem; border-left: 4px solid #f59e0b; color: #94a3b8; font-style: italic; }`;
+  let count = 0;
+  for (const post of allPosts) {
+    const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+    if (!articleId) continue;
+    const permalink = articlePermalink(articleId);
+    const pubDate = post.date || '';
+    const datePublishedISO = pubDate ? `${pubDate}T06:00:00+05:30` : null;
+    const title = post.title || 'Article';
+    const desc = (post.excerpt || post.title || '').slice(0, 160);
+    const serviceLabel = post.serviceLabel || post.topic || 'Try this tool';
+    const serviceMode = post.serviceMode;
+    let ctaHtml = '';
+    if (serviceMode) {
+      const tryHref = `${BASE_URL}/?mode=${encodeURIComponent(serviceMode)}`;
+      ctaHtml = `<div class="mt-8 p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl"><p class="text-amber-200 font-semibold mb-3">Ready to explore?</p><a href="${escapeHtml(tryHref)}" class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all">Try ${escapeHtml(serviceLabel)} →</a></div>`;
+    }
+    const related = allPosts
+      .filter((p) => (p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug)) !== articleId)
+      .slice(0, 2);
+    let relatedHtml = '';
+    if (related.length > 0) {
+      relatedHtml = '<div class="mt-10 pt-8 border-t border-slate-700"><h3 class="text-amber-200 font-serif text-lg mb-4">More to read</h3><ul class="space-y-2">';
+      for (const p of related) {
+        const aid = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+        relatedHtml += `<li><a href="../${encodeURIComponent(aid)}/" class="text-amber-400 hover:text-amber-300 underline">${escapeHtml(p.title)}</a></li>`;
+      }
+      relatedHtml += '</ul></div>';
+    }
+    const visibleDateStr = pubDate ? new Date(pubDate + 'T06:00:00+05:30').toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '';
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: title,
+      description: desc,
+      datePublished: datePublishedISO,
+      dateModified: datePublishedISO,
+      author: { '@type': 'Person', name: 'Nikesh Maurya', url: `${BASE_URL}/about.html` },
+      publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': permalink },
+      image: `${BASE_URL}/app-logo.png`,
+    };
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(title)} – CosmicJyoti | Vedic Astrology</title>
+    <meta name="description" content="${escapeHtml(desc)}">
+    <link rel="canonical" href="${permalink}">
+    <link rel="alternate" hreflang="en" href="${permalink}">
+    <link rel="alternate" hreflang="hi" href="${articlePermalinkHi(articleId)}">
+    <link rel="alternate" hreflang="x-default" href="${permalink}">
+    <meta property="og:title" content="${escapeHtml(title)} – CosmicJyoti">
+    <meta property="og:description" content="${escapeHtml(desc)}">
+    <meta property="og:url" content="${permalink}">
+    <meta property="og:image" content="${BASE_URL}/app-logo.png">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>${styles}</style>
+    <script type="application/ld+json">${JSON.stringify(schema)}</script>
+</head>
+<body class="navbar-space">
+    ${navFragment}
+    <article class="article-content" id="article-body">
+        <h1 class="gradient-text text-2xl sm:text-3xl mb-4">${escapeHtml(title)}</h1>
+        <p class="text-slate-400 text-sm mb-6"><time datetime="${escapeHtml(datePublishedISO || '')}">Published: ${escapeHtml(visibleDateStr)}</time> | By Nikesh Maurya | ${escapeHtml(post.readingTime || '5 min read')}</p>
+        <div class="article-body">${post.content || ''}</div>
+        ${ctaHtml}
+        ${relatedHtml}
+        <p class="mt-8"><a href="${BASE_URL}/" class="text-amber-400 hover:text-amber-300">← Back to Dashboard</a></p>
+    </article>
+    <script>
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
+        var m = document.getElementById('mobile-menu');
+        if (m) m.classList.toggle('hidden');
+    });
+    </script>
+</body>
+</html>`;
+    const dir = path.join(BLOG_DIR, articleId);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf8');
+    count += 1;
+  }
+  console.log(`[DONE] Wrote ${count} static article pages under blog/{articleId}/index.html.`);
+}
+
+/** Write Hindi article pages: full content when hiTranslations[articleId] exists, else stub. One language per URL, fast load. */
+function writeStaticArticlePagesHi(allPosts, hiTranslations = {}) {
+  if (!fs.existsSync(HI_BLOG_DIR)) fs.mkdirSync(HI_BLOG_DIR, { recursive: true });
+  const enPermalink = (id) => `${BASE_URL}/blog/${encodeURIComponent(id)}/`;
+  const hiPermalink = (id) => `${BASE_URL}/hi/blog/${encodeURIComponent(id)}/`;
+  const navHi = `<nav class="fixed top-0 w-full z-50 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/50 py-2 sm:py-2.5 px-3 sm:px-4">
+        <div class="container mx-auto flex items-center justify-between max-w-7xl">
+            <a href="../../../landing.html" class="flex items-center gap-1.5 sm:gap-2"><span class="text-2xl sm:text-3xl">☀</span><span class="text-lg sm:text-xl md:text-2xl font-serif font-bold gradient-text">CosmicJyoti</span></a>
+            <div class="hidden lg:flex items-center gap-3 xl:gap-4">
+                <a href="../../../landing.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded text-sm xl:text-base">होम</a>
+                <a href="../../../blog.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded text-sm xl:text-base">ब्लॉग</a>
+                <a href="../../../about.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded text-sm xl:text-base">हमारे बारे में</a>
+                <a href="../../../contact.html" class="text-slate-300 hover:text-amber-300 px-2 py-1.5 rounded text-sm xl:text-base">संपर्क</a>
+            </div>
+            <button id="mobile-menu-btn" class="lg:hidden text-amber-400 text-xl p-2 rounded hover:bg-slate-800 transition" aria-label="मेन्यू">☰</button>
+        </div>
+        <div id="mobile-menu" class="lg:hidden hidden bg-slate-900/95 border-t border-slate-800 px-4 py-3 space-y-1">
+            <a href="../../../landing.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded">होम</a>
+            <a href="../../../blog.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded">ब्लॉग</a>
+            <a href="../../../about.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded">हमारे बारे में</a>
+            <a href="../../../contact.html" class="block py-3 px-3 text-slate-300 hover:text-amber-300 rounded">संपर्क</a>
+        </div>
+    </nav>`;
+  const stylesBase = `* { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Lato', sans-serif; background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #020617 100%); color: #e2e8f0; line-height: 1.6; }
+        .gradient-text { background: linear-gradient(135deg, #fbbf24 0%, #ffffff 50%, #fbbf24 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .navbar-space { padding-top: 80px; }
+        .article-content { max-width: 800px; margin: 0 auto; padding: 2rem; }`;
+  const stylesFull = stylesBase + `
+        .article-body { line-height: 1.75; }
+        .article-body h2 { font-size: 1.5rem; margin-top: 2rem; margin-bottom: 1rem; color: #fbbf24; font-weight: 700; }
+        .article-body h2:first-child { margin-top: 0; }
+        .article-body h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: #fcd34d; font-weight: 600; }
+        .article-body h4 { font-size: 1.1rem; margin-top: 1.25rem; margin-bottom: 0.5rem; color: #e2e8f0; }
+        .article-body p { margin-bottom: 1.25rem; color: #cbd5e1; }
+        .article-body ul, .article-body ol { margin: 1rem 0 1rem 2rem; color: #cbd5e1; }
+        .article-body li { margin-bottom: 0.5rem; }
+        .article-body ul { list-style-type: disc; }
+        .article-body ol { list-style-type: decimal; }
+        .article-body strong { color: #fbbf24; font-weight: 600; }
+        .article-body em { color: #e2e8f0; font-style: italic; }
+        .article-body a { color: #f59e0b; text-decoration: underline; }
+        .article-body a:hover { color: #fcd34d; }
+        .article-body blockquote { margin: 1.5rem 0; padding-left: 1.5rem; border-left: 4px solid #f59e0b; color: #94a3b8; font-style: italic; }`;
+  let countFull = 0;
+  let countStub = 0;
+  for (const post of allPosts) {
+    const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+    if (!articleId) continue;
+    const permalinkEn = enPermalink(articleId);
+    const permalinkHi = hiPermalink(articleId);
+    const hi = hiTranslations[articleId];
+    const hasFull = hi && typeof hi.titleHi === 'string' && typeof hi.contentHi === 'string';
+    const titleHi = hasFull ? hi.titleHi : (post.title || 'Article');
+    const descHi = hasFull ? (hi.excerptHi || hi.titleHi).slice(0, 160) : 'यह लेख अंग्रेज़ी में उपलब्ध है। CosmicJyoti ब्लॉग।';
+    const contentHi = hasFull ? hi.contentHi : '';
+    const readingTimeHi = post.readingTime ? `${post.readingTime} पढ़ने का समय` : '5 मिनट पढ़ें';
+    const pubDate = post.date || '';
+    const datePublishedISO = pubDate ? `${pubDate}T06:00:00+05:30` : null;
+    const visibleDateStr = pubDate ? new Date(pubDate + 'T06:00:00+05:30').toLocaleString('hi-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '';
+    const related = allPosts
+      .filter((p) => (p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug)) !== articleId)
+      .slice(0, 2);
+    let relatedHtml = '';
+    if (related.length > 0) {
+      relatedHtml = '<div class="mt-10 pt-8 border-t border-slate-700"><h3 class="text-amber-200 font-serif text-lg mb-4">और पढ़ें</h3><ul class="space-y-2">';
+      for (const p of related) {
+        const aid = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+        const relTitle = (hiTranslations[aid] && hiTranslations[aid].titleHi) ? hiTranslations[aid].titleHi : (p.title || '');
+        relatedHtml += `<li><a href="../${encodeURIComponent(aid)}/" class="text-amber-400 hover:text-amber-300 underline">${escapeHtml(relTitle)}</a></li>`;
+      }
+      relatedHtml += '</ul></div>';
+    }
+    const serviceMode = post.serviceMode;
+    const serviceLabel = post.serviceLabel || post.topic || 'इस टूल को आज़माएं';
+    let ctaHtml = '';
+    if (serviceMode && hasFull) {
+      const tryHref = `${BASE_URL}/?mode=${encodeURIComponent(serviceMode)}`;
+      ctaHtml = `<div class="mt-8 p-6 bg-amber-500/10 border border-amber-500/30 rounded-2xl"><p class="text-amber-200 font-semibold mb-3">आगे बढ़ें?</p><a href="${escapeHtml(tryHref)}" class="inline-flex items-center gap-2 px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all">${escapeHtml(serviceLabel)} आज़माएं →</a></div>`;
+    }
+    let bodyBlock;
+    if (hasFull) {
+      bodyBlock = `<h1 class="gradient-text text-2xl sm:text-3xl mb-4">${escapeHtml(titleHi)}</h1>
+        <p class="text-slate-400 text-sm mb-6"><time datetime="${escapeHtml(datePublishedISO || '')}">प्रकाशित: ${escapeHtml(visibleDateStr)}</time> | निकेश मौर्य द्वारा | ${escapeHtml(readingTimeHi)}</p>
+        <div class="article-body">${contentHi}</div>
+        ${ctaHtml}
+        ${relatedHtml}
+        <p class="mt-8"><a href="${BASE_URL}/" class="text-amber-400 hover:text-amber-300">← होम पर वापस</a></p>`;
+    } else {
+      bodyBlock = `<h1 class="gradient-text text-2xl sm:text-3xl mb-4">${escapeHtml(post.title || 'Article')}</h1>
+        <p class="text-slate-300 mb-6">यह लेख अंग्रेज़ी में उपलब्ध है।</p>
+        <p><a href="${permalinkEn}" class="text-amber-400 hover:text-amber-300 font-semibold">अंग्रेज़ी में पढ़ें →</a></p>
+        <p class="mt-8"><a href="${BASE_URL}/" class="text-amber-400 hover:text-amber-300">← होम पर वापस</a></p>`;
+    }
+    const schema = hasFull ? {
+      '@context': 'https://schema.org',
+      '@type': 'NewsArticle',
+      headline: titleHi,
+      description: descHi,
+      datePublished: datePublishedISO,
+      dateModified: datePublishedISO,
+      author: { '@type': 'Person', name: 'Nikesh Maurya', url: `${BASE_URL}/about.html` },
+      publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': permalinkHi },
+      image: `${BASE_URL}/app-logo.png`,
+    } : null;
+    const html = `<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${escapeHtml(titleHi)} – CosmicJyoti | ज्योतिष</title>
+    <meta name="description" content="${escapeHtml(descHi)}">
+    <link rel="canonical" href="${permalinkHi}">
+    <link rel="alternate" hreflang="en" href="${permalinkEn}">
+    <link rel="alternate" hreflang="hi" href="${permalinkHi}">
+    <link rel="alternate" hreflang="x-default" href="${permalinkEn}">
+    <meta property="og:title" content="${escapeHtml(titleHi)} – CosmicJyoti">
+    <meta property="og:description" content="${escapeHtml(descHi)}">
+    <meta property="og:url" content="${permalinkHi}">
+    <meta property="og:image" content="${BASE_URL}/app-logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>${hasFull ? stylesFull : stylesBase}</style>
+    ${schema ? `<script type="application/ld+json">${JSON.stringify(schema)}</script>` : ''}
+</head>
+<body class="navbar-space">
+    ${navHi}
+    <article class="article-content">
+        ${bodyBlock}
+    </article>
+    <script>document.getElementById('mobile-menu-btn')?.addEventListener('click', function() { var m = document.getElementById('mobile-menu'); if (m) m.classList.toggle('hidden'); });</script>
+</body>
+</html>`;
+    const dir = path.join(HI_BLOG_DIR, articleId);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), html, 'utf8');
+    if (hasFull) countFull += 1;
+    else countStub += 1;
+  }
+  console.log(`[DONE] Wrote ${countFull + countStub} Hindi pages: ${countFull} full, ${countStub} stubs (hi/blog/{articleId}/index.html).`);
 }
 
 async function main() {
@@ -442,6 +875,52 @@ async function main() {
     }
     console.log(`Refreshing feed and sitemaps from ${allPosts.length} existing posts...`);
     writeFeedAndSitemaps(allPosts, today);
+    writeStaticArticlePages(allPosts);
+    writeStaticArticlePagesHi(allPosts, loadHiTranslations());
+    return;
+  }
+
+  if (slot === TRANSLATE_HINDI) {
+    let allPosts = [];
+    try {
+      const raw = fs.readFileSync(OUTPUT_PATH, 'utf8');
+      const data = JSON.parse(raw);
+      allPosts = Array.isArray(data.posts) ? data.posts : [];
+    } catch (e) {
+      console.error('No public/blog/daily-posts.json found. Run the blog script with a slot or refresh-sitemaps first.');
+      process.exit(1);
+    }
+    if (allPosts.length === 0) {
+      console.error('daily-posts.json has no posts.');
+      process.exit(1);
+    }
+    const apiKey = getGeminiKey();
+    if (!apiKey) {
+      console.error('Set GEMINI_API_KEY or API_KEY in .env for translation.');
+      process.exit(1);
+    }
+    const hi = loadHiTranslations();
+    const toTranslate = allPosts.filter((p) => {
+      const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
+      return id && !hi[id];
+    });
+    console.log(`Translating ${toTranslate.length} articles to Hindi (${Object.keys(hi).length} already done)...`);
+    for (let i = 0; i < toTranslate.length; i++) {
+      const post = toTranslate[i];
+      const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+      process.stdout.write(`  [${i + 1}/${toTranslate.length}] ${articleId?.slice(0, 40)}... `);
+      const result = await translatePostToHindi(post);
+      if (result) {
+        hi[articleId] = result;
+        saveHiTranslations(hi);
+        console.log('OK');
+      } else {
+        console.log('SKIP (translation failed)');
+      }
+      if (i < toTranslate.length - 1) await sleep(1500);
+    }
+    writeStaticArticlePagesHi(allPosts, hi);
+    console.log('[DONE] translate-hindi finished.');
     return;
   }
 
@@ -563,6 +1042,8 @@ async function main() {
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2), 'utf8');
 
   writeFeedAndSitemaps(allPosts, today);
+  writeStaticArticlePages(allPosts);
+  writeStaticArticlePagesHi(allPosts, loadHiTranslations());
   console.log(`[DONE] Appended 2 posts (slot: ${slot}). Total: ${allPosts.length}.`);
   console.log(`New titles: ${newPosts.map((p) => p.title).join(' | ')}`);
 }

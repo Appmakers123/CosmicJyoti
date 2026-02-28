@@ -4,4 +4,5 @@ Disallow: /api/
 
 Sitemap: https://www.cosmicjyoti.com/sitemap.xml
 Sitemap: https://www.cosmicjyoti.com/blog/sitemap-news.xml
+Sitemap: https://www.cosmicjyoti.com/hi/blog/sitemap-blog.xml
 

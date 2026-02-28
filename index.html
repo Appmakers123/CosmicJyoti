@@ -331,6 +331,18 @@
   gtag('js', new Date());
   gtag('config', 'G-GZ53ZGTB2Q', { anonymize_ip: true });
 </script>
+<!-- Google News Subscribe with Google (SWG) -->
+<script async type="application/javascript" src="https://news.google.com/swg/js/v1/swg-basic.js"></script>
+<script>
+  (self.SWG_BASIC = self.SWG_BASIC || []).push(function(basicSubscriptions) {
+    basicSubscriptions.init({
+      type: "NewsArticle",
+      isPartOfType: ["Product"],
+      isPartOfProductId: "CAow28LEDA:openaccess",
+      clientOptions: { theme: "light", lang: "en" },
+    });
+  });
+</script>
 </head>
   <body>
     <!-- Google Tag Manager (noscript) -->

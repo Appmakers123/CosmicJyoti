@@ -2481,16 +2481,18 @@ export const createChatSession = (language: Language, context?: string, persona:
 };
 
 export const askRishiWithFallback = async (prompt: string, language: Language, context?: string, persona: AstrologerPersona = 'general') => {
+    let backendErr: any = null;
     // 1. Try backend proxy (Render, etc.)
     try {
         return await askRishiFromBackend(prompt, language, context, persona);
-    } catch (backendErr: any) {
-        const msg = backendErr?.message || '';
+    } catch (err: any) {
+        backendErr = err;
+        const msg = err?.message || '';
         const isBackendUnreachable = msg.includes('Backend not available') || msg.includes('Failed to fetch') || msg.includes('NetworkError');
         const isBackendError = msg.includes('Ask Rishi API error') || msg.includes('503') || msg.includes('500') || msg.includes('400') || msg.includes('404');
         // Always fall through to direct call on any backend failure so module chat (Kundali/Compatibility/Module Ask AI) gets a response or friendly message instead of throwing
         if (!isBackendUnreachable && !isBackendError) {
-            throw backendErr;
+            throw err;
         }
     }
 

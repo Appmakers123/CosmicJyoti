@@ -644,6 +644,13 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
               <h2 className="text-xl font-serif text-white">{result.personA.name} + {result.personB.name}</h2>
               <SaveShareBar
                 language={language}
+                shareContent={[
+                  `${result.personA.name} & ${result.personB.name}`,
+                  `${language === 'hi' ? 'कुल स्कोर' : 'Overall'}: ${result.scores.overall}%`,
+                  typeof result.report === 'string' ? result.report.slice(0, 500) : ''
+                ].filter(Boolean).join('\n\n')}
+                shareTitle={language === 'hi' ? `संगतता: ${result.personA.name} & ${result.personB.name}` : `Compatibility: ${result.personA.name} & ${result.personB.name}`}
+                contentType="compatibility"
                 onSave={() => {
                   const formInput = { personA, personB, lang: language };
                   const id = saveReport('compatibility', result, formInput, `${language === 'hi' ? 'संगतता' : 'Compatibility'}: ${personA.name} & ${personB.name}`);

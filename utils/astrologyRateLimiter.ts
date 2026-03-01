@@ -4,9 +4,28 @@
  */
 
 const STORAGE_KEY = 'cosmicjyoti_astrology_usage';
+const ROTATION_INDEX_KEY = 'cosmicjyoti_astrology_rotation_index';
 const REQUESTS_PER_SECOND = 1;
 const REQUESTS_PER_DAY = 50;
 const MS_PER_SECOND = 1000;
+
+/** Round-robin index (persisted so rotation continues across page loads). */
+function getRotationIndex(keys: string[]): number {
+  try {
+    const s = localStorage.getItem(ROTATION_INDEX_KEY);
+    if (s != null) {
+      const n = parseInt(s, 10);
+      if (Number.isInteger(n) && n >= 0) return n % Math.max(1, keys.length);
+    }
+  } catch (_) {}
+  return 0;
+}
+
+function setRotationIndex(index: number): void {
+  try {
+    localStorage.setItem(ROTATION_INDEX_KEY, String(index));
+  } catch (_) {}
+}
 
 interface KeyUsage {
   lastRequestTime: number;
@@ -55,15 +74,23 @@ function saveUsage(keys: string[], usage: Record<string, KeyUsage>) {
   }
 }
 
+/** Keys in rotation order (round-robin across multiple keys). */
+function keysInRotationOrder(keys: string[]): string[] {
+  if (keys.length <= 1) return keys;
+  const start = getRotationIndex(keys);
+  return keys.slice(start).concat(keys.slice(0, start));
+}
+
 /**
- * Pick best available key and wait if needed to respect 1 req/sec limit.
+ * Pick best available key and wait if needed. Uses round-robin rotation across keys.
  */
 export async function acquireKeySlot(keys: string[]): Promise<string> {
   const usage = loadUsage(keys);
   const now = Date.now();
   const today = getToday();
+  const ordered = keysInRotationOrder(keys);
 
-  for (const key of keys) {
+  for (const key of ordered) {
     const u = usage[key] || { lastRequestTime: 0, dailyCount: 0, dailyDate: today };
     if (u.dailyDate !== today) {
       u.dailyCount = 0;
@@ -73,15 +100,17 @@ export async function acquireKeySlot(keys: string[]): Promise<string> {
 
     const elapsed = now - u.lastRequestTime;
     if (elapsed >= MS_PER_SECOND) {
+      setRotationIndex((getRotationIndex(keys) + 1) % Math.max(1, keys.length));
       return key; // This key is ready
     }
-    // Need to wait - but maybe another key is ready
   }
 
-  // All keys either exhausted or need wait - pick the one that will be ready soonest
+  // All keys either exhausted or need wait - pick the one that will be ready soonest (prefer rotation order)
   let bestKey: string | null = null;
+  let bestKeyIndex = -1;
   let minWait = Infinity;
-  for (const k of keys) {
+  for (let i = 0; i < ordered.length; i++) {
+    const k = ordered[i];
     const u = usage[k] || { lastRequestTime: 0, dailyCount: 0, dailyDate: today };
     if (u.dailyDate !== today) u.dailyCount = 0;
     if (u.dailyCount >= REQUESTS_PER_DAY) continue;
@@ -89,6 +118,7 @@ export async function acquireKeySlot(keys: string[]): Promise<string> {
     if (wait < minWait) {
       minWait = wait;
       bestKey = k;
+      bestKeyIndex = keys.indexOf(k);
     }
   }
 
@@ -98,6 +128,7 @@ export async function acquireKeySlot(keys: string[]): Promise<string> {
   if (minWait > 0) {
     await new Promise((r) => setTimeout(r, minWait));
   }
+  setRotationIndex((bestKeyIndex + 1) % Math.max(1, keys.length));
   return bestKey;
 }
 

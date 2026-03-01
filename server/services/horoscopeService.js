@@ -1,9 +1,17 @@
-import axios from 'axios';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
+import { post } from '../lib/freeAstrologyApi.js';
 
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.API_KEY;
+// Lazy read so dotenv has run (index.js loads .env after importing this module)
+function getGeminiApiKey() {
+  const env = process.env;
+  const keys = env.GEMINI_API_KEYS || env.API_KEYS;
+  if (keys && typeof keys === 'string') {
+    const first = keys.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  const single = env.GEMINI_API_KEY || env.API_KEY || env.VITE_GEMINI_API_KEY;
+  return single && typeof single === 'string' ? single.trim() : null;
+}
 
 // Language name mapping for AI prompts
 const LANGUAGE_NAMES = {
@@ -40,11 +48,7 @@ export async function generateHoroscope(sign, date, language = 'en', period = 'd
 
     // Call horoscope API if available, otherwise generate based on sign
     try {
-      const response = await postWithKeyRotation(
-        axios,
-        `${ASTROLOGY_API_BASE}/horoscope`,
-        payload
-      );
+      const response = await post('horoscope', payload);
 
       const horoscopeText = response.data.horoscope || response.data.prediction || response.data;
       
@@ -85,40 +89,85 @@ export async function generateHoroscope(sign, date, language = 'en', period = 'd
  * @param {string} period - 'day' | 'week' | 'month' | 'year'
  */
 async function generateHoroscopeWithAI(sign, date, language, languageName, period = 'day') {
-  if (!GEMINI_API_KEY) {
-    console.warn('Gemini API key not found, using basic horoscope');
+  const apiKey = getGeminiApiKey();
+  if (!apiKey) {
+    console.warn('Gemini API key not found, using basic horoscope. Set GEMINI_API_KEYS (or GEMINI_API_KEY) in .env.local for AI horoscope (week/month/year).');
     const basic = generateBasicHoroscope(sign, date, language);
     const text = typeof basic === 'object' && basic.general ? basic.general : String(basic);
     return { sign, date, horoscope: text, language };
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
     const periodLabel = period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : period === 'year' ? 'yearly' : 'daily';
-    const prompt = `You are an expert Vedic astrologer. Generate a ${periodLabel} horoscope for ${sign} zodiac sign. Date: ${date}. 
-Provide a detailed, accurate, and helpful horoscope prediction in ${languageName} language. 
-Include insights about career, love, health, finance, and general life aspects. 
-Make it specific, practical, and compassionate.${period !== 'day' ? ` For ${periodLabel} cover the overall theme and key phases or dates.` : ''}`;
+    const extraSections = period !== 'day' ? `
+
+## Overall theme
+(2-3 sentences for the ${periodLabel} period.)
+
+## Key dates or phases
+(2-3 bullet points with dates or phases to watch.)` : '';
+
+    const prompt = `You are an expert Vedic astrologer. Write a DETAILED ${periodLabel} horoscope for ${sign} zodiac sign. Date: ${date}. Language: ${languageName}.
+
+OUTPUT FORMAT — use exactly these markdown headers in your response:
+## Intro
+(2-3 sentences summarizing ${periodLabel} energy for ${sign}.)
+
+## Career
+(2-4 bullet points or short paragraph: work, opportunities, challenges. Use **bold** for key terms.)
+
+## Love
+(2-4 bullet points: relationships, romance. Use **bold** for key terms.)
+
+## Health
+(2-4 bullet points: wellbeing, energy. Use **bold** for key terms.)
+
+## Finance
+(2-4 bullet points: money, investments. Use **bold** for key terms.)${extraSections}
+
+RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compassionate. Use - for bullets and **bold** for key words. Respond in ${languageName}.`;
 
     const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const horoscopeText = response.text();
+    const response = result.response;
+    let horoscopeText = '';
+    try {
+      if (typeof response.text === 'function') {
+        horoscopeText = response.text();
+      } else if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+        horoscopeText = response.candidates[0].content.parts[0].text;
+      } else {
+        horoscopeText = response.text || '';
+      }
+    } catch (e) {
+      console.warn('Gemini response text failed for', period, e?.message);
+      if (result.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        horoscopeText = result.response.candidates[0].content.parts[0].text;
+      }
+    }
+    if (!horoscopeText || typeof horoscopeText !== 'string' || horoscopeText.trim().length < 50) {
+      console.warn('Gemini returned empty/short horoscope for', period, '- using basic fallback');
+      const basic = generateBasicHoroscope(sign, date, language);
+      horoscopeText = typeof basic === 'object' && basic.general ? basic.general : String(basic);
+    }
 
     return {
       sign: sign,
       date: date,
-      horoscope: horoscopeText,
+      horoscope: horoscopeText.trim(),
       language: language
     };
   } catch (aiError) {
-    console.error('AI horoscope generation error:', aiError);
+    console.error('AI horoscope generation error (' + period + '):', aiError?.message || aiError);
     // Fallback to basic horoscope
+    const basic = generateBasicHoroscope(sign, date, language);
+    const text = typeof basic === 'object' && basic.general ? basic.general : String(basic);
     return {
       sign: sign,
       date: date,
-      horoscope: generateBasicHoroscope(sign, date, language),
+      horoscope: text,
       language: language
     };
   }

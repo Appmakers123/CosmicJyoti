@@ -469,6 +469,17 @@ export async function generateMatchmakingFromBackend(
 
     return await response.json();
   } catch (error: any) {
+    const isConnectionRefused =
+      error?.message?.includes('Failed to fetch') ||
+      error?.name === 'TypeError';
+    if (isConnectionRefused) {
+      console.warn(
+        '[Backend] Matchmaking: backend not reachable (is the server running?). Start it with: npm run server  or  npm run dev:all'
+      );
+      throw new Error(
+        'Backend not reachable. Start the server with: npm run server (or use npm run dev:all to run app + server together).'
+      );
+    }
     console.error('Backend Matchmaking API error:', error);
     throw error;
   }

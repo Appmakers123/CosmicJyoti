@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
-
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
+import { post } from '../lib/freeAstrologyApi.js';
 
 /**
  * Generate Muhurat (Best Timing) for a specific date and location
@@ -29,11 +26,7 @@ export async function generateMuhurat(date, location, activity = 'general', lang
     // Call Panchang API to get Tithi, Nakshatra, etc.
     let panchangData = null;
     try {
-      const panchangResponse = await postWithKeyRotation(
-        axios,
-        `${ASTROLOGY_API_BASE}/panchang`,
-        payload
-      );
+      const panchangResponse = await post('panchang', payload);
 
       panchangData = panchangResponse.data;
       
@@ -50,8 +43,12 @@ export async function generateMuhurat(date, location, activity = 'general', lang
       console.log("Panchang API response keys:", Object.keys(panchangData || {}));
       console.log("Panchang API response data:", JSON.stringify(panchangData, null, 2));
     } catch (panchangError) {
-      console.error("Panchang API error:", panchangError.message);
-      console.error("Panchang API error details:", panchangError.response?.data || panchangError);
+      const status = panchangError.response?.status;
+      const msg = panchangError.response?.data?.message || panchangError.message;
+      console.error("Panchang API error:", msg);
+      if (status === 403 || (msg && String(msg).includes('Missing Authentication'))) {
+        console.warn("Tip: Add ASTROLOGY_API_KEYS to .env.local (comma-separated keys from freeastrologyapi.com).");
+      }
       // Use default panchang data structure
       panchangData = {
         tithi: '',

@@ -8,6 +8,7 @@ const REPORT_TYPE_TO_MODE: Record<string, AppViewMode> = {
   panchang: 'panchang',
   horoscope: 'daily',
   matchmaking: 'matchmaking',
+  compatibility: 'compatibility',
   muhurat: 'muhurat',
   numerology: 'numerology',
   tarot: 'tarot',
@@ -16,7 +17,7 @@ const REPORT_TYPE_TO_MODE: Record<string, AppViewMode> = {
 };
 
 /** Section order for grouped list */
-const TYPE_ORDER: string[] = ['kundali', 'horoscope', 'panchang', 'matchmaking', 'muhurat', 'numerology', 'tarot', 'palm', 'face'];
+const TYPE_ORDER: string[] = ['kundali', 'horoscope', 'panchang', 'matchmaking', 'compatibility', 'muhurat', 'numerology', 'tarot', 'palm', 'face'];
 
 interface MySavedReportsProps {
   language: Language;
@@ -48,6 +49,7 @@ const MySavedReports: React.FC<MySavedReportsProps> = ({ language, onOpenMode, o
     panchang: { en: 'Panchang', hi: 'पंचांग' },
     horoscope: { en: 'Horoscope', hi: 'राशिफल' },
     matchmaking: { en: 'Guna Milan', hi: 'गुण मिलान' },
+    compatibility: { en: 'Compatibility', hi: 'संगतता' },
     muhurat: { en: 'Muhurat', hi: 'मुहूर्त' },
     numerology: { en: 'Numerology', hi: 'अंक ज्योतिष' },
     tarot: { en: 'Tarot', hi: 'टैरो' },

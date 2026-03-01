@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
-
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
+import { post } from '../lib/freeAstrologyApi.js';
 
 /**
  * Generate Panchang (Almanac) for a specific date and location
@@ -20,11 +17,7 @@ export async function generatePanchang(date, location, language = 'en') {
       timezone: coords.timezone
     };
 
-    const response = await postWithKeyRotation(
-      axios,
-      `${ASTROLOGY_API_BASE}/panchang`,
-      payload
-    );
+    const response = await post('panchang', payload);
 
     let panchangData = response.data;
     if (panchangData.output) {

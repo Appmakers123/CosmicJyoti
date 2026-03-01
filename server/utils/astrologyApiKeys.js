@@ -1,13 +1,14 @@
 /**
- * Astrology API key rotation utility - uses multiple keys to avoid single-point failure.
+ * Astrology API key rotation utility - uses multiple keys in round-robin to spread load.
  * Respects rate limits: 1 req/sec per key, 50/day per key (in-memory for server).
- * Keys must be set in .env.local (project root) or env: ASTROLOGY_API_KEYS=key1,key2,key3
+ * On failure (429, 401, etc.) tries the next key automatically.
+ * Keys must be set in .env.local or env: ASTROLOGY_API_KEYS=key1,key2,key3
  */
 
 function getKeys() {
   const envKeys = process.env.ASTROLOGY_API_KEYS;
   if (envKeys && typeof envKeys === 'string') {
-    const parsed = envKeys.split(',').map((k) => k.trim()).filter(Boolean);
+    const parsed = envKeys.split(',').map((k) => k.trim()).filter((k) => k.length > 0);
     if (parsed.length > 0) return parsed;
   }
   return [];
@@ -18,15 +19,25 @@ const REQUESTS_PER_DAY = 50;
 const keyLastRequest = {};
 const keyDailyCount = {};
 const keyDailyDate = {};
+/** Round-robin index so we rotate across all keys evenly */
+let keyRotationIndex = 0;
 
 function getToday() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Keys in rotation order starting from keyRotationIndex (round-robin). */
+function keysInRotationOrder(keys) {
+  if (keys.length <= 1) return keys;
+  const start = keyRotationIndex % keys.length;
+  return keys.slice(start).concat(keys.slice(0, start));
+}
+
 async function acquireKeySlot(keys) {
   const now = Date.now();
   const today = getToday();
-  for (const key of keys) {
+  const ordered = keysInRotationOrder(keys);
+  for (const key of ordered) {
     const last = keyLastRequest[key] || 0;
     let count = keyDailyCount[key] || 0;
     const date = keyDailyDate[key] || '';
@@ -35,12 +46,15 @@ async function acquireKeySlot(keys) {
       keyDailyDate[key] = today;
     }
     if (count >= REQUESTS_PER_DAY) continue;
-    if (now - last >= MS_PER_SECOND) return key;
+    if (now - last >= MS_PER_SECOND) {
+      keyRotationIndex = (keyRotationIndex + 1) % Math.max(1, keys.length);
+      return key;
+    }
   }
-  // Wait for soonest available key
+  // Wait for soonest available key (still prefer rotation order)
   let bestKey = null;
   let minWait = Infinity;
-  for (const key of keys) {
+  for (const key of ordered) {
     let count = keyDailyCount[key] || 0;
     if (keyDailyDate[key] !== today) count = 0;
     if (count >= REQUESTS_PER_DAY) continue;
@@ -52,6 +66,7 @@ async function acquireKeySlot(keys) {
   }
   if (!bestKey) throw new Error('All astrology API keys reached daily limit. Try again tomorrow.');
   if (minWait > 0) await new Promise((r) => setTimeout(r, minWait));
+  keyRotationIndex = (keys.indexOf(bestKey) + 1) % Math.max(1, keys.length);
   return bestKey;
 }
 
@@ -74,7 +89,9 @@ function shouldRetryWithNextKey(status, body) {
     body.includes('api key') ||
     body.includes('quota') ||
     body.includes('rate limit') ||
-    body.includes('invalid key')
+    body.includes('invalid key') ||
+    body.includes('Missing Authentication Token') ||
+    body.includes('Forbidden')
   )) return true;
   return false;
 }
@@ -101,11 +118,16 @@ async function postWithKeyRotation(axios, url, data, config = {}) {
   for (let attempt = 0; attempt < keys.length; attempt++) {
     try {
       keyToUse = await acquireKeySlot(keys);
+      if (!keyToUse || typeof keyToUse !== 'string' || !keyToUse.trim()) {
+        continue;
+      }
+      const apiKey = keyToUse.trim();
       const response = await axios.post(url, data, {
         ...config,
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': keyToUse,
+          'x-api-key': apiKey,
+          Authorization: `Bearer ${apiKey}`,
           ...(config.headers || {}),
         },
       });

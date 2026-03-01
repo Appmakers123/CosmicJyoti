@@ -25,6 +25,22 @@ dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 dotenv.config({ path: path.resolve(__dirname, '..', '.env.local') });
 
+const geminiKeys = process.env.GEMINI_API_KEYS || process.env.API_KEYS;
+const geminiKey = geminiKeys && typeof geminiKeys === 'string' ? geminiKeys.split(',')[0]?.trim() : (process.env.GEMINI_API_KEY || process.env.API_KEY);
+if (geminiKey) {
+  console.log('✅ Gemini API key loaded (week/month/year horoscope + AI)');
+} else {
+  console.warn('⚠️  No Gemini key in env. Set GEMINI_API_KEYS in .env.local for AI horoscope (week/month/year).');
+}
+
+const astrologyKeysEnv = process.env.ASTROLOGY_API_KEYS || '';
+const astrologyKeysCount = astrologyKeysEnv ? astrologyKeysEnv.split(',').map((k) => k.trim()).filter(Boolean).length : 0;
+if (astrologyKeysCount > 0) {
+  console.log('✅ Astrology API keys loaded:', astrologyKeysCount, '(panchang, muhurat, matchmaking, etc.)');
+} else {
+  console.warn('⚠️  No ASTROLOGY_API_KEYS in env. Panchang/Muhurat will use fallbacks. Add keys to .env.local (freeastrologyapi.com).');
+}
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 const isProduction = process.env.NODE_ENV === 'production';
@@ -85,10 +101,13 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Initialize Gemini AI
+// Initialize Gemini AI (prefer GEMINI_API_KEYS, first key if comma-separated)
 let genAI = null;
 try {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+  const keys = process.env.GEMINI_API_KEYS || process.env.API_KEYS;
+  const apiKey = keys && typeof keys === 'string'
+    ? keys.split(',')[0]?.trim()
+    : (process.env.GEMINI_API_KEY || process.env.API_KEY);
   if (apiKey) {
     genAI = new GoogleGenerativeAI(apiKey);
     console.log('✅ Gemini AI initialized for predictions');
@@ -307,13 +326,16 @@ app.post('/api/gochara', async (req, res) => {
 // Horoscope (Rashifal)
 app.post('/api/horoscope', async (req, res) => {
   try {
-    const { sign, date, language = 'en', period = 'day' } = req.body;
-    
+    const { sign, date, language = 'en', period: rawPeriod } = req.body;
+    const period = ['day', 'week', 'month', 'year'].includes(String(rawPeriod || '').toLowerCase())
+      ? String(rawPeriod).toLowerCase()
+      : 'day';
+
     if (!sign || !date) {
       return res.status(400).json({ error: 'Missing required fields: sign, date' });
     }
 
-    const cacheKey = `horoscope:${sign}:${date}:${language}:${period || 'day'}`;
+    const cacheKey = `horoscope:${sign}:${date}:${language}:${period}`;
     
     const result = await getCachedOrCompute(cacheKey, async () => {
       return await generateHoroscope(sign, date, language, period);

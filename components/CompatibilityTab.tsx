@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from '../utils/translations';
 import { getGlobalProfile } from '../utils/profileStorageService';
-import { listReports, getReport } from '../utils/reportStorageService';
+import { listReports, getReport, saveReport, getReportByForm, deleteReport } from '../utils/reportStorageService';
 import { getExternalLinkProps } from '../utils/linkHandler';
 import { Language, KundaliFormData, KundaliResponse } from '../types';
 import { calculateLifePath } from '../utils/numerologyUtils';
@@ -10,6 +10,7 @@ import { generateAshtakootaFromBackend } from '../services/backendService';
 import AdBanner from './AdBanner';
 import RichText from './RichText';
 import CompatibilityAskAI from './CompatibilityAskAI';
+import { SaveShareBar } from './common';
 import { setErrorSafely } from '../utils/errorHandler';
 import { getCachedAI, setCachedAI } from '../utils/aiCacheService';
 import { requestScrollToMain } from '../utils/scrollToMain';
@@ -146,6 +147,8 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedKundalis, setSavedKundalis] = useState<{ id: string; title: string; formInput: KundaliFormData }[]>([]);
+  const [isSaved, setIsSaved] = useState(false);
+  const [savedReportId, setSavedReportId] = useState<string | null>(null);
 
   // Load saved Kundali charts for "Compare with friend" (Co-Star style)
   useEffect(() => {
@@ -196,6 +199,19 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
   useEffect(() => {
     if (result) requestScrollToMain();
   }, [result]);
+
+  // Sync saved state when result or form data changes
+  useEffect(() => {
+    if (!result) {
+      setIsSaved(false);
+      setSavedReportId(null);
+      return;
+    }
+    const formInput = { personA, personB, lang: language };
+    const savedReport = getReportByForm('compatibility', formInput);
+    setIsSaved(!!savedReport);
+    setSavedReportId(savedReport?.meta?.id ?? null);
+  }, [result, personA, personB, language]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -620,12 +636,25 @@ const CompatibilityTab: React.FC<CompatibilityTabProps> = ({ language }) => {
         </div>
       ) : (
         <div className="space-y-8">
-           <div className="flex justify-between items-center">
-              <button onClick={() => setResult(null)} className="text-pink-400 hover:text-white transition-colors text-sm font-bold uppercase flex items-center">
+           <div className="flex flex-wrap justify-between items-center gap-4">
+              <button onClick={() => { setResult(null); setIsSaved(false); setSavedReportId(null); }} className="text-pink-400 hover:text-white transition-colors text-sm font-bold uppercase flex items-center">
                 <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 {t.return || (language === 'hi' ? 'वापस' : 'Back')}
               </button>
               <h2 className="text-xl font-serif text-white">{result.personA.name} + {result.personB.name}</h2>
+              <SaveShareBar
+                language={language}
+                onSave={() => {
+                  const formInput = { personA, personB, lang: language };
+                  const id = saveReport('compatibility', result, formInput, `${language === 'hi' ? 'संगतता' : 'Compatibility'}: ${personA.name} & ${personB.name}`);
+                  setIsSaved(true);
+                  setSavedReportId(id);
+                }}
+                onUnsave={savedReportId ? () => { deleteReport(savedReportId); setIsSaved(false); setSavedReportId(null); } : undefined}
+                isSaved={isSaved}
+                savedReportId={savedReportId}
+                savedLocationLabel={language === 'hi' ? 'मेरी रिपोर्ट' : 'My Reports'}
+              />
            </div>
 
            {/* Overall Score */}

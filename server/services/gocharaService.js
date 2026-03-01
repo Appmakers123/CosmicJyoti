@@ -1,7 +1,4 @@
-import axios from 'axios';
-import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
-
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
+import { post } from '../lib/freeAstrologyApi.js';
 
 /**
  * Generate Gochara (Transits) - Current planetary positions relative to birth chart
@@ -44,8 +41,8 @@ export async function generateGochara(birthDate, birthTime, birthLocation, curre
     };
 
     const [currentResponse, birthResponse] = await Promise.all([
-      postWithKeyRotation(axios, `${ASTROLOGY_API_BASE}/planets`, currentPayload),
-      postWithKeyRotation(axios, `${ASTROLOGY_API_BASE}/planets`, birthPayload)
+      post('planets', currentPayload),
+      post('planets', birthPayload)
     ]);
 
     let currentData = currentResponse.data;

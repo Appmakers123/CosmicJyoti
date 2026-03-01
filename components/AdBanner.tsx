@@ -38,10 +38,13 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
   // Note: AdMob banner is loaded globally in App.tsx on app start
   // This component just handles the UI placeholder for Android
 
+  // Skip ads on localhost (AdSense returns 403; avoids CORS and TagError noise)
+  const isLocalhost = typeof window !== 'undefined' && /^localhost$|^127\.0\.0\.1$/.test(window.location.hostname);
+
   // Handle AdSense for web
   useEffect(() => {
-    // Skip AdSense if we're on Android and using AdMob
-    if (isCapacitor()) {
+    // Skip AdSense if we're on Android and using AdMob, or on localhost
+    if (isCapacitor() || isLocalhost) {
       return;
     }
 
@@ -65,7 +68,8 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
                     setIsLoaded(true); // Mark as loaded
                     return true;
                  } catch (e) {
-                    console.error("AdSense push failed:", e);
+                    // TagError / push errors are common when re-mounting or on localhost; avoid noisy console
+                    if (!isLocalhost) console.warn("AdSense push failed:", e);
                  }
              }
         }
@@ -91,6 +95,9 @@ const AdBanner: React.FC<AdBannerProps> = ({ variant = 'leaderboard', className 
         if (intervalId) clearInterval(intervalId);
     };
   }, [resolvedSlotId, isLoaded]); 
+
+  // On localhost, skip AdSense entirely (403, CORS, TagError)
+  if (isLocalhost) return null;
 
   // On Android, AdMob banner is shown natively at the bottom
   // Return null or minimal placeholder to avoid layout issues

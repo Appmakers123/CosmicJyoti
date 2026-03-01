@@ -409,6 +409,7 @@ const App: React.FC = () => {
   }, []);
 
   const [horoscopePredictionPeriod, setHoroscopePredictionPeriod] = useState<HoroscopePeriod>('day');
+  const horoscopePeriodFetchRef = React.useRef<HoroscopePeriod | null>(null);
 
   const getCachedHoroscope = (signName: string, lang: Language, period: HoroscopePeriod): HoroscopeResponse | null => {
     const today = new Date().toDateString();
@@ -468,15 +469,34 @@ const App: React.FC = () => {
   const refetchHoroscopeWithPeriod = useCallback((period: HoroscopePeriod) => {
     if (!selectedSign) return;
     setHoroscopePredictionPeriod(period);
-    setLoading(true);
     setError(null);
+    // Use cached result for this period if we have it (instant switch, correct content)
+    const cached = getCachedHoroscope(selectedSign.name, language, period);
+    if (cached) {
+      setHoroscopeData(cached);
+      return;
+    }
+    setLoading(true);
+    horoscopePeriodFetchRef.current = period;
     generateHoroscope(selectedSign.name, language, period)
       .then((data) => {
-        setHoroscopeData(data);
-        setCachedHoroscope(selectedSign.name, language, data, period);
+        // Only apply result if this is still the period we're waiting for (avoids race)
+        if (horoscopePeriodFetchRef.current === period) {
+          setHoroscopeData(data);
+          setCachedHoroscope(selectedSign.name, language, data, period);
+        }
       })
-      .catch((err) => setErrorSafely(setError, err, language, 'Horoscope'))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (horoscopePeriodFetchRef.current === period) {
+          setErrorSafely(setError, err, language, 'Horoscope');
+        }
+      })
+      .finally(() => {
+        if (horoscopePeriodFetchRef.current === period) {
+          horoscopePeriodFetchRef.current = null;
+          setLoading(false);
+        }
+      });
   }, [selectedSign, language]);
 
   const loadSavedKundaliCharts = useCallback(() => {
@@ -1747,6 +1767,7 @@ const App: React.FC = () => {
               cachedAt={horoscopeCachedAt}
               predictionPeriod={horoscopePredictionPeriod}
               onPeriodChange={refetchHoroscopeWithPeriod}
+              periodLoading={loading}
             />
           ) : (
             <div className="animate-fade-in space-y-6 max-w-md mx-auto px-4 py-12 text-center">

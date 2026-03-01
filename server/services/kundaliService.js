@@ -1,8 +1,7 @@
 import https from 'https';
 import axios from 'axios';
 import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
-
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
+import { getUrl } from '../lib/freeAstrologyApi.js';
 
 // On Windows/corporate networks, "unable to get local issuer certificate" can occur.
 // Set NODE_TLS_REJECT_UNAUTHORIZED=0 or ALLOW_INSECURE_SSL=1 in .env (dev only) to skip SSL verify for outbound requests.
@@ -134,7 +133,7 @@ export async function generateKundali(formData, language = 'en') {
     try {
       const d1ChartResponse = await postWithKeyRotation(
         axiosWithTls,
-        `${ASTROLOGY_API_BASE}/horoscope-chart-url`,
+        getUrl('horoscopeChartUrl'),
         chartPayload
       );
 
@@ -170,7 +169,7 @@ export async function generateKundali(formData, language = 'en') {
     try {
       const d1Response = await postWithKeyRotation(
         axiosWithTls,
-        `${ASTROLOGY_API_BASE}/planets`,
+        getUrl('planets'),
         d1Payload
       );
 
@@ -197,7 +196,7 @@ export async function generateKundali(formData, language = 'en') {
     try {
       const d9Response = await postWithKeyRotation(
         axiosWithTls,
-        `${ASTROLOGY_API_BASE}/navamsa-chart-info`,
+        getUrl('navamsaChartInfo'),
         d9Payload
       );
 
@@ -218,7 +217,7 @@ export async function generateKundali(formData, language = 'en') {
     try {
       const d9ChartResponse = await postWithKeyRotation(
         axiosWithTls,
-        `${ASTROLOGY_API_BASE}/navamsa-chart-svg-code`,
+        getUrl('navamsaChartSvgCode'),
         d9Payload
       );
 

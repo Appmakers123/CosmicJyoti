@@ -1,7 +1,5 @@
 import axios from 'axios';
-import { postWithKeyRotation } from '../utils/astrologyApiKeys.js';
-
-const ASTROLOGY_API_BASE = process.env.ASTROLOGY_API_BASE_URL || 'https://json.freeastrologyapi.com';
+import { post } from '../lib/freeAstrologyApi.js';
 
 /**
  * Generate Matchmaking (Guna Milan) report
@@ -17,7 +15,7 @@ export async function generateMatchmaking(boy, girl, language = 'en') {
 
     // Get planetary positions for both (with key rotation)
     const [boyResponse, girlResponse] = await Promise.all([
-      postWithKeyRotation(axios, `${ASTROLOGY_API_BASE}/planets`, {
+      post('planets', {
         year: boyDt.year,
         month: boyDt.month,
         date: boyDt.date,
@@ -33,7 +31,7 @@ export async function generateMatchmaking(boy, girl, language = 'en') {
           language: language === 'hi' ? 'hi' : 'en'
         }
       }),
-      postWithKeyRotation(axios, `${ASTROLOGY_API_BASE}/planets`, {
+      post('planets', {
         year: girlDt.year,
         month: girlDt.month,
         date: girlDt.date,
@@ -53,9 +51,12 @@ export async function generateMatchmaking(boy, girl, language = 'en') {
 
     let boyData = boyResponse.data;
     let girlData = girlResponse.data;
-    
-    if (boyData.output) boyData = boyData.output;
-    if (girlData.output) girlData = girlData.output;
+
+    if (boyData && typeof boyData === 'object' && boyData.output) boyData = boyData.output;
+    if (girlData && typeof girlData === 'object' && girlData.output) girlData = girlData.output;
+
+    boyData = normalizePlanetsResponse(boyData);
+    girlData = normalizePlanetsResponse(girlData);
 
     // Calculate Ashtakoot matching
     const ashtakootScore = calculateAshtakoot(boyData, girlData, language);
@@ -84,13 +85,38 @@ export async function generateMatchmaking(boy, girl, language = 'en') {
 }
 
 /**
+ * Normalize planets API response to { Moon: {}, Sun: {}, ... } so Ashtakoot logic always has a shape it expects.
+ */
+function normalizePlanetsResponse(data) {
+  if (!data || typeof data !== 'object') {
+    return { Moon: { zodiac_sign_name: 'Aries', nakshatra_name: 'Ashwini' } };
+  }
+  if (data.Moon && typeof data.Moon === 'object') {
+    return data; // already normalized
+  }
+  if (Array.isArray(data.planets)) {
+    const out = {};
+    for (const p of data.planets) {
+      const name = p.name || p.planet_name || p.planet;
+      if (name) out[name] = p;
+    }
+    if (out.Moon) return out;
+  }
+  const moon = data.Moon || data.moon;
+  if (moon && typeof moon === 'object') {
+    return { ...data, Moon: moon };
+  }
+  return { Moon: { zodiac_sign_name: 'Aries', nakshatra_name: 'Ashwini' } };
+}
+
+/**
  * Calculate Ashtakoot (8 Gunas) matching - Proper Vedic calculation
  */
 function calculateAshtakoot(boyData, girlData, language = 'en') {
-  const boyMoonSign = getSignNumber(boyData.Moon?.zodiac_sign_name || 'Aries');
-  const girlMoonSign = getSignNumber(girlData.Moon?.zodiac_sign_name || 'Aries');
-  const boyNakshatra = boyData.Moon?.nakshatra_name || 'Ashwini';
-  const girlNakshatra = girlData.Moon?.nakshatra_name || 'Ashwini';
+  const boyMoonSign = getSignNumber((boyData && boyData.Moon?.zodiac_sign_name) || 'Aries');
+  const girlMoonSign = getSignNumber((girlData && girlData.Moon?.zodiac_sign_name) || 'Aries');
+  const boyNakshatra = (boyData && boyData.Moon?.nakshatra_name) || 'Ashwini';
+  const girlNakshatra = (girlData && girlData.Moon?.nakshatra_name) || 'Ashwini';
   
   // 1. Varna (1 point) - Based on Moon sign
   const varna = calculateVarna(boyMoonSign, girlMoonSign);
@@ -458,13 +484,17 @@ async function getCoordinates(location) {
  */
 function parseDateTime(dateStr, timeStr) {
   const date = new Date(dateStr);
-  const [hours, minutes] = timeStr.split(':').map(Number);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid date: ${dateStr}`);
+  }
+  const t = String(timeStr || '0:0').trim();
+  const [hours, minutes] = t.split(':').map(Number);
   return {
     year: date.getFullYear(),
     month: date.getMonth() + 1,
     date: date.getDate(),
-    hours: hours || 0,
-    minutes: minutes || 0,
+    hours: Number.isFinite(hours) ? hours : 0,
+    minutes: Number.isFinite(minutes) ? minutes : 0,
     seconds: 0
   };
 }

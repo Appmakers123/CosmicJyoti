@@ -336,45 +336,107 @@ export const generateMobileNumerologyAnalysis = async (mobileNumber: string, lan
 export type HoroscopePeriod = 'day' | 'week' | 'month' | 'year';
 
 export const generateHoroscope = async (signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> => {
-  // 1. Try Perplexity first (web-grounded) – only for daily; other periods use backend/Gemini
-  if (period === 'day' && hasPerplexityKey()) {
+  // 1. Perplexity only from server (no CORS from browser; API keys must not be exposed client-side)
+  const canUsePerplexity = typeof window === 'undefined' && period === 'day' && hasPerplexityKey();
+  if (canUsePerplexity) {
     try {
       return await generateHoroscopeFromPerplexity(signName, language);
     } catch (error: any) {
       console.warn('Perplexity horoscope failed, trying backend:', error?.message);
     }
   }
-  // 2. Try backend API
+  // 2. Try backend API (when available)
+  let backendResponse: any = null;
   try {
-    const backendResponse = await generateHoroscopeFromBackend(signName, new Date().toISOString().split('T')[0], language, period);
+    backendResponse = await generateHoroscopeFromBackend(signName, new Date().toISOString().split('T')[0], language, period);
     const h = backendResponse.horoscope;
-    const horoscope = typeof h === 'string' ? h : (typeof h?.general === 'string' ? h.general : (h ? String(h) : 'Horoscope analysis in progress...'));
+    const horoscope = typeof h === 'string' ? h : (typeof h?.general === 'string' ? h.general : (h ? String(h) : ''));
+    const text = (horoscope || '').trim();
+    // For week/month, require formatted content (## sections); otherwise use Gemini direct. Same for any short/basic fallback.
+    const isShortOrBasic = text.length < 200 || /today brings mixed results|success in professional field/i.test(text);
+    const missingFormat = (period === 'week' || period === 'month') && !/##\s*(Intro|Career|Love|Health|Finance)/i.test(text);
+    const useGeminiFallback = (isShortOrBasic || missingFormat) && text.length > 0 && hasGeminiKeys();
+    if (useGeminiFallback) {
+      try {
+        if (missingFormat) console.warn('Backend response missing format for', period, ', using Gemini');
+        else console.warn('Backend returned basic horoscope, using Gemini for detailed content');
+        return await generateHoroscopeDirect(signName, language, period);
+      } catch (e) {
+        // Fall through to use backend response below
+      }
+    }
+    if (text.length > 0) {
+      return {
+        horoscope: text,
+        luckyNumber: backendResponse.luckyNumber ?? Math.floor(Math.random() * 9) + 1,
+        luckyColor: backendResponse.luckyColor || 'Gold',
+        mood: backendResponse.mood || 'Balanced',
+        compatibility: backendResponse.horoscope?.love || ''
+      };
+    }
+  } catch (error: any) {
+    console.warn('Backend horoscope failed for', period, ', using Gemini:', error?.message);
+  }
+  // 3. Use Gemini direct when backend unavailable, returned basic, or for week/month when response was poor
+  if (hasGeminiKeys()) {
+    try {
+      return await generateHoroscopeDirect(signName, language, period);
+    } catch (e) {
+      console.warn('Gemini direct failed for', period, e);
+    }
+  }
+  // 4. No Gemini key in frontend: return backend basic response if we have it, else throw helpful error
+  if (backendResponse) {
+    const h = backendResponse.horoscope;
+    const text = typeof h === 'string' ? h : (typeof h?.general === 'string' ? h.general : (h ? String(h) : 'Horoscope analysis in progress...'));
     return {
-      horoscope: horoscope || 'Horoscope analysis in progress...',
-      luckyNumber: backendResponse.luckyNumber || Math.floor(Math.random() * 9) + 1,
+      horoscope: text || 'Horoscope analysis in progress...',
+      luckyNumber: backendResponse.luckyNumber ?? Math.floor(Math.random() * 9) + 1,
       luckyColor: backendResponse.luckyColor || 'Gold',
       mood: backendResponse.mood || 'Balanced',
       compatibility: backendResponse.horoscope?.love || ''
     };
-  } catch (error: any) {
-    console.warn('Backend horoscope failed, using Gemini fallback:', error?.message);
-    return await generateHoroscopeDirect(signName, language, period);
   }
+  throw new Error('Horoscope unavailable. Add GEMINI_API_KEYS to server .env.local, or VITE_GEMINI_API_KEY (or API_KEY) to .env.local for frontend.');
 };
 
   async function generateHoroscopeDirect(signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> {
       const today = new Date().toDateString();
       const periodLabel = period === 'day' ? 'today' : period === 'week' ? 'this week' : period === 'month' ? 'this month' : 'this year';
+      const periodDetail = period === 'day' ? 'daily' : period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : 'yearly';
       return (async () => {
         const ai = getAI();
       const languageName = getLanguageName(language);
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview", 
-        contents: `Give a ${period} horoscope (${periodLabel}) for ${signName}. Date: ${today}. IMPORTANT: Respond in ${languageName} language.
-Format the horoscope field with: brief intro, then bullet points (* or -) for Career, Love, Health, Finance. Use **bold** for key words. For week/month/year cover the overall theme and key dates or phases.`,
+        contents: `Write a DETAILED ${periodDetail} horoscope for ${signName} (${periodLabel}). Date: ${today}. Language: ${languageName}.
+
+OUTPUT FORMAT (use exactly these markdown headers in the horoscope string):
+## Intro
+(2-3 sentences summarizing ${periodDetail} energy for ${signName}.)
+
+## Career
+(2-4 bullet points or short paragraph: work, opportunities, challenges. Use **bold** for key terms.)
+
+## Love
+(2-4 bullet points: relationships, romance. Use **bold** for key terms.)
+
+## Health
+(2-4 bullet points: wellbeing, energy. Use **bold** for key terms.)
+
+## Finance
+(2-4 bullet points: money, investments. Use **bold** for key terms.)
+${period !== 'day' ? `
+## Overall theme
+(2-3 sentences for the ${periodDetail} period.)
+
+## Key dates or phases
+(2-3 bullet points with dates or phases to watch.)` : ''}
+
+RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respond in ${languageName}.`,
         config: {
           tools: [{ googleSearch: {} }],
-          systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Use bullet points and **bold** for emphasis. Deterministic output.`,
+          systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Output the horoscope field as markdown with ## headers (Intro, Career, Love, Health, Finance). Use - for bullets and **bold** for key words. Deterministic output.`,
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
@@ -2568,16 +2630,31 @@ export const generateAstroRiddles = async (language: Language): Promise<any[]> =
 // ... remaining stubs for compatibility features
 export const generateMatchMaking = async (boy: MatchMakingInput, girl: MatchMakingInput, language: Language): Promise<MatchMakingResponse> => {
     try {
-        // Use backend API
+        // Use backend API (when server is running, e.g. npm run server)
         const backendResponse = await generateMatchmakingFromBackend(boy, girl, language);
         return {
             ashtakoot_score: backendResponse.ashtakoot_score,
             conclusion: backendResponse.conclusion
         };
     } catch (error: any) {
-        console.error('Backend matchmaking failed, using fallback:', error);
-        // Fallback to original implementation
-        return await generateMatchMakingDirect(boy, girl, language);
+        const backendUnavailable = error?.message?.includes('Backend not reachable') || error?.message?.includes('Failed to fetch');
+        if (backendUnavailable) {
+            console.warn('Backend matchmaking unavailable. Start server with: npm run server');
+        } else {
+            console.error('Backend matchmaking failed:', error);
+        }
+        try {
+            return await generateMatchMakingDirect(boy, girl, language);
+        } catch (directError: any) {
+            const msg = directError?.message || String(directError);
+            const is503 = msg.includes('503') || msg.includes('Service Unavailable');
+            if (backendUnavailable && is503) {
+                throw new Error(
+                    'Matchmaking needs the backend server. Run in terminal: npm run server  (then keep it running and try again). Or run both app and server: npm run dev:all'
+                );
+            }
+            throw directError;
+        }
     }
 };
 

@@ -22,6 +22,8 @@ interface HoroscopeCardProps {
   predictionPeriod?: HoroscopePeriod;
   /** When user changes period, refetch with new period */
   onPeriodChange?: (period: HoroscopePeriod) => void;
+  /** True while period (day/week/month/year) is being fetched */
+  periodLoading?: boolean;
 }
 
 const PERIOD_LABELS: Record<HoroscopePeriod, { en: string; hi: string }> = {
@@ -31,7 +33,7 @@ const PERIOD_LABELS: Record<HoroscopePeriod, { en: string; hi: string }> = {
   year: { en: 'Year', hi: 'साल' },
 };
 
-const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, personalizedName, onBack, cachedAt, predictionPeriod = 'day', onPeriodChange }) => {
+const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, personalizedName, onBack, cachedAt, predictionPeriod = 'day', onPeriodChange, periodLoading = false }) => {
   const t = useTranslation(language);
   const cachedDate = cachedAt ? (() => { try { return new Date(cachedAt).toLocaleDateString(undefined, { dateStyle: 'medium' }); } catch { return cachedAt; } })() : null;
   // Format date based on language
@@ -105,6 +107,21 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
         <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-amber-500/10 to-transparent"></div>
         <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
+        {/* Period loading overlay */}
+        {periodLoading && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm rounded-3xl" aria-live="polite">
+            <div className="flex flex-col items-center gap-4">
+              <svg className="w-12 h-12 text-amber-400 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" className="opacity-25" />
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+              <p className="text-amber-200 font-medium text-sm">
+                {language === 'hi' ? 'लोड हो रहा है...' : 'Loading...'}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Content */}
         <div className="relative z-10 p-8 md:p-12">
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -139,7 +156,8 @@ const HoroscopeCard: React.FC<HoroscopeCardProps> = ({ data, sign, language, per
                   key={p}
                   type="button"
                   onClick={() => onPeriodChange(p)}
-                  className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  disabled={periodLoading}
+                  className={`min-h-[36px] px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
                     predictionPeriod === p ? 'bg-amber-600 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-amber-200'
                   }`}
                 >

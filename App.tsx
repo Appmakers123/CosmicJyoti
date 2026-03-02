@@ -954,7 +954,10 @@ const App: React.FC = () => {
       document.head.appendChild(ogDesc);
     }
     ogDesc.setAttribute('content', description);
-    const baseUrl = typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname || '/').replace(/\/?$/, '')) : 'https://www.cosmicjyoti.com';
+    const canonicalBase = 'https://www.cosmicjyoti.com';
+    const baseUrl = typeof window !== 'undefined' && (window.location.hostname === 'cosmicjyoti.com' || window.location.hostname === 'www.cosmicjyoti.com')
+      ? canonicalBase
+      : (typeof window !== 'undefined' ? (window.location.origin + (window.location.pathname || '/').replace(/\/?$/, '')) : canonicalBase);
     const canonicalUrl = mode === 'hub' ? `${baseUrl}/` : `${baseUrl}/?mode=${mode}`;
     let linkCanonical = document.querySelector('link[rel="canonical"]');
     if (!linkCanonical) {

@@ -1395,6 +1395,15 @@ const App: React.FC = () => {
 
         {mode === 'hub' && !loading && (
           <div className="animate-fade-in-up space-y-10 md:space-y-14 pb-8">
+            {/* Policy-compliant disclaimer notice – visible on hub */}
+            <div className="rounded-xl border border-amber-500/20 bg-slate-800/50 px-4 py-2.5 text-center">
+              <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                {t.disclaimerBanner}{' '}
+                <a href="/terms-of-service.html#disclaimers" className="text-amber-400 hover:text-amber-300 underline font-medium">{language === 'hi' ? 'शर्तें' : 'Terms'}</a>
+                {' · '}
+                <a href="/privacy-policy.html" className="text-amber-400 hover:text-amber-300 underline font-medium">{language === 'hi' ? 'गोपनीयता' : 'Privacy'}</a>
+              </p>
+            </div>
             {/* Hero + primary CTA – one clear action for new users */}
             <div className="text-center space-y-4">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-white to-amber-200">CosmicJyoti</h2>
@@ -1999,6 +2008,16 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Important Disclaimer - policy-aligned */}
+          <section className="border-t border-slate-800/50 pt-6 sm:pt-8 mb-6 sm:mb-8" aria-labelledby="footer-disclaimer-heading">
+            <h2 id="footer-disclaimer-heading" className="text-amber-300 font-serif font-bold text-sm sm:text-base uppercase tracking-wider mb-3 text-center md:text-left">
+              {t.disclaimerTitle}
+            </h2>
+            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-4xl">
+              {t.disclaimerBody}
+            </p>
+          </section>
 
           {/* Bottom Bar */}
           <div className="border-t border-slate-800/50 pt-6 sm:pt-8">

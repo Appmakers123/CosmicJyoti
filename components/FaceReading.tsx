@@ -170,7 +170,7 @@ const FaceReading: React.FC<FaceReadingProps> = ({ language }) => {
             </label>
           ) : (
             <div className="relative w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl">
-              <img src={previewUrl} alt="Face" className="w-full h-auto" />
+              <img src={previewUrl} alt="Face photo for Samudrik Shastra face reading" className="w-full h-auto" />
               <button
                 type="button"
                 onClick={() => {

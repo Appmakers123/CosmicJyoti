@@ -49,7 +49,8 @@ Prioritised by impact and feasibility.
      `https://www.cosmicjyoti.com/blog/2026-02-25-daily-horoscope-february-25-2026/`  
    - Same for daily Panchang, Muhurat, “Key astrological events”, etc.  
    - Needed for Google News and better SEO (unique, shareable links).  
-   - *Done: static pages at `/blog/{YYYY-MM-DD-slug}/`, feed/sitemaps and article.html use these URLs; old `?id=` links redirect to the permanent URL.*
+   - *Done: static pages at `/blog/{YYYY-MM-DD-slug}/`, feed/sitemaps and article.html use these URLs; old `?id=` links redirect to the permanent URL.*  
+   - Static blog and AI article pages show a visible “Permanent link: &lt;canonical URL&gt;” at the bottom. Configure the host to **rewrite** `/blog/:id/` → `/blog/article.html` (or `?id=:id`) so AI article URLs resolve; see `docs/HOST_REDIRECTS.md` (Blog: AI article permanent URLs).
 
 2. **Visible publication date on every article**  
    - Show **date and time** (e.g. “25 Feb 2026, 6:00 AM IST”) between headline and body.  

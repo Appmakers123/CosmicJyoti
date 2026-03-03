@@ -62,7 +62,7 @@ const MysticLens: React.FC<MysticLensProps> = ({ language }) => {
             </label>
           ) : (
             <div className="w-full max-w-sm rounded-2xl overflow-hidden border border-slate-700 shadow-2xl relative">
-                <img src={previewUrl} alt="Lens" className="w-full h-auto" />
+                <img src={previewUrl} alt="Mystic lens or uploaded image for cosmic reading" className="w-full h-auto" />
                 {loading && <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center"><div className="w-10 h-10 border-2 border-purple-500 border-t-transparent animate-spin rounded-full"></div></div>}
                 <button onClick={() => setPreviewUrl(null)} className="absolute top-2 right-2 bg-slate-900/80 p-2 rounded-full text-white">×</button>
             </div>

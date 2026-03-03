@@ -74,6 +74,11 @@
         var params = new URLSearchParams(window.location.search);
         var slug = params.get('id');
         var pathname = window.location.pathname || '';
+        // When host rewrites /blog/:id/ to this file, pathname is /blog/XXX/ and there is no ?id= — get id from path
+        if (!slug && pathname.indexOf('/blog/') === 0) {
+            var match = pathname.replace(/\/$/, '').split('/blog/')[1];
+            if (match && match.indexOf('/') === -1) slug = decodeURIComponent(match);
+        }
         if (slug && (pathname.endsWith('article.html') || pathname.endsWith('/article'))) {
             var newPath = '/blog/' + encodeURIComponent(slug) + '/';
             if (window.location.pathname !== newPath) {
@@ -121,6 +126,10 @@
             var ogUrl = document.querySelector('meta[property="og:url"]');
             if (!ogUrl) { ogUrl = document.createElement('meta'); ogUrl.setAttribute('property', 'og:url'); document.head.appendChild(ogUrl); }
             ogUrl.content = articleUrl;
+            var articleImage = post.imageUrl || baseUrl + '/app-logo.png';
+            var ogImage = document.querySelector('meta[property="og:image"]');
+            if (!ogImage) { ogImage = document.createElement('meta'); ogImage.setAttribute('property', 'og:image'); document.head.appendChild(ogImage); }
+            ogImage.content = articleImage;
             var articleUrlHi = baseUrl + '/hi/blog/' + encodeURIComponent(articleId) + '/';
             [ { hreflang: 'en', href: articleUrl }, { hreflang: 'hi', href: articleUrlHi }, { hreflang: 'x-default', href: articleUrl } ].forEach(function(alt) {
                 var link = document.createElement('link');
@@ -159,17 +168,20 @@
                 datePublished: datePublishedISO,
                 dateModified: dateModifiedISO,
                 author: { '@type': 'Person', name: 'Nikesh Maurya', url: baseUrl + '/about.html' },
-                publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: baseUrl + '/app-logo.png' } },
+                publisher: { '@type': 'Organization', name: 'CosmicJyoti', url: baseUrl, logo: { '@type': 'ImageObject', url: baseUrl + '/app-logo.png' } },
                 mainEntityOfPage: { '@type': 'WebPage', '@id': articleUrl },
-                image: baseUrl + '/app-logo.png'
+                image: [articleImage]
             };
             var schemaEl = document.createElement('script');
             schemaEl.type = 'application/ld+json';
             schemaEl.textContent = JSON.stringify(schema);
             document.head.appendChild(schemaEl);
             var visibleDateStr = pubDate ? new Date(pubDate + 'T06:00:00+05:30').toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '';
+            var imgSrc = post.imageUrl ? ('/blog/images/' + encodeURIComponent(articleId) + '.png') : '/app-logo.png';
+            var imageBlock = '<figure class="my-6"><img src="' + esc(imgSrc) + '" alt="" class="w-full max-w-2xl rounded-xl border border-slate-600" loading="lazy" /></figure>';
             body.innerHTML = '<h1 class="gradient-text text-2xl sm:text-3xl mb-4">' + esc(post.title) + '</h1>' +
                 '<p class="text-slate-400 text-sm mb-6"><time datetime="' + (datePublishedISO || '') + '">Published: ' + visibleDateStr + '</time> | By Nikesh Maurya | ' + (post.readingTime || '5 min read') + '</p>' +
+                imageBlock +
                 '<div class="article-body">' + post.content + '</div>' +
                 ctaHtml +
                 relatedHtml +

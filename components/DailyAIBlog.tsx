@@ -16,6 +16,7 @@ interface DailyPost {
   excerpt: string;
   content?: string;
   readingTime?: string;
+  imageUrl?: string;
   topic?: string;
   serviceMode?: string;
   serviceLabel?: string;
@@ -223,9 +224,10 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
     );
   }
 
+  /** Permanent URL for each article (Google News compliant). Format: /blog/{articleId}/ */
   const articleUrl = (post: DailyPost) => {
     const id = post.articleId || post.id || (post.date ? `${post.date}-${post.slug}` : post.slug);
-    return `/blog/article.html?id=${encodeURIComponent(id)}`;
+    return `/blog/${encodeURIComponent(id)}/`;
   };
 
   const fullArticleUrl = (post: DailyPost) => {
@@ -272,6 +274,8 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
     const post = selectedPost;
     const tryMode = appModeFor(post);
     const tryUrl = serviceUrl(post);
+    const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+    const imageSrc = post.imageUrl ? `/blog/images/${articleId}.png` : '/app-logo.png';
     return (
       <section className="animate-fade-in-up bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -282,6 +286,9 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
           {post.date ? new Date(post.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'long' }) : ''}
           {post.readingTime && ` • ${post.readingTime}`}
         </p>
+        <figure className="my-6">
+          <img src={imageSrc} alt="" className="w-full max-w-2xl rounded-xl border border-slate-600" loading="lazy" />
+        </figure>
         {post.content ? (
           <div
             className="article-body prose prose-invert max-w-none text-slate-300 space-y-4 [&_h2]:text-amber-200 [&_h2]:text-lg [&_h2]:mt-6 [&_h3]:text-amber-100 [&_h3]:text-base [&_h3]:mt-4 [&_p]:leading-relaxed [&_ul]:list-disc [&_ul]:ml-6 [&_li]:mb-1"

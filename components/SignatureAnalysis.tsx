@@ -319,7 +319,7 @@ const SignatureAnalysis: React.FC<SignatureAnalysisProps> = ({ language }) => {
             </label>
             {previewUrl && (
               <div className="rounded-xl overflow-hidden border border-slate-600 max-h-48">
-                <img src={previewUrl} alt="Signature" className="w-full h-auto object-contain max-h-48 bg-slate-800" />
+                <img src={previewUrl} alt="User signature for graphology and handwriting analysis" className="w-full h-auto object-contain max-h-48 bg-slate-800" />
               </div>
             )}
           </div>

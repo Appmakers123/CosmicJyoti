@@ -172,7 +172,7 @@ const PalmReading: React.FC<PalmReadingProps> = ({ language }) => {
                     </label>
                 ) : (
                     <div className="relative w-full max-w-sm rounded-xl overflow-hidden border border-slate-700 shadow-2xl">
-                        <img ref={imgRef} src={previewUrl} alt="Palm" className="w-full h-auto" />
+                        <img ref={imgRef} src={previewUrl} alt="Palm photo for Vedic palmistry and hand reading" className="w-full h-auto" />
                         <button onClick={() => {setPreviewUrl(null); setReading(null);}} className="absolute top-2 right-2 bg-slate-900/80 p-2 rounded-full text-white">×</button>
                     </div>
                 )}

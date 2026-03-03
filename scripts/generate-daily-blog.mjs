@@ -12,6 +12,8 @@
  * Usage:
  *   node scripts/generate-daily-blog.mjs [slot]
  *   slot = 6am | 12pm | 6pm | 9pm  (or morning | noon | evening | night)
+ *   Add --images to generate an AI image per new article (needs GEMINI_API_KEY; uses Imagen/Gemini image models).
+ *   Or set ENABLE_ARTICLE_IMAGES=1 in .env.
  *
  * Requires at least one of:
  *   PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local
@@ -144,6 +146,57 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Generate one article image using Gemini/Imagen and save to public/blog/images/{articleId}.png.
+ * Returns full image URL on success, null on failure (no API key, unsupported model, or save error).
+ * Enable with ENABLE_ARTICLE_IMAGES=1 or --images. Requires GEMINI_API_KEY.
+ */
+async function generateArticleImage(title, excerpt, articleId, apiKey) {
+  if (!apiKey || !articleId) return null;
+  const safeTitle = (title || 'Vedic astrology').slice(0, 80).replace(/[^\w\s\-.,]/g, '');
+  const prompt = `Generate a single, serene illustration for a blog article. Theme: Vedic astrology, cosmic, mystical. Title context: "${safeTitle}". Style: warm amber and gold tones, subtle celestial elements, no text or words in the image, suitable for a family-friendly astrology website. One image only.`;
+  if (!fs.existsSync(BLOG_IMAGES_DIR)) fs.mkdirSync(BLOG_IMAGES_DIR, { recursive: true });
+  const outPath = path.join(BLOG_IMAGES_DIR, `${articleId}.png`);
+
+  for (const model of IMAGE_GEN_MODELS) {
+    try {
+      const url = `${GEMINI_API_BASE}/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseModalities: ['IMAGE'],
+          },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        if (res.status === 404 || err.includes('not found') || err.includes('Invalid')) continue;
+        throw new Error(`${res.status}: ${err}`);
+      }
+      const data = await res.json();
+      const parts = data?.candidates?.[0]?.content?.parts || [];
+      for (const part of parts) {
+        const raw = part.inlineData?.data ?? part.inline_data?.data;
+        if (raw) {
+          const buf = Buffer.from(raw, 'base64');
+          fs.writeFileSync(outPath, buf);
+          return `${BASE_URL}/blog/images/${articleId}.png`;
+        }
+      }
+      if (parts.length && !parts.some((p) => p.inlineData?.data || p.inline_data?.data)) {
+        console.warn(`  [image] ${model}: response had no image part (parts: ${parts.map((p) => Object.keys(p || {})).join(', ')})`);
+      }
+    } catch (e) {
+      if (e?.message?.includes('404') || e?.message?.includes('not found')) continue;
+      console.warn(`  [image] ${model}: ${e?.message || e}`);
+    }
+  }
+  return null;
+}
+
 async function generateWithGeminiOne(prompt, postCount, apiKey, model) {
   const systemContent = `You are an expert Vedic astrologer and content writer. Output ONLY valid JSON, no other text or markdown.`;
   const userContent = `${prompt}\n\nOutput a single JSON object with a "posts" array of exactly ${postCount} articles. No code fences, no explanation.`;
@@ -177,21 +230,27 @@ async function generateWithGemini(prompt, contextDate, postCount = 2) {
   const maxRetries = 3;
   const retryDelayMs = 12000;
 
+  const retryDelay503Ms = 20000;
   for (const model of GEMINI_MODELS) {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        if (attempt > 1) console.warn(`Gemini retry ${attempt}/${maxRetries} (${model}) after 429...`);
+        if (attempt > 1) console.warn(`Gemini retry ${attempt}/${maxRetries} (${model})...`);
         return await generateWithGeminiOne(prompt, postCount, apiKey, model);
       } catch (e) {
         const msg = e?.message || String(e);
         const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
-        if (is429 && attempt < maxRetries) {
-          console.warn(`Gemini ${model} rate limited (429). Waiting ${retryDelayMs / 1000}s before retry...`);
-          await sleep(retryDelayMs);
+        const is503 = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
+        const is5xx = msg.includes('500') || msg.includes('502');
+        const retryable = (is429 || is503 || is5xx) && attempt < maxRetries;
+        if (retryable) {
+          const delay = is503 || is5xx ? retryDelay503Ms : retryDelayMs;
+          const reason = is503 ? 'high demand (503)' : is429 ? 'rate limit (429)' : 'server error (5xx)';
+          console.warn(`Gemini ${model} ${reason}. Waiting ${delay / 1000}s before retry...`);
+          await sleep(delay);
           continue;
         }
-        if (is429 && attempt === maxRetries && GEMINI_MODELS.indexOf(model) < GEMINI_MODELS.length - 1) {
-          console.warn(`Gemini ${model} still rate limited. Trying next model...`);
+        if ((is429 || is503) && attempt === maxRetries && GEMINI_MODELS.indexOf(model) < GEMINI_MODELS.length - 1) {
+          console.warn(`Gemini ${model} still unavailable. Trying next model...`);
           break;
         }
         throw e;
@@ -267,11 +326,16 @@ ${content}`;
 }
 
 const BLOG_DIR = path.resolve(__dirname, '../public/blog');
+const BLOG_IMAGES_DIR = path.join(BLOG_DIR, 'images');
 const HI_BLOG_DIR = path.resolve(__dirname, '../public/hi/blog');
 const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
 const TRANSLATIONS_HI_PATH = path.join(BLOG_DIR, 'daily-posts-hi.json');
 const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
+
+/** Models that support image generation (Gemini/Imagen). Try in order. */
+/** Gemini Nano Banana (2.5 Flash Image) first; Nano Banana Pro (3 Pro Image) as fallback. */
+const IMAGE_GEN_MODELS = ['gemini-2.5-flash-image', 'gemini-3-pro-image-preview'];
 
 // All dashboard modules for 12pm slot – rotate daily so every module gets blog coverage
 const NOON_MODULES = [
@@ -653,6 +717,7 @@ function writeStaticArticlePages(allPosts) {
       relatedHtml += '</ul></div>';
     }
     const visibleDateStr = pubDate ? new Date(pubDate + 'T06:00:00+05:30').toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Kolkata' }) : '';
+    const articleImage = post.imageUrl || `${BASE_URL}/app-logo.png`;
     const schema = {
       '@context': 'https://schema.org',
       '@type': 'NewsArticle',
@@ -661,9 +726,9 @@ function writeStaticArticlePages(allPosts) {
       datePublished: datePublishedISO,
       dateModified: datePublishedISO,
       author: { '@type': 'Person', name: 'Nikesh Maurya', url: `${BASE_URL}/about.html` },
-      publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
+      publisher: { '@type': 'Organization', name: 'CosmicJyoti', url: BASE_URL, logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
       mainEntityOfPage: { '@type': 'WebPage', '@id': permalink },
-      image: `${BASE_URL}/app-logo.png`,
+      image: [articleImage],
     };
     const html = `<!DOCTYPE html>
 <html lang="en">
@@ -679,7 +744,7 @@ function writeStaticArticlePages(allPosts) {
     <meta property="og:title" content="${escapeHtml(title)} – CosmicJyoti">
     <meta property="og:description" content="${escapeHtml(desc)}">
     <meta property="og:url" content="${permalink}">
-    <meta property="og:image" content="${BASE_URL}/app-logo.png">
+    <meta property="og:image" content="${articleImage}">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3559865379099936" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -691,6 +756,7 @@ function writeStaticArticlePages(allPosts) {
     <article class="article-content" id="article-body">
         <h1 class="gradient-text text-2xl sm:text-3xl mb-4">${escapeHtml(title)}</h1>
         <p class="text-slate-400 text-sm mb-6"><time datetime="${escapeHtml(datePublishedISO || '')}">Published: ${escapeHtml(visibleDateStr)}</time> | By Nikesh Maurya | ${escapeHtml(post.readingTime || '5 min read')}</p>
+        <figure class="my-6"><img src="${post.imageUrl ? `/blog/images/${escapeHtml(articleId)}.png` : '/app-logo.png'}" alt="" class="w-full max-w-2xl rounded-xl border border-slate-600" loading="lazy" /></figure>
         <div class="article-body">${post.content || ''}</div>
         ${ctaHtml}
         ${relatedHtml}
@@ -794,8 +860,10 @@ function writeStaticArticlePagesHi(allPosts, hiTranslations = {}) {
     }
     let bodyBlock;
     if (hasFull) {
+      const imgSrcHi = post.imageUrl ? `/blog/images/${escapeHtml(articleId)}.png` : '/app-logo.png';
       bodyBlock = `<h1 class="gradient-text text-2xl sm:text-3xl mb-4">${escapeHtml(titleHi)}</h1>
         <p class="text-slate-400 text-sm mb-6"><time datetime="${escapeHtml(datePublishedISO || '')}">प्रकाशित: ${escapeHtml(visibleDateStr)}</time> | निकेश मौर्य द्वारा | ${escapeHtml(readingTimeHi)}</p>
+        <figure class="my-6"><img src="${imgSrcHi}" alt="" class="w-full max-w-2xl rounded-xl border border-slate-600" loading="lazy" /></figure>
         <div class="article-body">${contentHi}</div>
         ${ctaHtml}
         ${relatedHtml}
@@ -806,6 +874,7 @@ function writeStaticArticlePagesHi(allPosts, hiTranslations = {}) {
         <p><a href="${permalinkEn}" class="text-amber-400 hover:text-amber-300 font-semibold">अंग्रेज़ी में पढ़ें →</a></p>
         <p class="mt-8"><a href="${BASE_URL}/" class="text-amber-400 hover:text-amber-300">← होम पर वापस</a></p>`;
     }
+    const articleImageHi = post.imageUrl || `${BASE_URL}/app-logo.png`;
     const schema = hasFull ? {
       '@context': 'https://schema.org',
       '@type': 'NewsArticle',
@@ -814,9 +883,9 @@ function writeStaticArticlePagesHi(allPosts, hiTranslations = {}) {
       datePublished: datePublishedISO,
       dateModified: datePublishedISO,
       author: { '@type': 'Person', name: 'Nikesh Maurya', url: `${BASE_URL}/about.html` },
-      publisher: { '@type': 'Organization', name: 'CosmicJyoti', logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
+      publisher: { '@type': 'Organization', name: 'CosmicJyoti', url: BASE_URL, logo: { '@type': 'ImageObject', url: `${BASE_URL}/app-logo.png` } },
       mainEntityOfPage: { '@type': 'WebPage', '@id': permalinkHi },
-      image: `${BASE_URL}/app-logo.png`,
+      image: [articleImageHi],
     } : null;
     const html = `<!DOCTYPE html>
 <html lang="hi">
@@ -832,7 +901,7 @@ function writeStaticArticlePagesHi(allPosts, hiTranslations = {}) {
     <meta property="og:title" content="${escapeHtml(titleHi)} – CosmicJyoti">
     <meta property="og:description" content="${escapeHtml(descHi)}">
     <meta property="og:url" content="${permalinkHi}">
-    <meta property="og:image" content="${BASE_URL}/app-logo.png">
+    <meta property="og:image" content="${articleImageHi}">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>${hasFull ? stylesFull : stylesBase}</style>
@@ -964,6 +1033,11 @@ async function main() {
       } catch (geminiErr) {
         const geminiMsg = geminiErr?.message || String(geminiErr);
         console.error('Gemini fallback failed:', geminiMsg);
+        if (geminiMsg.includes('503') || geminiMsg.includes('UNAVAILABLE') || geminiMsg.includes('high demand')) {
+          console.error('');
+          console.error('--- Gemini 503 (high demand) ---');
+          console.error('Gemini is temporarily overloaded. Run the script again in a few minutes.');
+        }
         if (geminiMsg.includes('429') || geminiMsg.includes('RESOURCE_EXHAUSTED')) {
           console.error('');
           console.error('--- Gemini 429 (quota / rate limit) ---');
@@ -1018,6 +1092,27 @@ async function main() {
       serviceLabel: p.serviceLabel || p.topic,
     };
   });
+
+  const wantImages = process.env.ENABLE_ARTICLE_IMAGES === '1' || process.argv.includes('--images');
+  if (wantImages && getGeminiKey()) {
+    for (let i = 0; i < newPosts.length; i++) {
+      const post = newPosts[i];
+      const articleId = post.articleId || post.id;
+      process.stdout.write(`  Generating image for ${articleId?.slice(0, 45)}... `);
+      try {
+        const imageUrl = await generateArticleImage(post.title, post.excerpt, articleId, getGeminiKey());
+        if (imageUrl) {
+          post.imageUrl = imageUrl;
+          console.log('OK');
+        } else {
+          console.log('skip');
+        }
+      } catch (e) {
+        console.log('error:', e?.message || e);
+      }
+      if (i < newPosts.length - 1) await sleep(2000);
+    }
+  }
 
   let existingPosts = [];
   try {

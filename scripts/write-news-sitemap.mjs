@@ -22,7 +22,7 @@ const newsPosts = allPosts.filter((p) => {
 
 const newsUrls = newsPosts.map((p) => {
   const id = p.articleId || p.id || (p.date && p.slug ? `${p.date}-${p.slug}` : p.slug);
-  const loc = `${BASE_URL}/blog/article.html?id=${encodeURIComponent(id)}`;
+  const loc = `${BASE_URL}/blog/${encodeURIComponent(id)}/`;
   const pubDate = p.date || today;
   const isoDate = `${pubDate}T06:00:00+05:30`;
   const title = (p.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

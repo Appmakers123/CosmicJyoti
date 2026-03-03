@@ -98,6 +98,14 @@ function relevanceScore(post: DailyPost, q: string): number {
   return score;
 }
 
+/** Preload an article image so it's ready when user opens the article */
+function preloadArticleImage(post: DailyPost): void {
+  const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+  const src = post.imageUrl ? `/blog/images/${articleId}.png` : '/app-logo.png';
+  const img = new Image();
+  img.src = src;
+}
+
 const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule }) => {
   const [data, setData] = useState<DailyPostsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,6 +114,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
   const [topicFilter, setTopicFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState<DailyPost | null>(null);
+  const [articleImageLoaded, setArticleImageLoaded] = useState(false);
 
   useEffect(() => {
     fetch('/blog/daily-posts.json')
@@ -120,6 +129,11 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
       .catch(() => setError(true))
       .finally(() => setLoading(false));
   }, []);
+
+  // Reset image loaded state when switching to another article
+  useEffect(() => {
+    setArticleImageLoaded(false);
+  }, [selectedPost?.id]);
 
   // Read initial search/page from URL for indexing and shareable links
   useEffect(() => {
@@ -286,8 +300,17 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
           {post.date ? new Date(post.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'long' }) : ''}
           {post.readingTime && ` • ${post.readingTime}`}
         </p>
-        <figure className="my-6">
-          <img src={imageSrc} alt="" className="w-full max-w-2xl rounded-xl border border-slate-600" loading="lazy" />
+        <figure className="my-6 relative min-h-[200px]">
+          {!articleImageLoaded && (
+            <div className="absolute inset-0 max-w-2xl rounded-xl bg-slate-700/40 animate-pulse" aria-hidden />
+          )}
+          <img
+            src={imageSrc}
+            alt=""
+            className={`w-full max-w-2xl rounded-xl border border-slate-600 transition-opacity duration-300 ${articleImageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            loading="eager"
+            onLoad={() => setArticleImageLoaded(true)}
+          />
         </figure>
         {post.content ? (
           <div
@@ -360,6 +383,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
             key={post.id}
             className="block bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/40 hover:bg-slate-800/60 transition-all group cursor-pointer"
             onClick={() => { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); }}
+            onMouseEnter={() => preloadArticleImage(post)}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => { if (e.key === 'Enter') { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); } }}

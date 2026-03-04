@@ -54,6 +54,26 @@ Implement the same GET/POST contract on any backend (e.g. Vercel, Netlify, Cloud
 
 ---
 
+## Deployed site: why changes don’t show after push
+
+**`.env.local` is gitignored** — it is never pushed. So the live site does **not** get any variables from your local `.env.local`.
+
+To get sync (and other features) on the **deployed** site:
+
+1. **Set environment variables in your host** (Vercel, Netlify, etc.):
+   - **Vercel:** Project → Settings → Environment Variables  
+   - **Netlify:** Site → Site settings → Environment variables  
+   Add at least:
+   - `VITE_GOOGLE_CLIENT_ID` (for Google sign-in)
+   - `VITE_SYNC_API_URL` = your **production** API URL (e.g. `https://your-api.example.com/api/sync`), **not** `http://localhost:3001/...`
+   - Any other `VITE_*` keys the app needs (e.g. `VITE_PROFILE_SUBMIT_URL`).
+
+2. **Redeploy** after adding or changing variables (e.g. “Redeploy” in the dashboard, or push a new commit). New env values are applied only on the next build.
+
+3. **Hard refresh** the site (Ctrl+Shift+R) or clear cache so the browser loads the new JS.
+
+---
+
 ## Without a backend
 
 If `VITE_SYNC_API_URL` is not set:

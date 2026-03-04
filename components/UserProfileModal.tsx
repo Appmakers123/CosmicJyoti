@@ -5,6 +5,8 @@ import Logo from './Logo';
 import { BirthForm, FieldRow } from './profile';
 import { getGlobalProfile, saveGlobalProfile } from '../utils/profileStorageService';
 import { submitProfileWithConsent } from '../services/profileSubmissionService';
+import { saveUserData, getSyncApiUrl } from '../services/userSyncService';
+import GoogleLoginButton from './GoogleLoginButton';
 
 const emptySelf: KundaliFormData = {
   name: '',
@@ -24,13 +26,16 @@ interface UserProfileModalProps {
   onLogout: () => void;
   language: Language;
   onProfileSaved?: () => void;
+  /** When provided, show "Sign in with Google"; on success parent should set user and may close modal */
+  onGoogleSignIn?: (user: User) => void;
 }
 
-const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClose, onLogout, language, onProfileSaved }) => {
+const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClose, onLogout, language, onProfileSaved, onGoogleSignIn }) => {
   const t = useTranslation(language);
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [isLoading, setIsLoading] = useState(false);
+  const [syncSaving, setSyncSaving] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
   const [showPartner, setShowPartner] = useState(false);
 
@@ -52,6 +57,30 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
       setShowPartner(true);
     }
   }, []);
+
+  useEffect(() => {
+    const onProfileUpdated = () => {
+      const profile = getGlobalProfile();
+      if (profile?.self) setSelf((s) => ({ ...emptySelf, ...s, ...profile.self }));
+      if (profile?.partner) setPartner((p) => ({ ...emptySelf, ...p, ...profile.partner }));
+    };
+    window.addEventListener('cosmicjyoti_profile_updated', onProfileUpdated);
+    return () => window.removeEventListener('cosmicjyoti_profile_updated', onProfileUpdated);
+  }, []);
+
+  const handleSaveToAccount = async () => {
+    if (!user?.id) return;
+    setSyncSaving(true);
+    try {
+      const ok = await saveUserData(user.id);
+      alert(ok
+        ? (language === 'hi' ? 'आपकी जानकारी और रिपोर्ट आपके खाते में सहेजी गई।' : 'Your details and reports have been saved to your account.')
+        : (language === 'hi' ? 'सहेजने में त्रुटि। बाद में पुनः प्रयास करें।' : 'Error saving. Please try again later.')
+      );
+    } finally {
+      setSyncSaving(false);
+    }
+  };
 
   const handleSave = async () => {
     if (!consentGiven) {
@@ -137,13 +166,22 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
 
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
-            <Logo className="w-14 h-14" />
+            {user?.photoUrl ? (
+              <img
+                src={user.photoUrl}
+                alt=""
+                className="w-14 h-14 rounded-full border-2 border-amber-500/40 object-cover bg-slate-700"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <Logo className="w-14 h-14" />
+            )}
           </div>
           <h2 className="text-xl font-serif text-white mb-1">
             {language === 'hi' ? 'आपकी प्रोफ़ाइल' : 'Your Profile'}
           </h2>
           <p className="text-xs text-slate-500 mb-3">
-            {language === 'hi' ? 'सभी मॉड्यूल में ऑटो-भरने के लिए' : 'Auto-fills forms across all modules'}
+            {user?.name ? user.name : (language === 'hi' ? 'सभी मॉड्यूल में ऑटो-भरने के लिए' : 'Auto-fills forms across all modules')}
           </p>
           <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-left">
             <p className="text-emerald-200/90 text-xs flex items-start gap-2">
@@ -154,6 +192,38 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
         </div>
 
         <div className="space-y-5">
+          {onGoogleSignIn && import.meta.env.VITE_GOOGLE_CLIENT_ID && !user && (
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-xs text-slate-400">{language === 'hi' ? 'या Google से साइन इन करें' : 'Or sign in with Google'}</p>
+              <GoogleLoginButton
+                language={language}
+                onSuccess={(googleUser) => { onGoogleSignIn(googleUser); onClose(); }}
+                theme="outline"
+                size="medium"
+                text="signin_with"
+              />
+            </div>
+          )}
+          {user && getSyncApiUrl() && (
+            <div className="flex flex-col items-center gap-2 p-3 rounded-xl bg-slate-900/50 border border-amber-500/20">
+              <p className="text-xs text-slate-400 text-center">
+                {language === 'hi' ? 'प्रोफ़ाइल और सेव की गई रिपोर्ट आपके खाते में सिंक होंगी' : 'Profile and saved reports will sync to your account'}
+              </p>
+              <button
+                type="button"
+                onClick={handleSaveToAccount}
+                disabled={syncSaving}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-medium rounded-xl transition-colors"
+              >
+                {syncSaving ? (
+                  <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span aria-hidden>☁️</span>
+                )}
+                {syncSaving ? (language === 'hi' ? 'सहेज रहा है...' : 'Saving...') : (language === 'hi' ? 'खाते में सहेजें' : 'Save to my account')}
+              </button>
+            </div>
+          )}
           <div>
             <h3 className="text-sm font-bold text-amber-400/90 uppercase tracking-wider mb-3">
               {language === 'hi' ? 'खाता (वैकल्पिक)' : 'Account (Optional)'}

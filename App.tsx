@@ -70,6 +70,7 @@ import { getReportByForm, saveReport, listReports, getReport, deleteReport } fro
 import { getGlobalProfile, saveGlobalProfile } from './utils/profileStorageService';
 import { recordVisit, getStreak } from './utils/streakService';
 import { submitProfileWithConsent, isProfileSubmitEnabled } from './services/profileSubmissionService';
+import { fetchUserData, mergeUserDataIntoLocal } from './services/userSyncService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import { getPageMeta, getCanonicalPath } from './utils/pageMeta';
 import { getFavoriteModules, toggleFavorite } from './utils/favoriteModules';
@@ -290,15 +291,16 @@ const App: React.FC = () => {
     setKarmaBalance(getKarma());
   }, [showKarmaStore]);
 
-  // Check for existing user session on app start
+  // Check for existing user session on app start and restore synced profile + reports
   useEffect(() => {
     const checkExistingSession = async () => {
-      // Check localStorage for stored user
       const storedUser = localStorage.getItem('cosmicjyoti_user');
       if (storedUser) {
         try {
           const user = JSON.parse(storedUser) as User;
           setUser(user);
+          const data = await fetchUserData(user.id);
+          if (data) mergeUserDataIntoLocal(data);
         } catch (e) {
           console.warn('[Auth] Failed to parse stored user:', e);
         }
@@ -1132,6 +1134,14 @@ const App: React.FC = () => {
             localStorage.removeItem('cosmicjyoti_user');
             localStorage.removeItem('cosmicjyoti_auth_token');
           }}
+          onGoogleSignIn={async (googleUser) => {
+            setUser(googleUser);
+            localStorage.setItem('cosmicjyoti_user', JSON.stringify(googleUser));
+            if (googleUser.idToken) localStorage.setItem('cosmicjyoti_auth_token', googleUser.idToken);
+            setShowProfile(false);
+            const data = await fetchUserData(googleUser.id);
+            if (data) mergeUserDataIntoLocal(data);
+          }}
         />
       )}
       
@@ -1153,6 +1163,13 @@ const App: React.FC = () => {
         language={language}
         onOpenProfile={() => { setShowProfile(true); setHamburgerOpen(false); }}
         user={user}
+        onGoogleSignIn={async (googleUser) => {
+          setUser(googleUser);
+          localStorage.setItem('cosmicjyoti_user', JSON.stringify(googleUser));
+          if (googleUser.idToken) localStorage.setItem('cosmicjyoti_auth_token', googleUser.idToken);
+          const data = await fetchUserData(googleUser.id);
+          if (data) mergeUserDataIntoLocal(data);
+        }}
         onLogout={async () => {
           setUser(null);
           localStorage.removeItem('cosmicjyoti_user');

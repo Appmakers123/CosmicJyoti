@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { listReports, deleteReport, type SavedReportMeta } from '../utils/reportStorageService';
 import type { AppViewMode } from '../types';
 import type { Language } from '../types';
@@ -32,6 +32,12 @@ const MySavedReports: React.FC<MySavedReportsProps> = ({ language, onOpenMode, o
   const [reportList, setReportList] = useState<SavedReportMeta[]>(() => listReports());
   const isHi = language === 'hi';
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const onReportsUpdated = () => setReportList(listReports());
+    window.addEventListener('cosmicjyoti_reports_updated', onReportsUpdated);
+    return () => window.removeEventListener('cosmicjyoti_reports_updated', onReportsUpdated);
+  }, []);
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.preventDefault();

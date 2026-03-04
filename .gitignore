@@ -60,3 +60,6 @@ Thumbs.db
 # Build outputs
 *.log
 .cache/
+
+# User sync data (server stores profile + reports here)
+server/data/

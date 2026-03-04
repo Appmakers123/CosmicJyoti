@@ -3,6 +3,7 @@ import { Language, User, AppViewMode } from '../types';
 import { PLAY_STORE_URL } from '../constants';
 import { getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
 import MySavedReports from './MySavedReports';
+import GoogleLoginButton from './GoogleLoginButton';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ interface HamburgerMenuProps {
   onOpenProfile: () => void;
   user: User | null;
   onLogout: () => void;
+  /** When Google sign-in succeeds; parent should set user and persist */
+  onGoogleSignIn?: (user: User) => void;
 }
 
 const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
@@ -27,6 +30,7 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
   onOpenProfile,
   user,
   onLogout,
+  onGoogleSignIn,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -127,8 +131,12 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
               onClick={() => { onOpenProfile(); }}
               className="flex items-center gap-4 w-full min-h-[56px] px-4 py-3 rounded-xl bg-slate-800/60 hover:bg-slate-700/70 active:scale-[0.99] border border-slate-700/50 hover:border-amber-500/30 transition-all text-left touch-manipulation"
             >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 border border-amber-500/40 flex items-center justify-center text-xl font-bold text-amber-300 shrink-0">
-                {user ? user.name[0].toUpperCase() : '👤'}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/30 to-amber-600/20 border border-amber-500/40 flex items-center justify-center text-xl font-bold text-amber-300 shrink-0 overflow-hidden">
+                {user?.photoUrl ? (
+                  <img src={user.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  (user ? user.name[0].toUpperCase() : '👤')
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-base font-semibold text-white truncate">{user ? user.name : (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile')}</p>
@@ -138,6 +146,17 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
+            {!user && onGoogleSignIn && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+              <div className="pt-1">
+                <GoogleLoginButton
+                  language={language}
+                  onSuccess={(u) => { onGoogleSignIn(u); onClose(); }}
+                  theme="outline"
+                  size="medium"
+                  text="signin_with"
+                />
+              </div>
+            )}
             {user && (
               <button
                 onClick={() => { onLogout(); onClose(); }}

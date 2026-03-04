@@ -127,3 +127,21 @@ export function deleteReport(id: string): void {
     console.warn('[ReportStorage] Failed to delete:', e);
   }
 }
+
+/** Replace all reports (e.g. after restore from cloud). Clears existing then writes index + items. */
+export function replaceAllReports(index: SavedReportMeta[], reports: Record<string, SavedReport>): void {
+  try {
+    const existing = getIndex();
+    existing.forEach((m) => localStorage.removeItem(STORAGE_PREFIX + m.id));
+    saveIndex(index);
+    Object.entries(reports).forEach(([id, saved]) => {
+      try {
+        localStorage.setItem(STORAGE_PREFIX + id, JSON.stringify(saved));
+      } catch (e) {
+        console.warn('[ReportStorage] Failed to write restored report:', id, e);
+      }
+    });
+  } catch (e) {
+    console.warn('[ReportStorage] Failed to replace reports:', e);
+  }
+}

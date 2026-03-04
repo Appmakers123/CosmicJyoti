@@ -17,9 +17,36 @@ import { generatePredictions } from './services/predictionService.js';
 import { generateChartBasedHealthAnalysis } from './services/healthService.js';
 import { runRishiAgent } from './agent/rishiAgent.js';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// User sync: JSON file path (profile + saved reports by userId)
+const SYNC_DATA_DIR = path.join(__dirname, 'data');
+const SYNC_DATA_FILE = path.join(SYNC_DATA_DIR, 'userSync.json');
+
+function readSyncStore() {
+  try {
+    const raw = fs.readFileSync(SYNC_DATA_FILE, 'utf8');
+    const data = JSON.parse(raw);
+    return typeof data === 'object' && data !== null ? data : {};
+  } catch (e) {
+    if (e.code === 'ENOENT') return {};
+    console.warn('Sync store read error:', e.message);
+    return {};
+  }
+}
+
+function writeSyncStore(data) {
+  try {
+    if (!fs.existsSync(SYNC_DATA_DIR)) fs.mkdirSync(SYNC_DATA_DIR, { recursive: true });
+    fs.writeFileSync(SYNC_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Sync store write error:', e.message);
+    throw e;
+  }
+}
 // Load .env from server folder first, then from project root (so root .env or .env.local works)
 dotenv.config();
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
@@ -495,6 +522,48 @@ app.post('/api/tarot', async (req, res) => {
   } catch (error) {
     console.error('Tarot API error:', error);
     res.status(500).json({ error: error.message || 'Failed to generate Tarot reading' });
+  }
+});
+
+// User sync: profile + saved reports (GET = fetch, POST = save). No Firebase; stores in server/data/userSync.json.
+app.get('/api/sync', (req, res) => {
+  try {
+    const userId = req.query.userId;
+    if (!userId || typeof userId !== 'string') {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+    const store = readSyncStore();
+    const row = store[userId];
+    if (!row) {
+      return res.status(200).json({ profile: null, reports: { index: [], items: {} } });
+    }
+    res.status(200).json({
+      profile: row.profile ?? null,
+      reports: row.reports ?? { index: [], items: {} },
+    });
+  } catch (e) {
+    console.error('Sync GET error:', e);
+    res.status(500).json({ error: e.message || 'Sync failed' });
+  }
+});
+
+app.post('/api/sync', (req, res) => {
+  try {
+    const { userId, profile, reports } = req.body || {};
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
+    const store = readSyncStore();
+    store[userId] = {
+      profile: profile ?? null,
+      reports: reports ?? { index: [], items: {} },
+      updatedAt: new Date().toISOString(),
+    };
+    writeSyncStore(store);
+    res.status(200).json({ ok: true });
+  } catch (e) {
+    console.error('Sync POST error:', e);
+    res.status(500).json({ error: e.message || 'Sync failed' });
   }
 });
 

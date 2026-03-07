@@ -330,7 +330,6 @@ const BLOG_IMAGES_DIR = path.join(BLOG_DIR, 'images');
 const HI_BLOG_DIR = path.resolve(__dirname, '../public/hi/blog');
 const OUTPUT_PATH = path.join(BLOG_DIR, 'daily-posts.json');
 const TRANSLATIONS_HI_PATH = path.join(BLOG_DIR, 'daily-posts-hi.json');
-const MAX_POSTS = 100;
 const BASE_URL = 'https://www.cosmicjyoti.com';
 
 /** Models that support image generation (Gemini/Imagen). Try in order. */
@@ -1119,12 +1118,12 @@ async function main() {
     const raw = fs.readFileSync(OUTPUT_PATH, 'utf8');
     const existing = JSON.parse(raw);
     existingPosts = Array.isArray(existing.posts) ? existing.posts : [];
-    console.log(`Found ${existingPosts.length} existing posts (appending 2, max ${MAX_POSTS})`);
+    console.log(`Found ${existingPosts.length} existing posts (appending 2, no limit)`);
   } catch (e) {
     console.log('No existing daily-posts.json; starting fresh.');
   }
 
-  const allPosts = [...newPosts, ...existingPosts].slice(0, MAX_POSTS);
+  const allPosts = [...newPosts, ...existingPosts];
 
   const data = {
     lastGenerated: today,

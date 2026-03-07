@@ -70,15 +70,13 @@ import { getReportByForm, saveReport, listReports, getReport, deleteReport } fro
 import { getGlobalProfile, saveGlobalProfile } from './utils/profileStorageService';
 import { recordVisit, getStreak } from './utils/streakService';
 import { submitProfileWithConsent, isProfileSubmitEnabled } from './services/profileSubmissionService';
-import { fetchUserData, mergeUserDataIntoLocal } from './services/userSyncService';
+import { fetchUserData, mergeUserDataIntoLocal, saveUserData, getSyncApiUrl } from './services/userSyncService';
 import { useNetworkStatus } from './utils/useNetworkStatus';
 import { getPageMeta, getCanonicalPath } from './utils/pageMeta';
 import { getFavoriteModules, toggleFavorite } from './utils/favoriteModules';
 import { trackToolOpen, trackReviewPromptDismissed } from './utils/dataLayer';
 import OfflineBanner from './components/OfflineBanner';
-import AppDownloadModal from './components/AppDownloadModal';
 import AdWatchModal from './components/AdWatchModal';
-import AddToHomeScreenBanner from './components/AddToHomeScreenBanner';
 import CheckTodayOnboardingHint from './components/CheckTodayOnboardingHint';
 import StreakRewardToast from './components/StreakRewardToast';
 import InviteFriendBanner from './components/InviteFriendBanner';
@@ -372,7 +370,6 @@ const App: React.FC = () => {
   const [panchangCachedAt, setPanchangCachedAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showAppDownloadModal, setShowAppDownloadModal] = useState(false);
   const [streakCount, setStreakCount] = useState(0);
   const [showRemindToast, setShowRemindToast] = useState(false);
   const [profileVersion, setProfileVersion] = useState(0);
@@ -393,22 +390,6 @@ const App: React.FC = () => {
       }
     }
   }, [mode]);
-
-  // Show app download popup on web only, after delay, once per 7 days
-  useEffect(() => {
-    if (isCapacitor()) return;
-    const key = 'cosmicjyoti_app_download_seen';
-    const seen = localStorage.getItem(key);
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-    if (seen && Date.now() - parseInt(seen, 10) < sevenDaysMs) return;
-    const t = setTimeout(() => setShowAppDownloadModal(true), 4000);
-    return () => clearTimeout(t);
-  }, []);
-
-  const handleCloseAppDownloadModal = useCallback(() => {
-    setShowAppDownloadModal(false);
-    localStorage.setItem('cosmicjyoti_app_download_seen', String(Date.now()));
-  }, []);
 
   const [horoscopePredictionPeriod, setHoroscopePredictionPeriod] = useState<HoroscopePeriod>('day');
   const horoscopePeriodFetchRef = React.useRef<HoroscopePeriod | null>(null);
@@ -521,6 +502,31 @@ const App: React.FC = () => {
   useEffect(() => {
     if (mode === 'kundali' || mode === 'hub') loadSavedKundaliCharts();
   }, [mode, loadSavedKundaliCharts]);
+
+  // When reports are updated (e.g. after login merge), refresh saved Kundali list
+  useEffect(() => {
+    const onReportsUpdated = () => loadSavedKundaliCharts();
+    window.addEventListener('cosmicjyoti_reports_updated', onReportsUpdated);
+    return () => window.removeEventListener('cosmicjyoti_reports_updated', onReportsUpdated);
+  }, [loadSavedKundaliCharts]);
+
+  // Auto-sync save folder to user account when logged in and reports change (save/delete)
+  const syncToAccountRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    const onReportsChanged = () => {
+      if (!user?.id || !getSyncApiUrl()) return;
+      if (syncToAccountRef.current) clearTimeout(syncToAccountRef.current);
+      syncToAccountRef.current = setTimeout(() => {
+        syncToAccountRef.current = null;
+        saveUserData(user.id).catch(() => {});
+      }, 1500);
+    };
+    window.addEventListener('cosmicjyoti_reports_changed', onReportsChanged);
+    return () => {
+      window.removeEventListener('cosmicjyoti_reports_changed', onReportsChanged);
+      if (syncToAccountRef.current) clearTimeout(syncToAccountRef.current);
+    };
+  }, [user?.id]);
 
   const handleLoadChart = useCallback((chart: KundaliFormData) => {
     const report = chart.id ? getReport<KundaliResponse>(chart.id) : null;
@@ -1176,12 +1182,6 @@ const App: React.FC = () => {
           localStorage.removeItem('cosmicjyoti_auth_token');
         }}
       />
-      
-      <AppDownloadModal
-        isOpen={showAppDownloadModal}
-        onClose={handleCloseAppDownloadModal}
-        language={language}
-      />
       {showKarmaStore && (
         <KarmaStore
           language={language}
@@ -1247,7 +1247,6 @@ const App: React.FC = () => {
         }}
         refreshTrigger={chatRefreshKey}
       />
-      {!isCapacitor() && <AddToHomeScreenBanner language={language} />}
       {mode === 'hub' && [3, 7, 30].includes(streakCount) && (
         <StreakRewardToast language={language} streakCount={streakCount} onClose={() => {}} />
       )}

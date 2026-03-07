@@ -191,6 +191,24 @@ Ensure the trigger’s service account has permissions to deploy to Cloud Run an
 
 ---
 
+## Troubleshooting
+
+### "Container import failed" / "failed to convert config file to RiptideContainer" / "got 1 Manifest.Layers vs 0 ConfigFile.RootFS.DiffIDs"
+
+This usually means the container image has a manifest/config mismatch (e.g. from buildpacks or an Alpine-based image). Fixes:
+
+1. **Use the repo Dockerfiles** – They now use `node:20-bookworm-slim` and `--platform=linux/amd64` to avoid this. Ensure your Cloud Run **source deploy** or **Cloud Build** uses the Dockerfile (repo root `Dockerfile` or `server/Dockerfile` with build context = repo root), not buildpacks.
+
+2. **Build with Cloud Build (recommended)** – From repo root run:
+   ```bash
+   gcloud builds submit --config cloudbuild.yaml .
+   ```
+   Then deploy that image to Cloud Run. This uses `docker build` and the `server/Dockerfile`, which produces a valid image.
+
+3. **If you use "Deploy from source"** (e.g. GitHub → Cloud Run) – In the trigger or service settings, set the build to use the **Dockerfile** at the repo root (or `server/Dockerfile` with context = repo root). Do not use "Buildpacks" for this repo.
+
+---
+
 ## Quick reference
 
 | Item | Value |

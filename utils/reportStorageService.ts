@@ -72,6 +72,9 @@ export function saveReport<T>(type: ReportType, data: T, formInput?: Record<stri
   };
   try {
     doSave();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cosmicjyoti_reports_changed'));
+    }
   } catch (e: unknown) {
     const isQuotaExceeded = e instanceof DOMException && (e.name === 'QuotaExceededError' || e.code === 22);
     if (isQuotaExceeded) {
@@ -82,6 +85,9 @@ export function saveReport<T>(type: ReportType, data: T, formInput?: Record<stri
           toRemove.forEach((m) => localStorage.removeItem(STORAGE_PREFIX + m.id));
           saveIndex(index.slice(0, -10));
           doSave();
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cosmicjyoti_reports_changed'));
+          }
         }
       } catch (retryErr) {
         console.warn('[ReportStorage] Failed to save after quota clear:', retryErr);
@@ -123,6 +129,9 @@ export function deleteReport(id: string): void {
     localStorage.removeItem(STORAGE_PREFIX + id);
     const index = getIndex().filter((m) => m.id !== id);
     saveIndex(index);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('cosmicjyoti_reports_changed'));
+    }
   } catch (e) {
     console.warn('[ReportStorage] Failed to delete:', e);
   }

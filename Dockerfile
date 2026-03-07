@@ -1,6 +1,7 @@
 # CosmicJyoti Backend API - for Cloud Run (build context: repo root)
 # Same as server/Dockerfile; use this when Cloud Run expects /Dockerfile at root.
-FROM node:20-alpine
+# Use bookworm-slim (not alpine) to avoid Cloud Run "Manifest.Layers vs ConfigFile.RootFS.DiffIDs" image errors.
+FROM --platform=linux/amd64 node:20-bookworm-slim
 
 WORKDIR /app
 

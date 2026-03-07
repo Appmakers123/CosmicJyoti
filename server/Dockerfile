@@ -1,6 +1,7 @@
 # CosmicJyoti Backend API - No Vite/Rollup
 # Build context: repo root. Copy only server folder.
-FROM node:20-alpine
+# Use bookworm-slim (not alpine) to avoid Cloud Run "Manifest.Layers vs ConfigFile.RootFS.DiffIDs" image errors.
+FROM --platform=linux/amd64 node:20-bookworm-slim
 
 WORKDIR /app
 

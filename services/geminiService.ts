@@ -42,6 +42,14 @@ function cleanPredictionText(text: string | undefined): string {
 
 const MASTER_MENTOR_PROMPT = "You are a world-class mentor for CosmicJyoti. Your goal is to explain occult sciences like astrology, palmistry, and numerology with deep scholarly insight but simple words. IMPORTANT: You must respond ONLY in the language requested by the user. Use bullet points and clear headers.";
 
+/** Fallback order for horoscope: when primary model returns 503 / high demand, try next. */
+const HOROSCOPE_MODEL_FALLBACKS = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+function isRetryableGeminiError(e: unknown): boolean {
+  const msg = e instanceof Error ? e.message : String(e ?? '');
+  return /503|UNAVAILABLE|high demand|try again later/i.test(msg);
+}
+
 // Mentor-like tone: warm, human, supportive (MyNitya/Co-Star style)
 const MENTOR_TONE = `TONE & STYLE: Be like a wise, caring friend who truly understands. Use a warm, conversational tone—never robotic or cold. Show empathy. Acknowledge the user's feelings. Give practical, actionable advice. Be encouraging but honest. Use "you" and "your" naturally. Avoid jargon unless you explain it. Keep responses focused and digestible.`;
 
@@ -404,12 +412,9 @@ export const generateHoroscope = async (signName: string, language: Language = '
       const today = new Date().toDateString();
       const periodLabel = period === 'day' ? 'today' : period === 'week' ? 'this week' : period === 'month' ? 'this month' : 'this year';
       const periodDetail = period === 'day' ? 'daily' : period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : 'yearly';
-      return (async () => {
-        const ai = getAI();
+      const ai = getAI();
       const languageName = getLanguageName(language);
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview", 
-        contents: `Write a DETAILED ${periodDetail} horoscope for ${signName} (${periodLabel}). Date: ${today}. Language: ${languageName}.
+      const contents = `Write a DETAILED ${periodDetail} horoscope for ${signName} (${periodLabel}). Date: ${today}. Language: ${languageName}.
 
 OUTPUT FORMAT (use exactly these markdown headers in the horoscope string):
 ## Intro
@@ -433,36 +438,52 @@ ${period !== 'day' ? `
 ## Key dates or phases
 (2-3 bullet points with dates or phases to watch.)` : ''}
 
-RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respond in ${languageName}.`,
-        config: {
-          tools: [{ googleSearch: {} }],
-          systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Output the horoscope field as markdown with ## headers (Intro, Career, Love, Health, Finance). Use - for bullets and **bold** for key words. Deterministic output.`,
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              horoscope: { type: Type.STRING },
-              luckyNumber: { type: Type.INTEGER },
-              luckyColor: { type: Type.STRING },
-              mood: { type: Type.STRING },
-              compatibility: { type: Type.STRING }
-            }
+RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respond in ${languageName}.`;
+      const config = {
+        tools: [{ googleSearch: {} }],
+        systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Output the horoscope field as markdown with ## headers (Intro, Career, Love, Health, Finance). Use - for bullets and **bold** for key words. Deterministic output.`,
+        responseMimeType: "application/json" as const,
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            horoscope: { type: Type.STRING },
+            luckyNumber: { type: Type.INTEGER },
+            luckyColor: { type: Type.STRING },
+            mood: { type: Type.STRING },
+            compatibility: { type: Type.STRING }
           }
         }
-      });
-      try {
-      return JSON.parse(response.text!) as HoroscopeResponse;
-      } catch (e) {
-        return parseJSONFromResponse<HoroscopeResponse>(response.text || "", {
-          horoscope: response.text?.substring(0, 500) || "",
-      luckyNumber: Math.floor(Math.random() * 9) + 1,
-      luckyColor: "Gold",
-      mood: "Balanced",
-      compatibility: "All signs"
-        });
+      };
+
+      let lastError: unknown;
+      for (const model of HOROSCOPE_MODEL_FALLBACKS) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents,
+            config
+          });
+          try {
+            return JSON.parse(response.text!) as HoroscopeResponse;
+          } catch {
+            return parseJSONFromResponse<HoroscopeResponse>(response.text || "", {
+              horoscope: response.text?.substring(0, 500) || "",
+              luckyNumber: Math.floor(Math.random() * 9) + 1,
+              luckyColor: "Gold",
+              mood: "Balanced",
+              compatibility: "All signs"
+            });
+          }
+        } catch (e) {
+          lastError = e;
+          if (isRetryableGeminiError(e)) {
+            console.warn(`Horoscope model ${model} unavailable (503/high demand), trying next fallback.`);
+            continue;
+          }
+          throw e;
+        }
       }
-    }
-  )();
+      throw lastError;
 };
 
 // Helper function to get coordinates from location using Google Geocoding API

@@ -23,6 +23,13 @@ const getLanguageName = (lang) => {
   return LANGUAGE_NAMES[lang] || 'English';
 };
 
+const HOROSCOPE_MODEL_FALLBACKS = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+
+function isRetryableGeminiError(e) {
+  const msg = e?.message || String(e || '');
+  return /503|UNAVAILABLE|high demand|try again later/i.test(msg);
+}
+
 /**
  * Generate Horoscope (Rashifal) for a specific sign and date
  * @param {string} sign - Zodiac sign
@@ -97,12 +104,8 @@ async function generateHoroscopeWithAI(sign, date, language, languageName, perio
     return { sign, date, horoscope: text, language };
   }
 
-  try {
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
-
-    const periodLabel = period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : period === 'year' ? 'yearly' : 'daily';
-    const extraSections = period !== 'day' ? `
+  const periodLabel = period === 'week' ? 'weekly' : period === 'month' ? 'monthly' : period === 'year' ? 'yearly' : 'daily';
+  const extraSections = period !== 'day' ? `
 
 ## Overall theme
 (2-3 sentences for the ${periodLabel} period.)
@@ -110,7 +113,7 @@ async function generateHoroscopeWithAI(sign, date, language, languageName, perio
 ## Key dates or phases
 (2-3 bullet points with dates or phases to watch.)` : '';
 
-    const prompt = `You are an expert Vedic astrologer. Write a DETAILED ${periodLabel} horoscope for ${sign} zodiac sign. Date: ${date}. Language: ${languageName}.
+  const prompt = `You are an expert Vedic astrologer. Write a DETAILED ${periodLabel} horoscope for ${sign} zodiac sign. Date: ${date}. Language: ${languageName}.
 
 OUTPUT FORMAT — use exactly these markdown headers in your response:
 ## Intro
@@ -130,7 +133,25 @@ OUTPUT FORMAT — use exactly these markdown headers in your response:
 
 RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compassionate. Use - for bullets and **bold** for key words. Respond in ${languageName}.`;
 
-    const result = await model.generateContent(prompt);
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    let result = null;
+    let lastError = null;
+    for (const modelId of HOROSCOPE_MODEL_FALLBACKS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelId });
+        result = await model.generateContent(prompt);
+        break;
+      } catch (e) {
+        lastError = e;
+        if (isRetryableGeminiError(e)) {
+          console.warn('Horoscope model', modelId, 'unavailable (503/high demand), trying next fallback.');
+          continue;
+        }
+        throw e;
+      }
+    }
+    if (!result) throw lastError;
     const response = result.response;
     let horoscopeText = '';
     try {

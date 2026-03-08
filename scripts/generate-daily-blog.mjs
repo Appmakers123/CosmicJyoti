@@ -1123,6 +1123,7 @@ async function main() {
     console.log('No existing daily-posts.json; starting fresh.');
   }
 
+  // No limit: keep all posts so daily cron can grow the archive indefinitely.
   const allPosts = [...newPosts, ...existingPosts];
 
   const data = {

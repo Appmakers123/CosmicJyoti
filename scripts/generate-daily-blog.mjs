@@ -17,7 +17,7 @@
  *
  * Requires at least one of:
  *   PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) in .env or .env.local
- *   GEMINI_API_KEY or API_KEY for fallback
+ *   GEMINI_API_KEY, GEMINI_API_KEYS, or API_KEY for fallback (multiple keys tried in order)
  */
 import fs from 'fs';
 import path from 'path';
@@ -101,9 +101,11 @@ async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
       if (!res.ok) {
         const err = await res.text();
         const isRetryable = res.status === 429 || res.status >= 500;
+        const isQuotaExceeded = res.status === 401 && (err.includes('insufficient_quota') || err.includes('quota'));
         if (res.status === 401) {
           lastError = new Error(`Perplexity API 401: ${err}`);
-          // 401 = invalid/expired key or auth rejected (e.g. by Cloudflare). Don't retry same key.
+          lastError.isQuotaExceeded = isQuotaExceeded;
+          // 401 = invalid/expired key, quota exceeded, or auth rejected. Don't retry same key.
           if (j < keys.length - 1) {
             console.warn(`Perplexity key failed: ${lastError.message}. Trying next key...`);
             continue;
@@ -133,10 +135,15 @@ async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
   throw lastError || new Error('No Perplexity keys available');
 }
 
+function getGeminiKeys() {
+  const keys = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+  const list = keys.split(',').map((k) => k.trim()).filter(Boolean);
+  return list;
+}
+
 function getGeminiKey() {
-  const key = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
-  const k = key.trim();
-  return k || null;
+  const list = getGeminiKeys();
+  return list.length ? list[0] : null;
 }
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -225,35 +232,43 @@ async function generateWithGeminiOne(prompt, postCount, apiKey, model) {
 }
 
 async function generateWithGemini(prompt, contextDate, postCount = 2) {
-  const apiKey = getGeminiKey();
-  if (!apiKey) return null;
+  const apiKeys = getGeminiKeys();
+  if (!apiKeys.length) return null;
   const maxRetries = 3;
   const retryDelayMs = 12000;
-
   const retryDelay503Ms = 20000;
+
   for (const model of GEMINI_MODELS) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        if (attempt > 1) console.warn(`Gemini retry ${attempt}/${maxRetries} (${model})...`);
-        return await generateWithGeminiOne(prompt, postCount, apiKey, model);
-      } catch (e) {
-        const msg = e?.message || String(e);
-        const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
-        const is503 = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
-        const is5xx = msg.includes('500') || msg.includes('502');
-        const retryable = (is429 || is503 || is5xx) && attempt < maxRetries;
-        if (retryable) {
-          const delay = is503 || is5xx ? retryDelay503Ms : retryDelayMs;
-          const reason = is503 ? 'high demand (503)' : is429 ? 'rate limit (429)' : 'server error (5xx)';
-          console.warn(`Gemini ${model} ${reason}. Waiting ${delay / 1000}s before retry...`);
-          await sleep(delay);
-          continue;
+    for (const apiKey of apiKeys) {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          if (attempt > 1) console.warn(`Gemini retry ${attempt}/${maxRetries} (${model})...`);
+          return await generateWithGeminiOne(prompt, postCount, apiKey, model);
+        } catch (e) {
+          const msg = e?.message || String(e);
+          const is401 = msg.includes('401') || msg.includes('INVALID_ARGUMENT');
+          const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+          const is503 = msg.includes('503') || msg.includes('UNAVAILABLE') || msg.includes('high demand');
+          const is5xx = msg.includes('500') || msg.includes('502');
+          const isFetchFailed = msg.includes('fetch failed') || msg.includes('ECONNREFUSED') || msg.includes('ENOTFOUND');
+          if (is401 && apiKeys.indexOf(apiKey) < apiKeys.length - 1) {
+            console.warn(`Gemini key returned 401, trying next key...`);
+            break;
+          }
+          const retryable = (is429 || is503 || is5xx) && attempt < maxRetries;
+          if (retryable) {
+            const delay = is503 || is5xx ? retryDelay503Ms : retryDelayMs;
+            const reason = is503 ? 'high demand (503)' : is429 ? 'rate limit (429)' : 'server error (5xx)';
+            console.warn(`Gemini ${model} ${reason}. Waiting ${delay / 1000}s before retry...`);
+            await sleep(delay);
+            continue;
+          }
+          if ((is429 || is503) && attempt === maxRetries && GEMINI_MODELS.indexOf(model) < GEMINI_MODELS.length - 1) {
+            console.warn(`Gemini ${model} still unavailable. Trying next model...`);
+            break;
+          }
+          throw e;
         }
-        if ((is429 || is503) && attempt === maxRetries && GEMINI_MODELS.indexOf(model) < GEMINI_MODELS.length - 1) {
-          console.warn(`Gemini ${model} still unavailable. Trying next model...`);
-          break;
-        }
-        throw e;
       }
     }
   }
@@ -1022,7 +1037,12 @@ async function main() {
       throw new Error('No Perplexity keys');
     }
   } catch (err) {
-    console.warn('Perplexity failed:', err?.message || err);
+    const errMsg = err?.message || String(err);
+    const perplexityQuota = err?.isQuotaExceeded || errMsg.includes('insufficient_quota');
+    console.warn('Perplexity failed:', errMsg);
+    if (perplexityQuota) {
+      console.warn('(Perplexity quota exceeded. Upgrade at https://www.perplexity.ai/settings/api or rely on Gemini fallback.)');
+    }
     if (hasGemini) {
       console.log('Trying Gemini fallback...');
       try {
@@ -1040,22 +1060,37 @@ async function main() {
         if (geminiMsg.includes('429') || geminiMsg.includes('RESOURCE_EXHAUSTED')) {
           console.error('');
           console.error('--- Gemini 429 (quota / rate limit) ---');
-          console.error('Gemini quota or rate limit hit. Script retried with backoff and alternate model.');
-          console.error('Check Google AI Studio quota: https://aistudio.google.com/ or try again later.');
+          console.error('Gemini quota or rate limit hit. Check https://aistudio.google.com/ or try again later.');
         }
-        if (String(err?.message || '').includes('401')) {
+        if (geminiMsg.includes('401') || geminiMsg.includes('INVALID_ARGUMENT')) {
           console.error('');
-          console.error('--- 401 Authorization Required ---');
-          console.error('Perplexity rejected all API keys. Do this:');
-          console.error('1. Open https://www.perplexity.ai/settings/api and check/create API keys.');
-          console.error('2. In GitHub: repo Settings → Secrets and variables → Actions.');
-          console.error('3. Set PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS.');
-          console.error('4. For fallback, set GEMINI_API_KEY or API_KEY.');
+          console.error('--- Gemini 401 (invalid or missing API key) ---');
+          console.error('Set a valid GEMINI_API_KEY (or GEMINI_API_KEYS) in .env / .env.local.');
+          console.error('In GitHub Actions: repo Settings → Secrets and variables → Actions → add GEMINI_API_KEY.');
+          console.error('Get a key: https://aistudio.google.com/app/apikey');
+        }
+        if (geminiMsg.includes('fetch failed') || geminiMsg.includes('ECONNREFUSED') || geminiMsg.includes('ENOTFOUND')) {
+          console.error('');
+          console.error('--- Gemini: network error (fetch failed) ---');
+          console.error('If running in GitHub Actions: ensure GEMINI_API_KEY is set in repo Secrets.');
+          console.error('If running locally: check firewall/proxy; ensure https://generativelanguage.googleapis.com is reachable.');
+        }
+        if (perplexityQuota || String(errMsg).includes('401')) {
+          console.error('');
+          console.error('--- Perplexity ---');
+          console.error(perplexityQuota
+            ? 'Perplexity quota exceeded. Upgrade at https://www.perplexity.ai/settings/api or fix Gemini key above.'
+            : 'Perplexity rejected all API keys. Check keys at https://www.perplexity.ai/settings/api');
+          console.error('For fallback: set GEMINI_API_KEY (or API_KEY) in .env or GitHub Secrets.');
         }
         process.exit(1);
       }
     } else {
-      if (String(err?.message || '').includes('401')) {
+      if (perplexityQuota) {
+        console.error('');
+        console.error('--- Perplexity quota exceeded ---');
+        console.error('Upgrade at https://www.perplexity.ai/settings/api or add GEMINI_API_KEY for fallback.');
+      } else if (String(errMsg).includes('401')) {
         console.error('');
         console.error('--- 401 Authorization Required ---');
         console.error('Perplexity rejected all API keys. Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS), or add GEMINI_API_KEY for fallback.');

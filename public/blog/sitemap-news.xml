@@ -9,6 +9,28 @@
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope for March 10, 2026: Navigating the Mars-Moon Synergy</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-science-of-ashtakoota-kundali-milan-guide/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>The Science of Ashtakoota: Why Kundali Milan is Essential for Lasting Unions</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-daily-horoscope-march-10-2026/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
       <news:title>Daily Horoscope: March 10, 2026 – Navigating the Lunar Transition and Planetary Shifts</news:title>
     </news:news>
   </url>

@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-daily-horoscope-march-10-2026/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope: March 10, 2026 – Navigating the Lunar Transition and Planetary Shifts</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-ashtakoota-vedic-compatibility-guide/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>The Science of Ashtakoota: A Deep Dive into Vedic Compatibility and Kundali Milan</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-03-10-auspicious-events-muhurat-march-10-2026/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>
@@ -219,94 +241,6 @@
       </news:publication>
       <news:publication_date>2026-03-08T06:00:00+05:30</news:publication_date>
       <news:title>Key Astrological Events and Festivals on March 8, 2026</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-daily-horoscope-march-7-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope: March 7, 2026 – Navigating the Lunar Shifts in Libra</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-science-of-kundali-milan-compatibility/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>The Science of Kundali Milan: Why Compatibility Goes Beyond the 36 Gunas</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-science-of-guna-milan-ashtakoota/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>The Science of Guna Milan: Decoding the Eight Pillars of Vedic Matchmaking</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-vedic-compatibility-love-match-guide/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>Beyond the Score: Deepening Relationships through Vedic Compatibility Analysis</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-daily-horoscope-march-7-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope: March 7, 2026 – Navigating the Winds of Swati Nakshatra</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-kundali-milan-compatibility-guide/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>The Sacred Science of Kundali Milan: Why Compatibility Goes Beyond the 36 Gunas</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-auspicious-muhurat-panchang-march-7-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>Auspicious Muhurat and Panchang Guide for March 7, 2026</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-07-astrological-events-planetary-alignments-march-7-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-07T06:00:00+05:30</news:publication_date>
-      <news:title>Key Astrological Events and Planetary Alignments on March 7, 2026</news:title>
     </news:news>
   </url>
 </urlset>

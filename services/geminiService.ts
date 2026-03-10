@@ -5,6 +5,7 @@ import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
 import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
 import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
+import { generateHoroscopeFromGroq, hasGroqKey, generateGenericTransitsFromGroq } from "./groqService";
 import { askRishiFromBackend, isBackendConfigured } from "./backendService";
 
 const getAI = () => {
@@ -344,7 +345,15 @@ export const generateMobileNumerologyAnalysis = async (mobileNumber: string, lan
 export type HoroscopePeriod = 'day' | 'week' | 'month' | 'year';
 
 export const generateHoroscope = async (signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> => {
-  // 1. Perplexity only from server (no CORS from browser; API keys must not be exposed client-side)
+  // 1. Groq or Perplexity from server (no CORS from browser; API keys must not be exposed client-side)
+  const canUseGroq = typeof window === 'undefined' && period === 'day' && hasGroqKey();
+  if (canUseGroq) {
+    try {
+      return await generateHoroscopeFromGroq(signName, language);
+    } catch (error: any) {
+      console.warn('Groq horoscope failed, trying next:', error?.message);
+    }
+  }
   const canUsePerplexity = typeof window === 'undefined' && period === 'day' && hasPerplexityKey();
   if (canUsePerplexity) {
     try {
@@ -2947,7 +2956,23 @@ function normalizeTransitPositions(positions: any[], rashi: string): PlanetaryPo
 export const generateGenericTransits = async (location: string, rashi: string, language: Language): Promise<TransitResponse> => {
     const todayStr = new Date().toISOString().split('T')[0];
 
-    // 1) Try Perplexity first (fast when backend is down)
+    // 1) Try Groq first, then Perplexity (fast when backend is down)
+    if (hasGroqKey()) {
+        try {
+            const groqResponse = await generateGenericTransitsFromGroq(location, rashi, language);
+            if (groqResponse?.currentPositions?.length > 0) {
+                const processed = normalizeTransitPositions(groqResponse.currentPositions, rashi);
+                if (processed.length > 0) {
+                    return {
+                        currentPositions: processed,
+                        personalImpact: Array.isArray(groqResponse.personalImpact) ? groqResponse.personalImpact : generateTransitPredictions(processed, null, language)
+                    };
+                }
+            }
+        } catch (_) {
+            // fall through to Perplexity then backend
+        }
+    }
     if (hasPerplexityKey()) {
         try {
             const perplexityResponse = await generateGenericTransitsFromPerplexity(location, rashi, language);
@@ -3156,7 +3181,7 @@ Language: ${language}.`;
         const errorMessage = geminiError?.message || geminiError?.error?.message || String(geminiError);
         const isNoKey = errorMessage?.includes("GEMINI_API_KEY_NOT_CONFIGURED") || errorMessage?.includes("AI service not available");
         if (isNoKey) {
-            throw new Error("Transit needs an API key. Add PERPLEXITY_API_KEY or API_KEY (Gemini) in .env, or run the backend server.");
+            throw new Error("Transit needs an API key. Add GROQ_API_KEY, PERPLEXITY_API_KEY or API_KEY (Gemini) in .env, or run the backend server.");
         }
         const isQuotaError = /quota|exceeded|429|RESOURCE_EXHAUSTED/i.test(errorMessage);
         if (isQuotaError) {

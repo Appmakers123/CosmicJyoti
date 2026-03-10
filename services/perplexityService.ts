@@ -8,6 +8,8 @@ import type { HoroscopeResponse, TransitResponse, PlanetaryPosition } from '../t
 import type { Language } from '../types';
 import { getNextPerplexityKey, getAllPerplexityKeys } from '../utils/perplexityApiKeys';
 import { getLanguageDisplayName } from '../utils/languageNames';
+import { hasGroqKey } from '../utils/groqApiKeys';
+import { generatePersonalizedDailyForecastFromGroq } from './groqService';
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
 
@@ -112,12 +114,19 @@ export interface PersonalizedChartContext {
 
 /**
  * Generate personalized daily forecast based on full birth chart (Lagna, Moon Sign, Sun Sign, Nakshatra).
- * Uses Perplexity for web-grounded, current-date predictions. Falls back to Gemini if Perplexity fails.
+ * Tries Groq first if GROQ_API_KEY is set, then Perplexity, then Gemini.
  */
 export async function generatePersonalizedDailyForecast(
   context: PersonalizedChartContext,
   language: Language = 'en'
 ): Promise<HoroscopeResponse> {
+  if (hasGroqKey()) {
+    try {
+      return await generatePersonalizedDailyForecastFromGroq(context, language);
+    } catch (err) {
+      console.warn('Groq personalized forecast failed, trying Perplexity:', (err as Error)?.message);
+    }
+  }
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long',
     year: 'numeric',

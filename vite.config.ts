@@ -43,6 +43,9 @@ export default defineConfig(({ mode }) => {
       // Perplexity API keys
       'process.env.PERPLEXITY_API_KEY': JSON.stringify(get('PERPLEXITY_API_KEY') || ''),
       'process.env.PERPLEXITY_API_KEYS': JSON.stringify(get('PERPLEXITY_API_KEYS') || get('PERPLEXITY_API_KEY') || ''),
+      // Groq API keys (alternative to Perplexity)
+      'process.env.GROQ_API_KEY': JSON.stringify(get('GROQ_API_KEY') || ''),
+      'process.env.GROQ_API_KEYS': JSON.stringify(get('GROQ_API_KEYS') || get('GROQ_API_KEY') || ''),
       // VITE_* and others
       'import.meta.env.VITE_GOOGLE_API_KEY': JSON.stringify(get('VITE_GOOGLE_API_KEY') || ''),
       'import.meta.env.VITE_ASTROLOGY_API_KEYS': JSON.stringify(get('ASTROLOGY_API_KEYS') || get('VITE_ASTROLOGY_API_KEYS') || ''),

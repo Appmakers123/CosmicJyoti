@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from '../utils/translations';
 import { Language, KundaliResponse } from '../types';
 import { createChatSession, askRishiWithFallback, translateText, type AstrologerPersona } from '../services/geminiService';
@@ -7,6 +7,8 @@ import { GenerateContentResponse, Chat } from '@google/genai';
 import RichText from './RichText';
 import DownloadAppForAICta from './common/DownloadAppForAICta';
 import { canSendMessage, getRemainingMessages, incrementChatUsage, getMessageLimit } from '../utils/chatLimitService';
+
+const SpeechRecognitionAPI = typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition);
 
 interface ChatWidgetProps {
   language: Language;
@@ -58,8 +60,11 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
   const [responseType, setResponseType] = useState<'general' | 'detailed' | null>(null);
   const [persona, setPersona] = useState<AstrologerPersona>('general');
   const [translatingIndex, setTranslatingIndex] = useState<number | null>(null);
+  const [isListening, setIsListening] = useState(false);
 
   const contextStringRef = useRef("");
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const finalTranscriptRef = useRef('');
   const lastLanguageRef = useRef<Language | null>(null);
   const lastContextIdRef = useRef<string | null>(null);
 
@@ -108,6 +113,71 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
   useEffect(() => {
     setRemainingMessages(getRemainingMessages(isPremium));
   }, [isPremium, refreshTrigger]);
+
+  // Speech-to-text: cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.abort();
+        } catch (_) {}
+        recognitionRef.current = null;
+      }
+      setIsListening(false);
+    };
+  }, []);
+
+  const toggleSpeechToText = useCallback(() => {
+    if (!SpeechRecognitionAPI) return;
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (_) {}
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+    const Recognition = SpeechRecognitionAPI as new () => SpeechRecognition;
+    const recognition = new Recognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = language === 'hi' ? 'hi-IN' : 'en-IN';
+    finalTranscriptRef.current = input;
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interim = '';
+      let finalText = finalTranscriptRef.current;
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalText += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+      finalTranscriptRef.current = finalText;
+      setInput((finalText + interim).trim());
+    };
+    recognition.onend = () => {
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+        setIsListening(false);
+      }
+    };
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      if (event.error === 'no-speech') return;
+      if (recognitionRef.current === recognition) {
+        recognitionRef.current = null;
+        setIsListening(false);
+      }
+    };
+    try {
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsListening(true);
+    } catch (e) {
+      setIsListening(false);
+    }
+  }, [isListening, language, input]);
 
   // Detect if question is personal and needs DOB
   const isPersonalQuestion = (question: string): boolean => {
@@ -623,10 +693,24 @@ const ChatWidget: React.FC<ChatWidgetProps> = ({ language, context, isPremium = 
                   value={input} 
                   onChange={e => setInput(e.target.value)} 
                   placeholder={t.askYourQuestion}
-                  className="w-full bg-slate-950 border border-slate-700/50 rounded-full px-5 py-3 text-sm focus:border-amber-500/50 outline-none transition-all pr-12 text-slate-200 placeholder-slate-600" 
+                  className="w-full bg-slate-950 border border-slate-700/50 rounded-full px-5 py-3 text-sm focus:border-amber-500/50 outline-none transition-all pr-24 text-slate-200 placeholder-slate-600" 
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-slate-700 font-bold uppercase tracking-tighter pointer-events-none">
-                  AI
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {SpeechRecognitionAPI && (
+                    <button
+                      type="button"
+                      onClick={toggleSpeechToText}
+                      disabled={isLoading}
+                      className={`p-2 rounded-full transition-colors ${isListening ? 'bg-red-500/80 text-white animate-pulse' : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800'}`}
+                      title={isListening ? (language === 'hi' ? 'रुकें' : 'Stop listening') : (language === 'hi' ? 'आवाज़ से टाइप करें' : 'Voice input')}
+                      aria-label={isListening ? 'Stop listening' : 'Voice input'}
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.91-3c-.49 0-.9.36-.98.85C16.52 14.2 14.47 16 12 16s-4.52-1.8-4.93-4.15c-.08-.49-.49-.85-.98-.85-.61 0-1.07.54-1 1.14.49 3 2.89 5.35 5.91 5.78V20c0 .55.45 1 1 1s1-.45 1-1v-2.08c3.02-.43 5.42-2.78 5.91-5.78.07-.6-.39-1.14-1-1.14z"/>
+                      </svg>
+                    </button>
+                  )}
+                  <span className="text-[10px] text-slate-700 font-bold uppercase tracking-tighter pointer-events-none">AI</span>
                 </div>
              </div>
              <button 

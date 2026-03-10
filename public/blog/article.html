@@ -91,7 +91,7 @@
             body.innerHTML = '<p class="text-slate-500">Article not found. <a href="../blog.html" class="text-amber-400">Back to Blog</a></p>';
             return;
         }
-        fetch('/blog/daily-posts.json').then(function(r) {
+        fetch('/blog/daily-posts.json', { cache: 'no-store' }).then(function(r) {
             if (!r.ok) throw new Error('Not found');
             return r.json();
         }).then(function(data) {

@@ -36,7 +36,7 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
       }
 
       // API key not configured
-      if (message.includes('GEMINI_API_KEY_NOT_CONFIGURED') || message.includes('PERPLEXITY_API_KEY_NOT_CONFIGURED')) {
+      if (message.includes('GEMINI_API_KEY_NOT_CONFIGURED') || message.includes('PERPLEXITY_API_KEY_NOT_CONFIGURED') || message.includes('GROQ_API_KEY_NOT_CONFIGURED')) {
         return language === 'hi'
           ? 'API कुंजी कॉन्फ़िगर नहीं है। कृपया सेटअप जांचें।'
           : 'API key not configured. Please check your setup.';

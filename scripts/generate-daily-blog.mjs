@@ -53,6 +53,13 @@ loadEnvFile(path.join(ROOT_DIR, '.env'));
 loadEnvFile(path.join(ROOT_DIR, '.env.local'));
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/chat/completions';
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+function getGroqKeys() {
+  const keys = process.env.GROQ_API_KEYS || process.env.GROQ_API_KEY || '';
+  return keys.split(',').map((k) => k.trim()).filter(Boolean);
+}
 
 function getPerplexityKeys() {
   const keys = process.env.PERPLEXITY_API_KEYS || process.env.PERPLEXITY_API_KEY || '';
@@ -133,6 +140,52 @@ async function generateWithPerplexity(prompt, contextDate, postCount = 2) {
     }
   }
   throw lastError || new Error('No Perplexity keys available');
+}
+
+let groqKeyIndex = 0;
+function getNextGroqKey() {
+  const list = getGroqKeys();
+  if (!list.length) return null;
+  const key = list[groqKeyIndex % list.length];
+  groqKeyIndex += 1;
+  return key;
+}
+
+async function generateWithGroq(prompt, contextDate, postCount = 2) {
+  const keys = getGroqKeys();
+  if (!keys.length) return null;
+  const systemContent = `You are an expert Vedic astrologer and content writer. Output ONLY valid JSON, no other text or markdown.`;
+  const userContent = `${prompt}\n\nOutput a single JSON object with a "posts" array of exactly ${postCount} articles. No code fences, no explanation.`;
+  const body = JSON.stringify({
+    model: GROQ_MODEL,
+    messages: [
+      { role: 'system', content: systemContent },
+      { role: 'user', content: userContent },
+    ],
+    max_tokens: 8192,
+    temperature: 0.4,
+  });
+  const key = getNextGroqKey();
+  try {
+    const res = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      },
+      body,
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Groq API ${res.status}: ${err}`);
+    }
+    const data = await res.json();
+    const text = data?.choices?.[0]?.message?.content?.trim() || '';
+    if (!text) throw new Error('Empty response from Groq');
+    return text;
+  } catch (e) {
+    throw e;
+  }
 }
 
 function getGeminiKeys() {
@@ -1007,12 +1060,14 @@ async function main() {
     return;
   }
 
+  const hasGroq = getGroqKeys().length > 0;
   const hasPerplexity = getPerplexityKeys().length > 0;
   const hasGemini = !!getGeminiKey();
-  if (!hasPerplexity && !hasGemini) {
-    console.error('Error: Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) and/or GEMINI_API_KEY (or API_KEY) in .env or .env.local');
+  if (!hasGroq && !hasPerplexity && !hasGemini) {
+    console.error('Error: Set GROQ_API_KEY, PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS) and/or GEMINI_API_KEY (or API_KEY) in .env or .env.local');
     process.exit(1);
   }
+  if (hasGroq) console.log('Using Groq API for blog generation.');
   if (hasPerplexity && getPerplexityKeys().length > 1) console.log(`Using ${getPerplexityKeys().length} Perplexity API key(s) in rotation.`);
 
   const tomorrowDate = new Date();
@@ -1030,20 +1085,33 @@ async function main() {
   let text;
   let usedGemini = false;
   try {
-    if (hasPerplexity) {
+    if (hasGroq) {
+      text = await generateWithGroq(prompt, today, 2);
+      if (!text) throw new Error('Empty response from Groq');
+    } else if (hasPerplexity) {
       text = await generateWithPerplexity(prompt, today, 2);
       if (!text) throw new Error('Empty response from Perplexity');
     } else {
-      throw new Error('No Perplexity keys');
+      throw new Error('No Groq or Perplexity keys');
     }
   } catch (err) {
     const errMsg = err?.message || String(err);
     const perplexityQuota = err?.isQuotaExceeded || errMsg.includes('insufficient_quota');
-    console.warn('Perplexity failed:', errMsg);
+    console.warn(hasGroq ? 'Groq failed:' : 'Perplexity failed:', errMsg);
     if (perplexityQuota) {
       console.warn('(Perplexity quota exceeded. Upgrade at https://www.perplexity.ai/settings/api or rely on Gemini fallback.)');
     }
-    if (hasGemini) {
+    if (hasPerplexity && hasGroq) {
+      console.log('Trying Perplexity fallback...');
+      try {
+        text = await generateWithPerplexity(prompt, today, 2);
+        if (!text) throw new Error('Empty response from Perplexity');
+      } catch (perpErr) {
+        console.warn('Perplexity fallback failed:', perpErr?.message || perpErr);
+        if (!hasGemini) throw err;
+      }
+    }
+    if (!text && hasGemini) {
       console.log('Trying Gemini fallback...');
       try {
         text = await generateWithGemini(prompt, today, 2);
@@ -1085,7 +1153,7 @@ async function main() {
         }
         process.exit(1);
       }
-    } else {
+    } else if (!text) {
       if (perplexityQuota) {
         console.error('');
         console.error('--- Perplexity quota exceeded ---');
@@ -1093,7 +1161,11 @@ async function main() {
       } else if (String(errMsg).includes('401')) {
         console.error('');
         console.error('--- 401 Authorization Required ---');
-        console.error('Perplexity rejected all API keys. Set PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS), or add GEMINI_API_KEY for fallback.');
+        console.error('Groq/Perplexity rejected API keys. Set GROQ_API_KEY, PERPLEXITY_API_KEY (or PERPLEXITY_API_KEYS), or GEMINI_API_KEY for fallback.');
+      } else {
+        console.error('');
+        console.error('--- Generation failed ---');
+        console.error('Set GROQ_API_KEY, PERPLEXITY_API_KEY, or GEMINI_API_KEY in .env or GitHub Secrets.');
       }
       process.exit(1);
     }

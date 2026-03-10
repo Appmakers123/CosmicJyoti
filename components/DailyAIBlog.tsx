@@ -117,7 +117,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
   const [articleImageLoaded, setArticleImageLoaded] = useState(false);
 
   useEffect(() => {
-    fetch('/blog/daily-posts.json')
+    fetch('/blog/daily-posts.json', { cache: 'no-store' })
       .then((r) => {
         if (!r.ok) throw new Error('Not found');
         return r.json();
@@ -160,11 +160,13 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
 
   const filteredAndSorted = useMemo(() => {
     if (!data?.posts?.length) return [];
-    let list = data.posts;
+    let list = [...data.posts];
     const q = searchQuery.trim().toLowerCase();
     if (q) {
-      list = data.posts.filter((p) => relevanceScore(p, searchQuery) > 0);
-      list = [...list].sort((a, b) => relevanceScore(b, searchQuery) - relevanceScore(a, searchQuery));
+      list = list.filter((p) => relevanceScore(p, searchQuery) > 0);
+      list.sort((a, b) => relevanceScore(b, searchQuery) - relevanceScore(a, searchQuery));
+    } else {
+      list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     }
     if (topicFilter) {
       list = list.filter((p) => {

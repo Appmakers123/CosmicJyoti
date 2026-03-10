@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-understanding-disha-shool-lucky-direction/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>Navigating Success: Understanding Disha Shool and Finding Your Lucky Direction Today</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-tarot-reading-vedic-astrology-divination/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
+      <news:title>The Mirror of the Soul: How Tarot Reading Complements Vedic Wisdom</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-03-10-daily-horoscope-march-10-2026/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>

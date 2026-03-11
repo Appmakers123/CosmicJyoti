@@ -53,24 +53,69 @@ loadEnvFile(path.join(ROOT_DIR, '.env.local'));
 /**
  * Sanitize JSON string from LLM: remove markdown fences and fix bad control characters
  * that cause "Bad control character in string literal" (e.g. raw newlines inside strings).
+ * Also strips U+2028/U+2029 (line/paragraph separator) and DEL (\x7f) which can break parsing.
  */
 function sanitizeJsonResponse(text) {
   if (!text || typeof text !== 'string') return text;
   let out = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  // Replace all control characters (incl. raw newlines inside strings) with space to fix "Bad control character in string literal"
-  out = out.replace(/[\x00-\x1f]/g, ' ');
+  // Replace control characters and JSON-unsafe chars: 0x00-0x1f, DEL, U+2028, U+2029
+  out = out.replace(/[\x00-\x1f\x7f\u2028\u2029]/g, ' ');
   return out;
+}
+
+/**
+ * Extract the outermost JSON object {...} from text so we parse only that (avoids
+ * preamble/trailing text with control chars or invalid content).
+ */
+function extractJsonObject(text) {
+  if (!text || typeof text !== 'string') return text;
+  const trimmed = text.trim();
+  const start = trimmed.indexOf('{');
+  if (start === -1) return trimmed;
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+  let quote = '';
+  for (let i = start; i < trimmed.length; i++) {
+    const c = trimmed[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (inString) {
+      if (c === '\\') escape = true;
+      else if (c === quote) inString = false;
+      continue;
+    }
+    if (c === '"') {
+      inString = true;
+      quote = '"';
+      continue;
+    }
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) return trimmed.slice(start, i + 1);
+    }
+  }
+  return trimmed;
 }
 
 function parseBlogJson(text) {
   let parsed;
+  const sanitized = sanitizeJsonResponse(text);
+  const extracted = extractJsonObject(sanitized);
   try {
-    parsed = JSON.parse(sanitizeJsonResponse(text));
+    parsed = JSON.parse(extracted);
   } catch (e1) {
     try {
-      parsed = JSON.parse(text);
+      parsed = JSON.parse(sanitized);
     } catch (e2) {
-      throw e1;
+      try {
+        parsed = JSON.parse(extractJsonObject(text));
+      } catch (e3) {
+        throw e1;
+      }
     }
   }
   return parsed;
@@ -374,7 +419,13 @@ async function callGeminiJson(prompt, apiKey, model = 'gemini-2.0-flash') {
   const data = await res.json();
   const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
   if (!text) throw new Error('Empty response from Gemini');
-  return JSON.parse(text);
+  const sanitized = sanitizeJsonResponse(text);
+  const extracted = extractJsonObject(sanitized);
+  try {
+    return JSON.parse(extracted);
+  } catch (_) {
+    return JSON.parse(sanitized);
+  }
 }
 
 /** Translate one post to Hindi. Returns { titleHi, excerptHi, contentHi } or null on failure. */

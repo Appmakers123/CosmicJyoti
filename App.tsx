@@ -616,7 +616,7 @@ const App: React.FC = () => {
         setShowAdWatchModal(true);
         return;
       }
-      setError(language === 'hi' ? 'आज का कुंडली लिमिट पूरा। कल फिर कोशिश करें।' : 'Daily Kundali limit reached. Try again tomorrow.');
+      setError(language === 'hi' ? 'आज का मुफ्त कुंडली लिमिट पूरा। कल फिर कोशिश करें या विज्ञापन देखकर एक और पाएं।' : 'Today’s free Kundali limit reached. Try again tomorrow or watch an ad for one more.');
       return;
     }
     setKundaliFormData(formData);

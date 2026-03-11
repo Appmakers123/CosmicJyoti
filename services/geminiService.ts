@@ -1036,6 +1036,7 @@ function normalizeKundaliFormData(formData: KundaliFormData): KundaliFormData {
 
 export const generateKundali = async (formData: KundaliFormData, language: Language = 'en'): Promise<KundaliResponse> => {
     const normalized = normalizeKundaliFormData(formData);
+    normalized.name = (normalized.name && String(normalized.name).trim()) || 'Seeker';
     if (isBackendConfigured()) {
         try {
             console.log("Generating Kundali via backend API for:", normalized.name);

@@ -25,10 +25,10 @@ interface FreeUsage {
   games: number;
 }
 
-/** Each AI module: 1 free use per day; chart gets +1 after ad */
+/** Each AI module: free uses per day; chart gets +1 after ad */
 const FREE_LIMITS: Record<Exclude<keyof FreeUsage, 'date'>, number> = {
-  chart: 1,
-  chartAdBonus: 1, // max 1 bonus per day
+  chart: 5, // free Kundali + compatibility per day
+  chartAdBonus: 2, // max 2 bonus per day after watching ad
   horoscope: 1,
   dream: 1,
   tarot: 1,

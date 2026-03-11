@@ -70,7 +70,6 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
   const [showNameSuggestions, setShowNameSuggestions] = useState(false);
   const [saveToProfile, setSaveToProfile] = useState(true);
-  const [use24Hour, setUse24Hour] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [timeError, setTimeError] = useState<string | null>(null);
   const lastSaveRef = useRef<string>('');
@@ -858,26 +857,16 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
                         required
                     />
                     <div className="space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <input
-                          type="time"
-                          name="time"
-                          value={formData.time}
-                          onChange={handleChange}
-                          onBlur={saveDraftOnBlur}
-                          step="1"
-                          className={`flex-1 min-h-[48px] bg-slate-900/50 border rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all [color-scheme:dark] ${timeError ? 'border-red-500/50' : 'border-slate-600'}`}
-                          required
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setUse24Hour(!use24Hour)}
-                          className="min-w-[44px] min-h-[44px] px-2 py-1 rounded-lg bg-slate-700/80 border border-slate-600 text-xs text-slate-400 hover:text-amber-200 transition-all"
-                          title={language === 'hi' ? '12/24 घंटे प्रारूप' : '12/24 hour format'}
-                        >
-                          {use24Hour ? '24h' : '12h'}
-                        </button>
-                      </div>
+                      <input
+                        type="time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleChange}
+                        onBlur={saveDraftOnBlur}
+                        step="1"
+                        className={`w-full min-h-[48px] bg-slate-900/50 border rounded-lg px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all [color-scheme:dark] ${timeError ? 'border-red-500/50' : 'border-slate-600'}`}
+                        required
+                      />
                       {timeError && <p className="text-xs text-red-400">{timeError}</p>}
                     </div>
                 </div>

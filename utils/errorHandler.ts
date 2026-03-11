@@ -41,11 +41,11 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           : 'Network connection issue. Please check your connection and try again.';
       }
 
-      // Google Maps API not enabled (Geocoding / Time Zone) – enable in Cloud Console
-      if (message.includes('REQUEST_DENIED') || message.includes('not activated on your API project') || message.includes('enable this API') || message.includes('gmp-get-started')) {
+      // Google Maps: API not enabled or API key restrictions – enable APIs and allow key to use them
+      if (message.includes('REQUEST_DENIED') || message.includes('not activated on your API project') || message.includes('enable this API') || message.includes('gmp-get-started') || message.includes('not authorized to use this service or API') || message.includes('API restrictions')) {
         return language === 'hi'
-          ? 'Google Maps API चालू नहीं है। Google Cloud Console में जाकर Geocoding API और Time Zone API enable करें।'
-          : 'Google Maps API is not enabled. In Google Cloud Console, enable Geocoding API and Time Zone API for your project.';
+          ? 'Google Maps: प्रोजेक्ट में Geocoding API व Time Zone API enable करें और API key की restrictions में इन्हें allow करें।'
+          : 'Google Maps: Enable Geocoding API and Time Zone API for your project, and in your API key restrictions allow these APIs.';
       }
 
       // API key not configured

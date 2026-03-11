@@ -45,7 +45,9 @@ function shouldRetryWithNextKey(status: number, body?: string): boolean {
     body.includes('api key') ||
     body.includes('quota') ||
     body.includes('rate limit') ||
-    body.includes('invalid key')
+    body.includes('invalid key') ||
+    body.includes('REQUEST_DENIED') ||
+    body.includes('not authorized')
   )) return true;
   return false;
 }
@@ -75,9 +77,11 @@ export async function fetchWithKeyRotation(
   const triedKeys = new Set<string>();
 
   for (let attempt = 0; attempt < keys.length; attempt++) {
+    const availableKeys = keys.filter((k) => !triedKeys.has(k));
+    if (availableKeys.length === 0) break;
     try {
-      // Respect rate limit: 1 req/sec per key, 50/day per key
-      const keyToUse = await acquireKeySlot(keys);
+      // Use only keys we haven't tried yet, so each retry uses a different key
+      const keyToUse = await acquireKeySlot(availableKeys);
       const res = await fetch(url, {
         ...fetchOptions,
         headers: {
@@ -98,8 +102,8 @@ export async function fetchWithKeyRotation(
       lastText = text;
       recordKeyUsed(keyToUse, keys); // Count failed request too (API may count it)
       triedKeys.add(keyToUse);
-      if (shouldRetryWithNextKey(res.status, text) && triedKeys.size < keys.length) {
-        console.warn(`Astrology API key failed (${res.status}), trying next key...`);
+      if (shouldRetryWithNextKey(res.status, text)) {
+        console.warn(`Astrology API key failed (${res.status}), trying next of ${keys.length} key(s)...`);
         continue;
       }
       return new Response(text, { status: res.status, statusText: res.statusText });

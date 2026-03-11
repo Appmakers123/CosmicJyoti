@@ -71,9 +71,10 @@ The frontend must know **where your backend is running** so it can call your API
 
    When `VITE_API_BASE_URL` is set, the built app uses that backend for Rishi, Kundali, Panchang, and for **user sync** (no need to set `VITE_SYNC_API_URL` unless you use a separate sync service).
 
-   Examples:
-   - Backend on your server: `VITE_API_BASE_URL` = `https://api.yourdomain.com`
-   - Backend on Render: `VITE_API_BASE_URL` = `https://cosmicjyoti-api.onrender.com`
+   Examples (use **one** — set the secret to the backend you want the site to use):
+   - Render: `VITE_API_BASE_URL` = `https://cosmicjyoti.onrender.com`
+   - Google Cloud Run: `VITE_API_BASE_URL` = `https://cosmicjyoti-753579758080.europe-west1.run.app`
+   - Your own server: `VITE_API_BASE_URL` = `https://api.yourdomain.com`
 
    **Important:** Use `https://` in production (no trailing slash).
 

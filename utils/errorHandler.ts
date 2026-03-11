@@ -41,6 +41,13 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           : 'Network connection issue. Please check your connection and try again.';
       }
 
+      // Google Maps API not enabled (Geocoding / Time Zone) – enable in Cloud Console
+      if (message.includes('REQUEST_DENIED') || message.includes('not activated on your API project') || message.includes('enable this API') || message.includes('gmp-get-started')) {
+        return language === 'hi'
+          ? 'Google Maps API चालू नहीं है। Google Cloud Console में जाकर Geocoding API और Time Zone API enable करें।'
+          : 'Google Maps API is not enabled. In Google Cloud Console, enable Geocoding API and Time Zone API for your project.';
+      }
+
       // API key not configured
       if (message.includes('GEMINI_API_KEY_NOT_CONFIGURED') || message.includes('PERPLEXITY_API_KEY_NOT_CONFIGURED') || message.includes('GROQ_API_KEY_NOT_CONFIGURED')) {
         return language === 'hi'

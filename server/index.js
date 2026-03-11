@@ -78,7 +78,7 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
 
-// CORS: allowlist from env (comma-separated). Dev: http://localhost:5173; production: add your frontend origins.
+// CORS: allowlist from env (comma-separated). Dev: localhost. Production: set CORS_ORIGIN to your frontend URL (e.g. https://user.github.io,https://user.github.io/cosmicsutra).
 const corsOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()).filter(Boolean)
   : ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000'];

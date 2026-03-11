@@ -154,7 +154,14 @@ async function generateAudioAsync(text, audioPath) {
   try {
     const mod = await import('text2wav');
     const text2wav = mod.default ?? mod;
-    const wav = await text2wav(text, { voice: 'hi' });
+    // Slower speed (140 WPM) for clearer, less harsh Hindi TTS; pitch/amplitude if supported
+    const opts = { voice: 'hi', speed: 140 };
+    let wav;
+    try {
+      wav = await text2wav(text, { ...opts, pitch: 45, amplitude: 100 });
+    } catch (_) {
+      wav = await text2wav(text, opts);
+    }
     if (wav && (wav.buffer || wav.length)) {
       fs.writeFileSync(audioPath, Buffer.from(wav.buffer ?? wav));
       return true;
@@ -477,21 +484,7 @@ async function main() {
     process.exit(1);
   }
 
-  // Add Hindi audio (TTS), burned-in subtitles, and logo watermark when text2wav and ffmpeg are available
-  const narration = getNarrationText(topic);
-  const audioPath = path.join(VIDEOS_DIR, `_temp-${date}-${slot}.wav`);
-  const srtPath = path.join(VIDEOS_DIR, `_temp-${date}-${slot}.srt`);
-  try {
-    const hasAudio = await generateAudioAsync(narration, audioPath);
-    if (hasAudio) console.log('TTS: audio generated.');
-    const lines = splitLinesForSubtitles(narration);
-    writeSrt(lines, srtPath);
-    await addAudioAndSubtitlesToVideo(outPath, audioPath, srtPath);
-  } finally {
-    if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
-    if (fs.existsSync(srtPath)) fs.unlinkSync(srtPath);
-  }
-
+  // Update manifest immediately so the video is always "added" even if post-process fails (e.g. in CI)
   const videoUrl = `/blog/videos/${basename}`;
   const entry = {
     id: `${date}-${slot}`,
@@ -506,7 +499,6 @@ async function main() {
     videoUrl,
     generatedAt: new Date().toISOString(),
   };
-
   let manifest = { lastUpdated: date, videos: [] };
   try {
     const raw = fs.readFileSync(MANIFEST_PATH, 'utf8');
@@ -518,6 +510,23 @@ async function main() {
   manifest.lastUpdated = date;
   fs.writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2), 'utf8');
   console.log(`Updated ${MANIFEST_PATH}`);
+
+  // Optional: add Hindi audio (TTS), burned-in subtitles, and logo watermark. Do not fail the run if this errors.
+  const narration = getNarrationText(topic);
+  const audioPath = path.join(VIDEOS_DIR, `_temp-${date}-${slot}.wav`);
+  const srtPath = path.join(VIDEOS_DIR, `_temp-${date}-${slot}.srt`);
+  try {
+    const hasAudio = await generateAudioAsync(narration, audioPath);
+    if (hasAudio) console.log('TTS: audio generated.');
+    const lines = splitLinesForSubtitles(narration);
+    writeSrt(lines, srtPath);
+    await addAudioAndSubtitlesToVideo(outPath, audioPath, srtPath);
+  } catch (e) {
+    console.warn('Post-process (audio/subs/watermark) skipped:', e.message || e);
+  } finally {
+    if (fs.existsSync(audioPath)) fs.unlinkSync(audioPath);
+    if (fs.existsSync(srtPath)) fs.unlinkSync(srtPath);
+  }
 }
 
 main().catch((e) => {

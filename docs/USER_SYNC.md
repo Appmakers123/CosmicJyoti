@@ -4,8 +4,10 @@ When a user signs in with Google, their **profile** (name, DOB, time, place, gen
 
 ## Flow
 
-- **On Google sign-in** (or on app load if user is already in localStorage): the app calls `GET VITE_SYNC_API_URL?userId=xxx`. If the backend returns `{ profile, reports }`, that data is merged into local storage so the profile form and “My saved reports” are populated.
-- **“Save to my account”** (in the profile modal when logged in): the app sends the current profile and all saved reports via `POST VITE_SYNC_API_URL` with body `{ userId, profile, reports }`.
+- **On Google sign-in** (or on app load if user is already in localStorage): the app calls `GET {syncUrl}?userId=xxx`. If the backend returns `{ profile, reports }`, that data is merged into local storage so the profile form and “My saved reports” are populated.
+- **“Save to my account”** (in the profile modal when logged in): the app sends the current profile and all saved reports via `POST {syncUrl}` with body `{ userId, profile, reports }`.
+
+**Sync URL:** When the app uses the backend from `/server` (e.g. in dev with `http://localhost:3001` or when `VITE_API_BASE_URL` is set), sync automatically uses that backend’s `/api/sync` endpoint. Only if no backend is configured does the app use `VITE_SYNC_API_URL` (e.g. for a separate production sync service).
 
 ## Backend contract
 
@@ -36,11 +38,7 @@ The CosmicJyoti **Express server** (`server/index.js`) includes sync endpoints t
    ```
    Add any other origins where you host the app.
 
-3. **Point the app at the server sync API.** In `.env.local` (project root):
-   ```bash
-   VITE_SYNC_API_URL=http://localhost:3001/api/sync
-   ```
-   For production, use your real server URL, e.g. `https://api.cosmicjyoti.com/api/sync`.
+3. **Sync URL:** When the frontend is using the same backend (e.g. in dev it uses `http://localhost:3001` automatically), sync uses `http://localhost:3001/api/sync` — no need to set `VITE_SYNC_API_URL`. For production, set `VITE_API_BASE_URL` to your backend URL so the app uses that backend for both API calls and sync; or if the frontend does not use that backend, set `VITE_SYNC_API_URL` to your sync endpoint (e.g. `https://api.cosmicjyoti.com/api/sync`).
 
 4. Restart the frontend dev server. When a user signs in with Google, the profile modal shows **“Save to my account”**. After they save, the same data is restored on next login (same or different device).
 

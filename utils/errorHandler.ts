@@ -28,11 +28,24 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
     if (error instanceof Error) {
       const message = error.message || '';
       
-      // Network errors
+      // Network errors (including CORS / "Failed to fetch" when backend is unreachable from deployed site)
       if (message.includes('network') || message.includes('fetch') || message.includes('Failed to fetch')) {
+        const isProd = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD;
+        if (isProd && (message.includes('Failed to fetch') || message.includes('fetch'))) {
+          return language === 'hi'
+            ? 'सर्वर से कनेक्ट नहीं हो पाया। बैकएंड पर CORS_ORIGIN में अपनी साइट URL जोड़ें, या GitHub Secrets में VITE_ASTROLOGY_API_KEYS सेट करें।'
+            : 'Could not reach the server. Add your site URL to CORS_ORIGIN on the backend, or set VITE_ASTROLOGY_API_KEYS in GitHub Secrets.';
+        }
         return language === 'hi'
           ? 'इंटरनेट कनेक्शन समस्या। कृपया अपना कनेक्शन जांचें और पुनः प्रयास करें।'
           : 'Network connection issue. Please check your connection and try again.';
+      }
+
+      // Google Maps: API not enabled or API key restrictions – enable APIs and allow key to use them
+      if (message.includes('REQUEST_DENIED') || message.includes('not activated on your API project') || message.includes('enable this API') || message.includes('gmp-get-started') || message.includes('not authorized to use this service or API') || message.includes('API restrictions')) {
+        return language === 'hi'
+          ? 'Google Maps: प्रोजेक्ट में Geocoding API व Time Zone API enable करें और API key की restrictions में इन्हें allow करें।'
+          : 'Google Maps: Enable Geocoding API and Time Zone API for your project, and in your API key restrictions allow these APIs.';
       }
 
       // API key not configured
@@ -40,6 +53,21 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
         return language === 'hi'
           ? 'API कुंजी कॉन्फ़िगर नहीं है। कृपया सेटअप जांचें।'
           : 'API key not configured. Please check your setup.';
+      }
+      // Kundali / Astrology API keys (freeastrologyapi.com) – needed for birth chart when backend is not used or fails
+      if (message.includes('Astrology API keys not configured') || message.includes('ASTROLOGY_API_KEYS') || message.includes('VITE_ASTROLOGY_API_KEYS')) {
+        const forDeploy = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD
+          ? (language === 'hi' ? ' डिप्लॉय साइट पर: GitHub Secrets में VITE_ASTROLOGY_API_KEYS जोड़ें और फिर से डिप्लॉय करें।' : ' For deployed site: add VITE_ASTROLOGY_API_KEYS to GitHub Secrets and redeploy.')
+          : '';
+        return language === 'hi'
+          ? `कुंडली के लिए एस्ट्रोलॉजी API कुंजी जरूरी है। .env.local में VITE_ASTROLOGY_API_KEYS सेट करें (freeastrologyapi.com से)।${forDeploy}`
+          : `Kundali requires astrology API keys. Add VITE_ASTROLOGY_API_KEYS to .env.local (get keys from freeastrologyapi.com).${forDeploy}`;
+      }
+      // Backend returned 4xx/5xx – hint to check backend or use astrology keys for Kundali
+      if (message.includes('Backend API error')) {
+        return language === 'hi'
+          ? 'बैकएंड से त्रुटि। सर्वर जांचें या GitHub Secrets में VITE_ASTROLOGY_API_KEYS सेट करके दोबारा डिप्लॉय करें।'
+          : 'Backend error. Check the server or set VITE_ASTROLOGY_API_KEYS in GitHub Secrets and redeploy.';
       }
 
       // API errors - Quota/Rate limit
@@ -54,6 +82,18 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
         return language === 'hi'
           ? 'अनुरोध समय सीमा से अधिक हो गया। कृपया पुनः प्रयास करें।'
           : 'Request timed out. Please try again.';
+      }
+
+      // Kundali form validation
+      if (message.includes('Invalid date') || message.includes('YYYY-MM-DD')) {
+        return language === 'hi'
+          ? 'अमान्य तारीख। जन्म तिथि वर्ष-महीना-दिन (जैसे 1990-08-15) में दर्ज करें।'
+          : 'Invalid date. Enter birth date as YYYY-MM-DD (e.g. 1990-08-15).';
+      }
+      if (message.includes('Invalid time') || message.includes('HH:MM')) {
+        return language === 'hi'
+          ? 'अमान्य समय। 24 घंटे प्रारूप में समय दर्ज करें (जैसे 14:30)।'
+          : 'Invalid time. Enter time in 24-hour format (e.g. 14:30).';
       }
 
       // Return sanitized error message (limit length to prevent UI issues)

@@ -18,6 +18,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,18 +27,38 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install dependencies (root + server)
         run: |
           rm -rf node_modules package-lock.json
           npm install
+          cd server && npm install && cd ..
 
-      - name: Build
+      # Run backend so we verify it starts; then build frontend. For live site, deploy backend (e.g. Render) and set VITE_API_BASE_URL in Secrets.
+      - name: Start backend and wait for health
+        env:
+          PORT: 3001
+        run: |
+          cd server && node index.js &
+          echo "Waiting for backend at http://localhost:3001..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3001/health > /dev/null; then
+              echo "Backend is up."
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "Backend did not become ready in time."
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: Build frontend
         run: npm run build
         env:
-          # Required for production: URL where your server/ backend is running. See DEPLOY.md.
+          # Backend: set VITE_API_BASE_URL in Secrets to one backend URL (no trailing slash). Examples: https://cosmicjyoti.onrender.com or https://cosmicjyoti-753579758080.europe-west1.run.app
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || '' }}
           API_KEY: ${{ secrets.API_KEY || '' }}
           API_KEYS: ${{ secrets.API_KEYS || '' }}
@@ -48,9 +70,11 @@ jobs:
           GROQ_API_KEYS: ${{ secrets.GROQ_API_KEYS || secrets.GROQ_API_KEY || '' }}
           VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY || '' }}
           VITE_PROFILE_SUBMIT_URL: ${{ secrets.VITE_PROFILE_SUBMIT_URL || '' }}
-          # Google Sign-In (OAuth 2.0 Client ID). Add secret VITE_GOOGLE_CLIENT_ID in repo Settings → Secrets and variables → Actions.
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || '' }}
-          # User sync (profile + saved reports). Add secret VITE_SYNC_API_URL = your Cloud Run API URL + /api/sync.
+          # Kundali (birth chart): set ASTROLOGY_API_KEYS or VITE_ASTROLOGY_API_KEYS (comma-separated keys from freeastrologyapi.com).
+          ASTROLOGY_API_KEYS: ${{ secrets.ASTROLOGY_API_KEYS || secrets.VITE_ASTROLOGY_API_KEYS || '' }}
+          VITE_ASTROLOGY_API_KEYS: ${{ secrets.VITE_ASTROLOGY_API_KEYS || secrets.ASTROLOGY_API_KEYS || '' }}
+          # Optional: only if sync uses a different URL than the backend (e.g. separate sync service). When VITE_API_BASE_URL is set, sync uses that backend.
           VITE_SYNC_API_URL: ${{ secrets.VITE_SYNC_API_URL || '' }}
           # Use relative base so assets load at any path (e.g. .../CosmicJyoti/ or custom domain root).
           VITE_BASE_URL: ./
@@ -68,10 +92,12 @@ jobs:
           path: './dist'
 
   deploy:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Deploy to GitHub Pages

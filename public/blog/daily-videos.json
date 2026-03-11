@@ -2,6 +2,19 @@
   "lastUpdated": "2026-03-11",
   "videos": [
     {
+      "id": "2026-03-11-2am",
+      "date": "2026-03-11",
+      "slot": "2am",
+      "title": "Kundali: Janam kundali ka rahasya",
+      "titleHi": "कुंडली: जन्म कुंडली का रहस्य",
+      "titleHinglish": "Kundali: Janam kundali ka rahasya",
+      "descriptionHi": "जन्म के समय आकाश की स्थिति से बनने वाली कुंडली। 12 भाव और ग्रहों की स्थिति जीवन का नक्शा बताती है।",
+      "descriptionHinglish": "Janam ke samay aakash ki stithi se bannne wali kundali. 12 bhav aur grahon ki stithi jeevan ka naksha batati hai.",
+      "appMode": "kundali",
+      "videoUrl": "/blog/videos/2026-03-11-2am.mp4",
+      "generatedAt": "2026-03-11T17:30:17.205Z"
+    },
+    {
       "id": "2026-03-11-7pm",
       "date": "2026-03-11",
       "slot": "7pm",

@@ -28,8 +28,14 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
     if (error instanceof Error) {
       const message = error.message || '';
       
-      // Network errors
+      // Network errors (including CORS / "Failed to fetch" when backend is unreachable from deployed site)
       if (message.includes('network') || message.includes('fetch') || message.includes('Failed to fetch')) {
+        const isProd = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD;
+        if (isProd && (message.includes('Failed to fetch') || message.includes('fetch'))) {
+          return language === 'hi'
+            ? 'सर्वर से कनेक्ट नहीं हो पाया। बैकएंड पर CORS_ORIGIN में अपनी साइट URL जोड़ें, या GitHub Secrets में VITE_ASTROLOGY_API_KEYS सेट करें।'
+            : 'Could not reach the server. Add your site URL to CORS_ORIGIN on the backend, or set VITE_ASTROLOGY_API_KEYS in GitHub Secrets.';
+        }
         return language === 'hi'
           ? 'इंटरनेट कनेक्शन समस्या। कृपया अपना कनेक्शन जांचें और पुनः प्रयास करें।'
           : 'Network connection issue. Please check your connection and try again.';
@@ -41,11 +47,20 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           ? 'API कुंजी कॉन्फ़िगर नहीं है। कृपया सेटअप जांचें।'
           : 'API key not configured. Please check your setup.';
       }
-      // Kundali / Astrology API keys (freeastrologyapi.com) – needed for birth chart
+      // Kundali / Astrology API keys (freeastrologyapi.com) – needed for birth chart when backend is not used or fails
       if (message.includes('Astrology API keys not configured') || message.includes('ASTROLOGY_API_KEYS') || message.includes('VITE_ASTROLOGY_API_KEYS')) {
+        const forDeploy = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD
+          ? (language === 'hi' ? ' डिप्लॉय साइट पर: GitHub Secrets में VITE_ASTROLOGY_API_KEYS जोड़ें और फिर से डिप्लॉय करें।' : ' For deployed site: add VITE_ASTROLOGY_API_KEYS to GitHub Secrets and redeploy.')
+          : '';
         return language === 'hi'
-          ? 'कुंडली के लिए एस्ट्रोलॉजी API कुंजी जरूरी है। .env.local में VITE_ASTROLOGY_API_KEYS सेट करें (freeastrologyapi.com से)।'
-          : 'Kundali requires astrology API keys. Add VITE_ASTROLOGY_API_KEYS to .env.local (get keys from freeastrologyapi.com).';
+          ? `कुंडली के लिए एस्ट्रोलॉजी API कुंजी जरूरी है। .env.local में VITE_ASTROLOGY_API_KEYS सेट करें (freeastrologyapi.com से)।${forDeploy}`
+          : `Kundali requires astrology API keys. Add VITE_ASTROLOGY_API_KEYS to .env.local (get keys from freeastrologyapi.com).${forDeploy}`;
+      }
+      // Backend returned 4xx/5xx – hint to check backend or use astrology keys for Kundali
+      if (message.includes('Backend API error')) {
+        return language === 'hi'
+          ? 'बैकएंड से त्रुटि। सर्वर जांचें या GitHub Secrets में VITE_ASTROLOGY_API_KEYS सेट करके दोबारा डिप्लॉय करें।'
+          : 'Backend error. Check the server or set VITE_ASTROLOGY_API_KEYS in GitHub Secrets and redeploy.';
       }
 
       // API errors - Quota/Rate limit

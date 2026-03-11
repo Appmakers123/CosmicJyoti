@@ -30,18 +30,26 @@ A full-featured **Vedic astrology** web and Android app with AI-powered horoscop
 
 **Requirements:** Node.js 18+ (see [.nvmrc](.nvmrc)).
 
+**To run both frontend and backend so they can communicate** (Kundali, Rishi, Panchang, etc. use the backend):
+
 ```bash
 git clone https://github.com/Appmakers123/CosmicJyoti.git
 cd CosmicJyoti
 npm install
-cp .env.example .env
-# Edit .env and add at least one of: API_KEY (Gemini), GROQ_API_KEY, PERPLEXITY_API_KEY
-npm run dev
+cd server && npm install && cd ..
+cp .env.example .env.local
+# Edit .env.local: add API_KEY (Gemini), and optionally ASTROLOGY_API_KEYS (freeastrologyapi.com)
+npm run dev:all
 ```
 
 - **Frontend:** http://localhost:5173  
-- **Backend (optional):** `npm run dev:server` → http://localhost:3001  
-- **Both:** `npm run dev:all`
+- **Backend:** http://localhost:3001 (the frontend talks to this in dev when both run)
+
+**Other options:**
+
+- **Frontend only:** `npm run dev` — app works but uses direct APIs (set `VITE_ASTROLOGY_API_KEYS` in .env.local for Kundali).
+- **Backend only:** `npm run dev:server` or `npm run server` → http://localhost:3001  
+- **Both (recommended for local):** `npm run dev:all`
 
 **Production build:**
 

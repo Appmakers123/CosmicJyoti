@@ -1028,18 +1028,25 @@ import {
   generateTarotFromBackend
 } from './backendService';
 
+/** Normalize form data so backend/direct never receive empty required fields (e.g. after deploy, state can be empty). */
+function normalizeKundaliFormData(formData: KundaliFormData): KundaliFormData {
+    const name = (formData.name ?? '').trim() || 'Seeker';
+    return { ...formData, name };
+}
+
 export const generateKundali = async (formData: KundaliFormData, language: Language = 'en'): Promise<KundaliResponse> => {
+    const normalized = normalizeKundaliFormData(formData);
     if (isBackendConfigured()) {
         try {
-            console.log("Generating Kundali via backend API for:", formData.name);
-            const backendResponse = await generateKundaliFromBackend(formData, language);
+            console.log("Generating Kundali via backend API for:", normalized.name);
+            const backendResponse = await generateKundaliFromBackend(normalized, language);
             return transformBackendResponse(backendResponse);
         } catch (error: any) {
             console.warn("Backend Kundali failed, falling back to direct API:", error?.message || error);
-            return await generateKundaliDirect(formData, language);
+            return await generateKundaliDirect(normalized, language);
         }
     }
-    return await generateKundaliDirect(formData, language);
+    return await generateKundaliDirect(normalized, language);
 };
 
 /**

@@ -14,6 +14,18 @@ function getArticleId(post: DailyPost): string {
   return post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
 }
 
+/** Base URL for assets (works with Vite base './' on GitHub Pages). No leading slash so paths resolve correctly. */
+function assetBase(): string {
+  const b = (typeof import.meta !== 'undefined' && (import.meta as any).env?.BASE_URL) || '/';
+  return b.endsWith('/') ? b : b + '/';
+}
+
+function getBlogImageSrc(post: DailyPost): string {
+  const base = assetBase();
+  const articleId = getArticleId(post);
+  return post.imageUrl ? `${base}blog/images/${articleId}.png` : `${base}app-logo.png`;
+}
+
 function getStoredArticleLikes(): Set<string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_ARTICLE_LIKES);
@@ -145,10 +157,8 @@ function relevanceScore(post: DailyPost, q: string): number {
 
 /** Preload an article image so it's ready when user opens the article */
 function preloadArticleImage(post: DailyPost): void {
-  const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
-  const src = post.imageUrl ? `/blog/images/${articleId}.png` : '/app-logo.png';
   const img = new Image();
-  img.src = src;
+  img.src = getBlogImageSrc(post);
 }
 
 const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule }) => {
@@ -393,7 +403,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
     const tryMode = appModeFor(post);
     const tryUrl = serviceUrl(post);
     const articleId = post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
-    const imageSrc = post.imageUrl ? `/blog/images/${articleId}.png` : '/app-logo.png';
+    const imageSrc = getBlogImageSrc(post);
     return (
       <section className="animate-fade-in-up bg-slate-800/30 border border-slate-700/50 rounded-2xl p-6 md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">

@@ -154,7 +154,14 @@ async function generateAudioAsync(text, audioPath) {
   try {
     const mod = await import('text2wav');
     const text2wav = mod.default ?? mod;
-    const wav = await text2wav(text, { voice: 'hi' });
+    // Slower speed (140 WPM) for clearer, less harsh Hindi TTS; pitch/amplitude if supported
+    const opts = { voice: 'hi', speed: 140 };
+    let wav;
+    try {
+      wav = await text2wav(text, { ...opts, pitch: 45, amplitude: 100 });
+    } catch (_) {
+      wav = await text2wav(text, opts);
+    }
     if (wav && (wav.buffer || wav.length)) {
       fs.writeFileSync(audioPath, Buffer.from(wav.buffer ?? wav));
       return true;

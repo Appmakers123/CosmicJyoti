@@ -84,14 +84,17 @@ function shouldRetryWithNextKey(status, body) {
   if (status === 401 || status === 403) return true;
   if (status === 429) return true;
   if (status >= 500) return true;
-  if (body && (
-    body.includes('API_KEY') ||
-    body.includes('api key') ||
-    body.includes('quota') ||
-    body.includes('rate limit') ||
-    body.includes('invalid key') ||
-    body.includes('Missing Authentication Token') ||
-    body.includes('Forbidden')
+  const bodyStr = typeof body === 'string' ? body : (body ? JSON.stringify(body) : '');
+  if (bodyStr && (
+    bodyStr.includes('API_KEY') ||
+    bodyStr.includes('api key') ||
+    bodyStr.includes('quota') ||
+    bodyStr.includes('rate limit') ||
+    bodyStr.includes('invalid key') ||
+    bodyStr.includes('Missing Authentication Token') ||
+    bodyStr.includes('Forbidden') ||
+    bodyStr.includes('REQUEST_DENIED') ||
+    bodyStr.includes('not authorized')
   )) return true;
   return false;
 }
@@ -116,8 +119,10 @@ async function postWithKeyRotation(axios, url, data, config = {}) {
 
   let keyToUse = null;
   for (let attempt = 0; attempt < keys.length; attempt++) {
+    const availableKeys = keys.filter((k) => !triedKeys.has(k));
+    if (availableKeys.length === 0) break;
     try {
-      keyToUse = await acquireKeySlot(keys);
+      keyToUse = await acquireKeySlot(availableKeys);
       if (!keyToUse || typeof keyToUse !== 'string' || !keyToUse.trim()) {
         continue;
       }
@@ -142,8 +147,8 @@ async function postWithKeyRotation(axios, url, data, config = {}) {
       lastData = body;
       triedKeys.add(keyToUse);
 
-      if (shouldRetryWithNextKey(status, body) && triedKeys.size < keys.length) {
-        console.warn(`Astrology API key failed (${status}), trying next key...`);
+      if (shouldRetryWithNextKey(status, body)) {
+        console.warn(`Astrology API key failed (${status}), trying next of ${keys.length} key(s)...`);
         continue;
       }
       throw err;

@@ -17,6 +17,14 @@ This document summarizes security measures in CosmicJyoti and how to harden your
 - **Unsafe URLs**: The external link handler blocks `javascript:` and `data:` URLs to avoid script injection via links.
 - **No sensitive logging**: API key presence is never logged in production builds.
 
+### API keys in the client bundle
+
+When you build the frontend with `GEMINI_API_KEY`, `GROQ_API_KEY`, or `PERPLEXITY_API_KEY` set (e.g. in CI), those values are **inlined into the JavaScript bundle** so the app can call the APIs from the browser when no backend is used. As a result, **anyone can view source or DevTools and extract these keys**. To reduce risk:
+
+- Prefer using the **backend** (`server/`) for AI and external APIs; do **not** set Gemini/Groq/Perplexity keys in the frontend build env. Set them only on the server (e.g. Cloud Run, GitHub Actions for blog script).
+- If you need client-side AI (e.g. when the backend is down), use separate keys with **strict quota/rate limits** and treat them as potentially public.
+- Keys that are meant to be public (e.g. Google Maps `VITE_GOOGLE_API_KEY`) can be restricted by domain in the provider’s console.
+
 ## Auditing dependencies
 
 npm reported **4 vulnerabilities (2 moderate, 2 high)**. To address them:

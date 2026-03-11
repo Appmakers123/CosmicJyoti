@@ -2,8 +2,18 @@
   "name": "cosmicjyoti",
   "private": true,
   "version": "1.2.9",
+  "description": "Vedic AI astrology app – Kundali, horoscope, Panchang, compatibility, Rishi chat",
   "license": "MIT",
   "copyright": "Copyright (c) 2025 CosmicJyoti",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Appmakers123/CosmicJyoti.git"
+  },
+  "homepage": "https://www.cosmicjyoti.com",
+  "bugs": "https://github.com/Appmakers123/CosmicJyoti/issues",
+  "engines": {
+    "node": ">=18"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

@@ -1,6 +1,6 @@
 /**
  * Sync profile + saved reports to/from cloud by user id (e.g. Google id).
- * Requires VITE_SYNC_API_URL to be set (e.g. a Cloud Function or your backend).
+ * Uses the backend from /server when available (same as Kundali/Rishi); otherwise VITE_SYNC_API_URL if set.
  * GET ?userId=xxx returns { profile, reports }. POST body { userId, profile, reports } saves.
  */
 
@@ -13,8 +13,17 @@ import {
   type SavedReportMeta,
   type SavedReport,
 } from '../utils/reportStorageService';
+import { getBackendBaseUrl } from './backendService';
 
-const SYNC_API_URL = import.meta.env.VITE_SYNC_API_URL as string | undefined;
+const VITE_SYNC_API_URL = import.meta.env.VITE_SYNC_API_URL as string | undefined;
+
+export function getSyncApiUrl(): string | undefined {
+  const backendBase = getBackendBaseUrl();
+  if (backendBase) {
+    return `${backendBase.replace(/\/$/, '')}/api/sync`;
+  }
+  return VITE_SYNC_API_URL?.trim() || undefined;
+}
 
 export interface UserSyncPayload {
   profile: GlobalProfile | null;
@@ -22,10 +31,6 @@ export interface UserSyncPayload {
     index: SavedReportMeta[];
     items: Record<string, SavedReport>;
   };
-}
-
-export function getSyncApiUrl(): string | undefined {
-  return SYNC_API_URL?.trim() || undefined;
 }
 
 /** Fetch saved profile + reports for this user from the cloud */

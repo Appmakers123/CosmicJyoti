@@ -570,17 +570,29 @@ const getCoordinates = async (location: string, lat?: number, lon?: number): Pro
     return { lat: 19.0760, lon: 72.8777, timezone: 5.5 };
 };
 
-// Helper function to parse date and time
+// Helper function to parse date and time (validates to avoid NaN in API payload)
 const parseDateTime = (dateStr: string, timeStr: string, seconds?: number) => {
     const date = new Date(dateStr);
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+        throw new Error('Invalid date. Use YYYY-MM-DD format (e.g. 1990-08-15).');
+    }
+    const parts = timeStr.trim().split(':').map(Number);
+    const hours = parts[0] ?? 0;
+    const minutes = parts[1] ?? 0;
+    const secs = seconds !== undefined ? seconds : (parts[2] ?? 0);
+    if (Number.isNaN(hours) || Number.isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        throw new Error('Invalid time. Use HH:MM or HH:MM:SS in 24-hour format (e.g. 14:30).');
+    }
     return {
-        year: date.getFullYear(),
-        month: date.getMonth() + 1,
-        date: date.getDate(),
-        hours: hours || 0,
-        minutes: minutes || 0,
-        seconds: seconds !== undefined ? seconds : 0
+        year,
+        month,
+        date: day,
+        hours,
+        minutes,
+        seconds: secs
     };
 };
 
@@ -1017,20 +1029,17 @@ import {
 } from './backendService';
 
 export const generateKundali = async (formData: KundaliFormData, language: Language = 'en'): Promise<KundaliResponse> => {
-    try {
-        console.log("Generating Kundali via backend API for:", formData.name);
-        
-        // Use backend API instead of direct astrology API
-        const backendResponse = await generateKundaliFromBackend(formData, language);
-        
-        // Transform backend response to match frontend types
-        return transformBackendResponse(backendResponse);
-    } catch (error: any) {
-        console.error("Backend Kundali generation failed, falling back to direct API:", error);
-        
-        // Fallback to original implementation if backend fails
-        return await generateKundaliDirect(formData, language);
+    if (isBackendConfigured()) {
+        try {
+            console.log("Generating Kundali via backend API for:", formData.name);
+            const backendResponse = await generateKundaliFromBackend(formData, language);
+            return transformBackendResponse(backendResponse);
+        } catch (error: any) {
+            console.warn("Backend Kundali failed, falling back to direct API:", error?.message || error);
+            return await generateKundaliDirect(formData, language);
+        }
     }
+    return await generateKundaliDirect(formData, language);
 };
 
 /**

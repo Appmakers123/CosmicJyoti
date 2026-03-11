@@ -36,7 +36,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Required for production: URL where your server/ backend is running. See DEPLOY.md.
+          # Backend from /server: set VITE_API_BASE_URL to your deployed backend URL (e.g. Render, Cloud Run). API calls and user sync (profile + saved reports) both use this; sync uses {VITE_API_BASE_URL}/api/sync. See DEPLOY.md.
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || '' }}
           API_KEY: ${{ secrets.API_KEY || '' }}
           API_KEYS: ${{ secrets.API_KEYS || '' }}
@@ -48,9 +48,11 @@ jobs:
           GROQ_API_KEYS: ${{ secrets.GROQ_API_KEYS || secrets.GROQ_API_KEY || '' }}
           VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY || '' }}
           VITE_PROFILE_SUBMIT_URL: ${{ secrets.VITE_PROFILE_SUBMIT_URL || '' }}
-          # Google Sign-In (OAuth 2.0 Client ID). Add secret VITE_GOOGLE_CLIENT_ID in repo Settings → Secrets and variables → Actions.
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || '' }}
-          # User sync (profile + saved reports). Add secret VITE_SYNC_API_URL = your Cloud Run API URL + /api/sync.
+          # Kundali (birth chart): set ASTROLOGY_API_KEYS or VITE_ASTROLOGY_API_KEYS (comma-separated keys from freeastrologyapi.com).
+          ASTROLOGY_API_KEYS: ${{ secrets.ASTROLOGY_API_KEYS || secrets.VITE_ASTROLOGY_API_KEYS || '' }}
+          VITE_ASTROLOGY_API_KEYS: ${{ secrets.VITE_ASTROLOGY_API_KEYS || secrets.ASTROLOGY_API_KEYS || '' }}
+          # Optional: only if sync uses a different URL than the backend (e.g. separate sync service). When VITE_API_BASE_URL is set, sync uses that backend.
           VITE_SYNC_API_URL: ${{ secrets.VITE_SYNC_API_URL || '' }}
           # Use relative base so assets load at any path (e.g. .../CosmicJyoti/ or custom domain root).
           VITE_BASE_URL: ./

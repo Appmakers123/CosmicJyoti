@@ -41,6 +41,12 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           ? 'API कुंजी कॉन्फ़िगर नहीं है। कृपया सेटअप जांचें।'
           : 'API key not configured. Please check your setup.';
       }
+      // Kundali / Astrology API keys (freeastrologyapi.com) – needed for birth chart
+      if (message.includes('Astrology API keys not configured') || message.includes('ASTROLOGY_API_KEYS') || message.includes('VITE_ASTROLOGY_API_KEYS')) {
+        return language === 'hi'
+          ? 'कुंडली के लिए एस्ट्रोलॉजी API कुंजी जरूरी है। .env.local में VITE_ASTROLOGY_API_KEYS सेट करें (freeastrologyapi.com से)।'
+          : 'Kundali requires astrology API keys. Add VITE_ASTROLOGY_API_KEYS to .env.local (get keys from freeastrologyapi.com).';
+      }
 
       // API errors - Quota/Rate limit
       if (message.includes('429') || message.includes('quota') || message.includes('rate limit') || message.includes('exceeded') || message.includes('RESOURCE_EXHAUSTED')) {
@@ -54,6 +60,18 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
         return language === 'hi'
           ? 'अनुरोध समय सीमा से अधिक हो गया। कृपया पुनः प्रयास करें।'
           : 'Request timed out. Please try again.';
+      }
+
+      // Kundali form validation
+      if (message.includes('Invalid date') || message.includes('YYYY-MM-DD')) {
+        return language === 'hi'
+          ? 'अमान्य तारीख। जन्म तिथि वर्ष-महीना-दिन (जैसे 1990-08-15) में दर्ज करें।'
+          : 'Invalid date. Enter birth date as YYYY-MM-DD (e.g. 1990-08-15).';
+      }
+      if (message.includes('Invalid time') || message.includes('HH:MM')) {
+        return language === 'hi'
+          ? 'अमान्य समय। 24 घंटे प्रारूप में समय दर्ज करें (जैसे 14:30)।'
+          : 'Invalid time. Enter time in 24-hour format (e.g. 14:30).';
       }
 
       // Return sanitized error message (limit length to prevent UI issues)

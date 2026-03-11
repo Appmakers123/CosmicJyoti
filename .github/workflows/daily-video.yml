@@ -86,15 +86,19 @@ jobs:
           API_KEY: ${{ secrets.API_KEY }}
 
       - name: Commit and push
+        env:
+          BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add public/blog/daily-videos.json public/blog/videos/
           if git diff --staged --quiet; then
-            echo "No changes to commit"
+            echo "No changes to commit (video or manifest may already exist for this slot/date)."
+            ls -la public/blog/videos/ 2>/dev/null || true
+            cat public/blog/daily-videos.json 2>/dev/null || true
           else
             git commit -m "chore: add daily AI video (${{ github.event.inputs.slot || steps.slot.outputs.slot || '2am' }})"
-            git fetch origin main
-            git pull origin main --no-rebase --no-edit -X ours
-            git push origin main
+            git fetch origin "$BRANCH"
+            git pull origin "$BRANCH" --no-rebase --no-edit -X ours
+            git push origin "HEAD:$BRANCH"
           fi

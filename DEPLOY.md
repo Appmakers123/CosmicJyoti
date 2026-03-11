@@ -65,8 +65,11 @@ The frontend must know **where your backend is running** so it can call your API
 
    | Secret name             | Value                                      | Required for |
    |--------------------------|--------------------------------------------|--------------|
-   | `VITE_API_BASE_URL`      | URL where your `server/` backend is running (no trailing slash) | Backend calls (Rishi, Kundali, etc.) |
+   | `VITE_API_BASE_URL`      | URL where your `server/` backend is running (no trailing slash) | All API calls and **user sync** (profile + saved reports use `{URL}/api/sync`). One URL for everything. |
    | `API_KEY` or `GEMINI_API_KEY` | Your Gemini API key (for direct fallback)   | Optional; backend has its own key |
+   | `ASTROLOGY_API_KEYS` or `VITE_ASTROLOGY_API_KEYS` | Comma-separated keys from freeastrologyapi.com | Kundali (birth chart) if backend is not used or needs keys |
+
+   When `VITE_API_BASE_URL` is set, the built app uses that backend for Rishi, Kundali, Panchang, and for **user sync** (no need to set `VITE_SYNC_API_URL` unless you use a separate sync service).
 
    Examples:
    - Backend on your server: `VITE_API_BASE_URL` = `https://api.yourdomain.com`
@@ -98,6 +101,6 @@ The frontend must know **where your backend is running** so it can call your API
 |------------|--------------|--------------|
 | Backend API | Your host (from `server/`) | e.g. `https://api.yourdomain.com` or localhost for dev |
 | Frontend   | GitHub Pages | e.g. `https://user.github.io/cosmicsutra/` |
-| Backend URL in frontend | GitHub Secret | `VITE_API_BASE_URL` = URL where your backend runs |
+| Backend URL in frontend | GitHub Secret | `VITE_API_BASE_URL` = URL where your backend runs (API + user sync use it) |
 
-After you set `VITE_API_BASE_URL` to your backend URL and redeploy the frontend, the app will use your `server/` backend for Rishi, Kundali, Panchang, and other APIs.
+After you set `VITE_API_BASE_URL` to your backend URL and redeploy the frontend, the app will use your `server/` backend for Rishi, Kundali, Panchang, user sync (profile + saved reports), and other APIs. No separate sync URL is needed when using the same backend.

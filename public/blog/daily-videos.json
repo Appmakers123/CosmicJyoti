@@ -1,4 +1,18 @@
 {
-  "lastUpdated": "",
-  "videos": []
+  "lastUpdated": "2026-03-11",
+  "videos": [
+    {
+      "id": "2026-03-11-7pm",
+      "date": "2026-03-11",
+      "slot": "7pm",
+      "title": "Rashifal: Aaj ka daily rashifal",
+      "titleHi": "राशिफल: आज का दैनिक राशिफल",
+      "titleHinglish": "Rashifal: Aaj ka daily rashifal",
+      "descriptionHi": "12 राशियों के लिए दैनिक भविष्यफल। ग्रहों की चाल और आपके दिन पर प्रभाव। सकारात्मक सुझाव।",
+      "descriptionHinglish": "12 rashiyon ke liye daily bhavishyafal. Grahon ki chaal aur aapke din par prabhav. Sakaratmak sujhav.",
+      "appMode": "daily",
+      "videoUrl": "/blog/videos/2026-03-11-7pm.mp4",
+      "generatedAt": "2026-03-11T16:13:51.633Z"
+    }
+  ]
 }

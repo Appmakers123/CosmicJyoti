@@ -567,6 +567,83 @@ app.post('/api/sync', (req, res) => {
   }
 });
 
+// Semantic blog search: embed query with Gemini, compare to precomputed post embeddings, return ranked post ids.
+const BLOG_EMBEDDINGS_PATH = path.join(__dirname, '..', 'public', 'blog', 'daily-posts-embeddings.json');
+const BLOG_SEARCH_TOP_K = 24;
+
+function cosineSimilarity(a, b) {
+  if (!a?.length || !b?.length || a.length !== b.length) return 0;
+  let dot = 0, normA = 0, normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    normA += a[i] * a[i];
+    normB += b[i] * b[i];
+  }
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : dot / denom;
+}
+
+app.get('/api/blog-search', async (req, res) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) {
+      return res.status(400).json({ error: 'Missing query (q)' });
+    }
+    const apiKey = geminiKey;
+    if (!apiKey) {
+      return res.status(503).json({ error: 'Blog semantic search requires GEMINI_API_KEY' });
+    }
+    let embeddingsData;
+    try {
+      const raw = fs.readFileSync(BLOG_EMBEDDINGS_PATH, 'utf8');
+      embeddingsData = JSON.parse(raw);
+    } catch (e) {
+      return res.status(503).json({
+        error: 'Blog embeddings not found. Run: npm run blog:embeddings',
+      });
+    }
+    const list = embeddingsData.embeddings || [];
+    if (!list.length) {
+      return res.json({ postIds: [] });
+    }
+    const modelId = (embeddingsData.model || 'gemini-embedding-001').startsWith('models/')
+      ? embeddingsData.model
+      : `models/${embeddingsData.model}`;
+    const dimensions = embeddingsData.dimensions || 768;
+    const embedUrl = `https://generativelanguage.googleapis.com/v1beta/${modelId}:embedContent?key=${encodeURIComponent(apiKey)}`;
+    const embedRes = await fetch(embedUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: modelId,
+        content: { parts: [{ text: q.slice(0, 8192) }] },
+        taskType: 'RETRIEVAL_QUERY',
+        outputDimensionality: dimensions,
+      }),
+    });
+    if (!embedRes.ok) {
+      const err = await embedRes.text();
+      console.error('Blog search embed error:', embedRes.status, err);
+      return res.status(502).json({ error: 'Embedding API error' });
+    }
+    const embedBody = await embedRes.json();
+    const queryVec = embedBody.embedding?.values || embedBody.embeddings?.[0]?.values || [];
+    if (!queryVec.length) {
+      return res.json({ postIds: [] });
+    }
+    const withScore = list.map(({ id, embedding }) => ({
+      id,
+      score: cosineSimilarity(queryVec, embedding),
+    }));
+    withScore.sort((a, b) => b.score - a.score);
+    const postIds = withScore.slice(0, BLOG_SEARCH_TOP_K).map((x) => x.id).filter(Boolean);
+    res.json({ postIds });
+  } catch (e) {
+    console.error('Blog search error:', e);
+    res.status(500).json({ error: e.message || 'Blog search failed' });
+  }
+});
+
 // Clear cache endpoint (for admin use). Set CACHE_CLEAR_SECRET in env to require ?secret= or body.secret.
 app.post('/api/cache/clear', (req, res) => {
   try {

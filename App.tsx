@@ -48,6 +48,7 @@ import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
 import DashboardConsentBanner from './components/DashboardConsentBanner';
 import DailyAIBlog from './components/DailyAIBlog';
+import DailyAIVideos from './components/DailyAIVideos';
 import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
 import HamburgerMenu from './components/HamburgerMenu';
@@ -175,6 +176,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
       { mode: 'numerology-guide', labelEn: 'Numerology Guide', labelHi: 'अंक गाइड', icon: '🔢', descEn: 'Number meanings', descHi: 'अंक अर्थ', isPremium: false },
       { mode: 'star-legends', labelEn: 'Star Legends', labelHi: 'तारा कथाएं', icon: '🌟', descEn: 'Cosmic stories', descHi: 'आकाशीय कथाएं', isPremium: false },
       { mode: 'ai-blog', labelEn: 'AI Articles', labelHi: 'AI लेख', icon: '📝', descEn: 'Daily astrology articles', descHi: 'दैनिक ज्योतिष लेख', isPremium: false },
+      { mode: 'ai-videos', labelEn: 'AI Videos', labelHi: 'AI वीडियो', icon: '🎬', descEn: 'Daily cosmic short videos', descHi: 'दैनिक संक्षिप्त वीडियो', isPremium: false },
       { mode: 'ashta-siddhis', labelEn: 'Ashta Siddhis & Nav Nidhi', labelHi: 'अष्ट सिद्धि व नव निधि', icon: '✨', descEn: 'Eight siddhis, nine nidhis', descHi: 'आठ सिद्धि, नव निधि', isPremium: false },
       { mode: 'rasa-shastra', labelEn: 'Rasa Shastra', labelHi: 'रस शास्त्र', icon: '⚗️', descEn: 'Indian alchemy & Rasayana', descHi: 'भारतीय रसायन विद्या', isPremium: false },
       { mode: 'sadesati-dasha', labelEn: 'Sade Sati & Dasha', labelHi: 'साढ़े साती और दशा', icon: '🪐', descEn: 'Calculator with AI interpretation', descHi: 'कैलकुलेटर और AI व्याख्या', isPremium: false },
@@ -202,7 +204,7 @@ const MODULE_CATEGORIES: CategoryDef[] = [
   },
 ];
 
-const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone', 'lal-kitab', 'prashna-kundali', 'mobile-numerology', 'loshu', 'i-ching', 'runes', 'signature', 'ashta-siddhis', 'rasa-shastra', 'sadesati-dasha', 'about', 'contact'];
+const VALID_APP_MODES: AppViewMode[] = ['daily', 'kundali', 'panchang', 'numerology', 'learning', 'tarot', 'compatibility', 'games', 'palm-reading', 'face-reading', 'muhurat', 'mantra', 'rudraksh', 'planets-houses', 'zodiac-signs', 'nakshatra-library', 'kundali-basics', 'palmistry-guide', 'numerology-guide', 'star-legends', 'matchmaking', 'vastu', 'gemstones', 'dreams', 'cosmic-health', 'yantra', 'appointment', 'ai-blog', 'ai-videos', 'varshphal', 'name-suggestions', 'upay', 'disha', 'birthstone', 'lal-kitab', 'prashna-kundali', 'mobile-numerology', 'loshu', 'i-ching', 'runes', 'signature', 'ashta-siddhis', 'rasa-shastra', 'sadesati-dasha', 'about', 'contact'];
 
 /** Renders when Sarvam/Shunya are loading UI translations (must be inside TranslationProvider). */
 function TranslationLoadingIndicator() {
@@ -1870,6 +1872,16 @@ const App: React.FC = () => {
             <DailyAIBlog language={language} onBack={() => setMode('hub')} onTryModule={(m) => { const mode = (m || '').toLowerCase().trim() as AppViewMode; if (mode && VALID_APP_MODES.includes(mode)) switchMode(mode); }} />
           </React.Suspense>
         )}
+        {mode === 'ai-videos' && (
+            <DailyAIVideos
+              language={language}
+              onBack={() => setMode('hub')}
+              onTryModule={(m) => {
+                const next = (m || '').toLowerCase().trim() as AppViewMode;
+                if (next && VALID_APP_MODES.includes(next)) switchMode(next);
+              }}
+            />
+          )}
         {mode === 'compatibility' && <CompatibilityTab language={language}  />}
         {mode === 'muhurat' && <MuhuratLab language={language} onBack={() => setMode('hub')} />}
         {mode === 'matchmaking' && <MatchMaking language={language} />}
@@ -2022,7 +2034,7 @@ const App: React.FC = () => {
                   <svg className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
-                  <a href="mailto:consultcosmicjyoti@gmail.com" className="text-blue-400 hover:text-blue-300 transition-colors hover:underline break-all">consultcosmicjyoti@gmail.com</a>
+                  <a href="mailto:nikemaurya1996@gmail.com" className="text-blue-400 hover:text-blue-300 transition-colors hover:underline break-all">nikemaurya1996@gmail.com</a>
                 </div>
               </div>
             </div>

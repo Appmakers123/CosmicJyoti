@@ -88,6 +88,11 @@ export function isBackendConfigured(): boolean {
   return API_BASE_URL !== null;
 }
 
+/** Backend base URL (e.g. http://localhost:3001) for direct API calls like blog-search. */
+export function getBackendBaseUrl(): string | null {
+  return API_BASE_URL;
+}
+
 export interface KundaliFormData {
   name: string;
   date: string;

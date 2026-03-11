@@ -3,7 +3,7 @@ import { Language } from '../types';
 import { getExternalLinkProps } from '../utils/linkHandler';
 
 const WHATSAPP_NUMBER = '919326715739';
-const SUPPORT_EMAIL = 'consultcosmicjyoti@gmail.com';
+const SUPPORT_EMAIL = 'nikemaurya1996@gmail.com';
 
 interface ContactUsProps {
   language: Language;
@@ -17,7 +17,7 @@ export default function ContactUs({ language }: ContactUsProps) {
     <div className="w-full max-w-3xl mx-auto px-4 py-8 animate-fade-in-up">
       <div className="bg-slate-900/80 backdrop-blur-md border border-amber-500/30 rounded-2xl p-6 md:p-8 shadow-2xl">
         <h1 className="text-2xl font-serif font-bold text-amber-200 mb-2">
-          {isHi ? 'संपर्क करें' : 'Contact Us'}
+          {isHi ? 'संपर्क करें' : 'Contact us'}
         </h1>
         <p className="text-slate-400 text-sm mb-8 break-words">
           {isHi ? 'WhatsApp या Gmail पर सीधे लिखें। हम जल्द जवाब देंगे।' : 'Reach us on WhatsApp or Gmail. We will get back to you soon.'}

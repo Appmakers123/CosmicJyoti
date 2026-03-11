@@ -63,3 +63,6 @@ Thumbs.db
 
 # User sync data (server stores profile + reports here)
 server/data/
+
+# Video script temp watermark (generated from SVG)
+public/blog/videos/_watermark-logo.png

@@ -1,11 +1,54 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Language } from '../types';
 import { BackButton } from './common';
 import AdBanner from './AdBanner';
 import { sanitizeHtml } from '../utils/sanitize';
 import { trackArticleRead } from '../utils/dataLayer';
+import { isBackendConfigured, getBackendBaseUrl } from '../services/backendService';
 
 const POSTS_PER_PAGE = 9;
+const STORAGE_KEY_ARTICLE_LIKES = 'cosmicjyoti_article_likes';
+const STORAGE_KEY_ARTICLE_VIEWS = 'cosmicjyoti_article_views';
+
+function getArticleId(post: DailyPost): string {
+  return post.articleId || post.id || (post.date && post.slug ? `${post.date}-${post.slug}` : post.slug);
+}
+
+function getStoredArticleLikes(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ARTICLE_LIKES);
+    if (!raw) return new Set();
+    const arr = JSON.parse(raw);
+    return new Set(Array.isArray(arr) ? arr : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function setStoredArticleLikes(ids: Set<string>) {
+  try {
+    localStorage.setItem(STORAGE_KEY_ARTICLE_LIKES, JSON.stringify([...ids]));
+  } catch (_) {}
+}
+
+function getStoredArticleViews(): Record<string, number> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ARTICLE_VIEWS);
+    if (!raw) return {};
+    const obj = JSON.parse(raw);
+    return typeof obj === 'object' && obj !== null ? obj : {};
+  } catch {
+    return {};
+  }
+}
+
+function incrementStoredArticleView(id: string) {
+  const views = getStoredArticleViews();
+  views[id] = (views[id] || 0) + 1;
+  try {
+    localStorage.setItem(STORAGE_KEY_ARTICLE_VIEWS, JSON.stringify(views));
+  } catch (_) {}
+}
 
 interface DailyPost {
   id: string;
@@ -20,6 +63,8 @@ interface DailyPost {
   topic?: string;
   serviceMode?: string;
   serviceLabel?: string;
+  /** Related article IDs (from Gemini embeddings script). */
+  relatedIds?: string[];
 }
 
 interface DailyPostsData {
@@ -115,6 +160,11 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState<DailyPost | null>(null);
   const [articleImageLoaded, setArticleImageLoaded] = useState(false);
+  /** Semantic search result (post ids in order). Null when not using backend or not yet fetched. */
+  const [semanticPostIds, setSemanticPostIds] = useState<string[] | null>(null);
+  const [semanticSearchLoading, setSemanticSearchLoading] = useState(false);
+  const [likes, setLikes] = useState<Set<string>>(getStoredArticleLikes);
+  const [views, setViews] = useState<Record<string, number>>(getStoredArticleViews);
 
   useEffect(() => {
     fetch('/blog/daily-posts.json', { cache: 'no-store' })
@@ -135,6 +185,26 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
     setArticleImageLoaded(false);
   }, [selectedPost?.id]);
 
+  const handleOpenArticle = useCallback((post: DailyPost) => {
+    const id = getArticleId(post);
+    trackArticleRead(post.articleId || post.id || '', post.title);
+    incrementStoredArticleView(id);
+    setViews((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+    setSelectedPost(post);
+  }, []);
+
+  const handleLikeArticle = useCallback((e: React.MouseEvent, id: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setLikes((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      setStoredArticleLikes(next);
+      return next;
+    });
+  }, []);
+
   // Read initial search/page from URL for indexing and shareable links
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -148,6 +218,26 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
     }
   }, []);
 
+  // Semantic search when backend is configured and user has typed a query
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q || !isBackendConfigured() || !data?.posts?.length) {
+      setSemanticPostIds(null);
+      return;
+    }
+    const base = getBackendBaseUrl();
+    if (!base) return;
+    setSemanticSearchLoading(true);
+    setSemanticPostIds(null);
+    fetch(`${base}/api/blog-search?q=${encodeURIComponent(q)}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('Search failed'))))
+      .then((body: { postIds?: string[] }) => {
+        setSemanticPostIds(Array.isArray(body.postIds) ? body.postIds : []);
+      })
+      .catch(() => setSemanticPostIds(null))
+      .finally(() => setSemanticSearchLoading(false));
+  }, [searchQuery, data?.posts?.length]);
+
   const allTopics = useMemo(() => {
     if (!data?.posts?.length) return [];
     const set = new Set<string>();
@@ -160,13 +250,25 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
 
   const filteredAndSorted = useMemo(() => {
     if (!data?.posts?.length) return [];
-    let list = [...data.posts];
     const q = searchQuery.trim().toLowerCase();
-    if (q) {
-      list = list.filter((p) => relevanceScore(p, searchQuery) > 0);
-      list.sort((a, b) => relevanceScore(b, searchQuery) - relevanceScore(a, searchQuery));
+    const useSemantic = q && semanticPostIds && semanticPostIds.length > 0;
+    let list: DailyPost[];
+    if (useSemantic) {
+      const idSet = new Set(semanticPostIds);
+      list = semanticPostIds
+        .map((id) => data.posts.find((p) => (p.articleId || p.id) === id))
+        .filter((p): p is DailyPost => !!p);
+      // Include any posts not in semantic result (e.g. new posts) at the end
+      const rest = data.posts.filter((p) => !idSet.has(p.articleId || p.id || ''));
+      list = [...list, ...rest];
     } else {
-      list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      list = [...data.posts];
+      if (q) {
+        list = list.filter((p) => relevanceScore(p, searchQuery) > 0);
+        list.sort((a, b) => relevanceScore(b, searchQuery) - relevanceScore(a, searchQuery));
+      } else {
+        list.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      }
     }
     if (topicFilter) {
       list = list.filter((p) => {
@@ -175,7 +277,7 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
       });
     }
     return list;
-  }, [data?.posts, searchQuery, topicFilter]);
+  }, [data?.posts, searchQuery, topicFilter, semanticPostIds]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / POSTS_PER_PAGE));
   const paginatedPosts = useMemo(() => {
@@ -298,10 +400,47 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
           <BackButton onClick={() => setSelectedPost(null)} label={language === 'hi' ? 'लेख सूची' : 'Article list'} />
         </div>
         <h1 className="text-xl md:text-2xl font-serif font-bold text-amber-200 mb-2">{post.title}</h1>
-        <p className="text-slate-500 text-sm mb-6">
+        <p className="text-slate-500 text-sm mb-2">
           {post.date ? new Date(post.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'long' }) : ''}
           {post.readingTime && ` • ${post.readingTime}`}
         </p>
+        <div className="flex flex-wrap items-center gap-3 mb-6 pb-4 border-b border-slate-700">
+          <button
+            type="button"
+            onClick={(e) => handleLikeArticle(e, articleId)}
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              likes.has(articleId)
+                ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                : 'bg-slate-700/50 text-slate-400 border border-slate-600 hover:text-amber-300'
+            }`}
+            aria-label={language === 'hi' ? 'पसंद करें' : 'Like'}
+          >
+            <svg className="w-4 h-4" fill={likes.has(articleId) ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+            {language === 'hi' ? (likes.has(articleId) ? 'पसंद किया' : 'पसंद') : (likes.has(articleId) ? 'Liked' : 'Like')}
+          </button>
+          {(views[articleId] ?? 0) > 0 && (
+            <span className="inline-flex items-center gap-2 text-slate-500 text-sm">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {views[articleId]} {language === 'hi' ? (views[articleId] === 1 ? 'बार देखा' : 'बार देखा गया') : (views[articleId] === 1 ? 'view' : 'views')}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(e) => handleShareArticle(e, post)}
+            className="inline-flex items-center gap-2 px-3 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 text-sm font-medium hover:bg-slate-600/50 hover:text-slate-200 transition-colors"
+            aria-label={language === 'hi' ? 'शेयर करें' : 'Share'}
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            </svg>
+            {language === 'hi' ? 'शेयर' : 'Share'}
+          </button>
+        </div>
         <figure className="my-6 relative min-h-[200px]">
           {!articleImageLoaded && (
             <div className="absolute inset-0 max-w-2xl rounded-xl bg-slate-700/40 animate-pulse" aria-hidden />
@@ -331,6 +470,32 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
             >
               {language === 'hi' ? 'आज़माएं' : 'Try'} {post.serviceLabel || post.topic}
             </a>
+          </div>
+        )}
+        {data && (post.relatedIds?.length ?? 0) > 0 && (
+          <div className="mt-8 pt-6 border-t border-slate-700">
+            <h3 className="text-lg font-serif font-bold text-amber-200 mb-3">
+              {language === 'hi' ? 'संबंधित लेख' : 'Related articles'}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(post.relatedIds || [])
+                .slice(0, 4)
+                .map((rid) => data.posts.find((p) => (p.articleId || p.id) === rid))
+                .filter((p): p is DailyPost => !!p && p.id !== post.id)
+                .map((related) => (
+                  <button
+                    key={related.id}
+                    type="button"
+                    onClick={() => handleOpenArticle(related)}
+                    className="text-left p-3 rounded-xl bg-slate-900/60 border border-slate-700/50 hover:border-amber-500/40 hover:bg-slate-800/60 transition-all"
+                  >
+                    <h4 className="font-medium text-amber-100 line-clamp-2">{related.title}</h4>
+                    <p className="text-slate-500 text-xs mt-1">
+                      {related.date ? new Date(related.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}
+                    </p>
+                  </button>
+                ))}
+            </div>
           </div>
         )}
         <div className="mt-6">
@@ -373,60 +538,95 @@ const DailyAIBlog: React.FC<DailyAIBlogProps> = ({ language, onBack, onTryModule
             ))}
           </select>
         </div>
-        <p className="text-slate-500 text-xs">
+        <p className="text-slate-500 text-xs flex items-center gap-2">
+          {semanticSearchLoading && searchQuery.trim() && (
+            <span className="inline-block w-3 h-3 border-2 border-amber-500/50 border-t-amber-400 rounded-full animate-spin" aria-hidden />
+          )}
           {language === 'hi' ? `${filteredAndSorted.length} लेख मिले` : `${filteredAndSorted.length} article${filteredAndSorted.length !== 1 ? 's' : ''} found`}
+          {searchQuery.trim() && semanticPostIds && !semanticSearchLoading && isBackendConfigured() && (
+            <span className="text-amber-400/90">(semantic)</span>
+          )}
           {displayDate && ` • ${language === 'hi' ? 'अंतिम अपडेट: ' : 'Last updated: '}${new Date(displayDate).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { dateStyle: 'long' })}`}
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {paginatedPosts.map((post) => (
-          <div
-            key={post.id}
-            className="block bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/40 hover:bg-slate-800/60 transition-all group cursor-pointer"
-            onClick={() => { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); }}
-            onMouseEnter={() => preloadArticleImage(post)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter') { trackArticleRead(post.articleId || post.id || '', post.title); setSelectedPost(post); } }}
-            aria-label={post.title}
-          >
-            <div className="block">
-              <h4 className="font-serif font-bold text-amber-100 group-hover:text-amber-200 mb-1 line-clamp-2">
-                {post.title}
-              </h4>
-              <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-2">
-                {post.date ? new Date(post.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • {post.readingTime || '5 min read'}
-              </p>
-              <p className="text-slate-400 text-sm line-clamp-2">{post.excerpt}</p>
-              <span className="inline-block mt-2 text-amber-400 text-xs font-medium group-hover:underline">
-                {language === 'hi' ? 'पढ़ें →' : 'Read More →'}
-              </span>
-            </div>
-            <div className="mt-3 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
-              {appModeFor(post) && (
-                <a
-                  href={serviceUrl(post)}
-                  onClick={(e) => handleTryClick(e, post)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600/20 border border-amber-500/40 rounded-lg text-amber-300 text-xs font-medium hover:bg-amber-600/30 transition-colors"
+        {paginatedPosts.map((post) => {
+          const articleId = getArticleId(post);
+          const isLiked = likes.has(articleId);
+          const viewCount = views[articleId] ?? 0;
+          return (
+            <div
+              key={post.id}
+              className="block bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/40 hover:bg-slate-800/60 transition-all group cursor-pointer"
+              onClick={() => handleOpenArticle(post)}
+              onMouseEnter={() => preloadArticleImage(post)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleOpenArticle(post); }}
+              aria-label={post.title}
+            >
+              <div className="block">
+                <h4 className="font-serif font-bold text-amber-100 group-hover:text-amber-200 mb-1 line-clamp-2">
+                  {post.title}
+                </h4>
+                <p className="text-slate-500 text-[10px] uppercase tracking-wider mb-2">
+                  {post.date ? new Date(post.date).toLocaleDateString(language === 'hi' ? 'hi-IN' : 'en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''} • {post.readingTime || '5 min read'}
+                </p>
+                <p className="text-slate-400 text-sm line-clamp-2">{post.excerpt}</p>
+                <span className="inline-block mt-2 text-amber-400 text-xs font-medium group-hover:underline">
+                  {language === 'hi' ? 'पढ़ें →' : 'Read More →'}
+                </span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={(e) => handleLikeArticle(e, articleId)}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    isLiked
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/40'
+                      : 'bg-slate-700/50 text-slate-400 border border-slate-600 hover:text-amber-300'
+                  }`}
+                  aria-label={isLiked ? (language === 'hi' ? 'पसंद हटाएं' : 'Unlike') : (language === 'hi' ? 'पसंद करें' : 'Like')}
                 >
-                  {language === 'hi' ? 'आज़माएं' : 'Try'} {post.serviceLabel || post.topic}
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); handleShareArticle(e, post); }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 text-xs font-medium hover:bg-slate-600/50 hover:text-slate-200 transition-colors"
-                aria-label={language === 'hi' ? 'शेयर करें' : 'Share'}
-              >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                </svg>
-                {language === 'hi' ? 'शेयर' : 'Share'}
-              </button>
+                  <svg className="w-3.5 h-3.5" fill={isLiked ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                  {language === 'hi' ? (isLiked ? 'पसंद किया' : 'पसंद') : (isLiked ? 'Liked' : 'Like')}
+                </button>
+                {viewCount > 0 && (
+                  <span className="inline-flex items-center gap-1 text-slate-500 text-xs">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    {viewCount}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleShareArticle(e, post); }}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-700/50 border border-slate-600 rounded-lg text-slate-300 text-xs font-medium hover:bg-slate-600/50 hover:text-slate-200 transition-colors"
+                  aria-label={language === 'hi' ? 'शेयर करें' : 'Share'}
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                  </svg>
+                  {language === 'hi' ? 'शेयर' : 'Share'}
+                </button>
+                {appModeFor(post) && (
+                  <a
+                    href={serviceUrl(post)}
+                    onClick={(e) => handleTryClick(e, post)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600/20 border border-amber-500/40 rounded-lg text-amber-300 text-xs font-medium hover:bg-amber-600/30 transition-colors ml-auto"
+                  >
+                    {language === 'hi' ? 'आज़माएं' : 'Try'} {post.serviceLabel || post.topic}
+                  </a>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Pagination */}

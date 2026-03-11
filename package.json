@@ -39,6 +39,16 @@
     "blog:generate:6pm": "node scripts/generate-daily-blog.mjs 6pm",
     "blog:generate:9pm": "node scripts/generate-daily-blog.mjs 9pm",
     "blog:refresh-sitemaps": "node scripts/generate-daily-blog.mjs refresh-sitemaps",
+    "blog:embeddings": "node scripts/generate-blog-embeddings.mjs",
+    "video:generate": "node scripts/generate-daily-video.mjs 2am",
+    "video:generate:2am": "node scripts/generate-daily-video.mjs 2am",
+    "video:generate:7am": "node scripts/generate-daily-video.mjs 7am",
+    "video:generate:11am": "node scripts/generate-daily-video.mjs 11am",
+    "video:generate:2pm": "node scripts/generate-daily-video.mjs 2pm",
+    "video:generate:5pm": "node scripts/generate-daily-video.mjs 5pm",
+    "video:generate:7pm": "node scripts/generate-daily-video.mjs 7pm",
+    "video:generate:10pm": "node scripts/generate-daily-video.mjs 10pm",
+    "video:generate:12am": "node scripts/generate-daily-video.mjs 12am",
     "logo:rectangular": "node scripts/export-rectangular-logo.mjs",
     "export-en-locale": "tsx scripts/exportEnLocale.ts",
     "pre-translate": "node scripts/preTranslate.mjs",
@@ -64,7 +74,8 @@
     "tar": "^7.5.7"
   },
   "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "4.53.5"
+    "@rollup/rollup-linux-x64-gnu": "4.53.5",
+    "text2wav": "^0.0.14"
   },
   "devDependencies": {
     "@capacitor/cli": "^6.0.0",
@@ -75,10 +86,10 @@
     "concurrently": "^9.1.2",
     "gh-pages": "^6.1.1",
     "postcss": "^8.4.35",
+    "sharp": "^0.33.5",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5.2.2",
-    "vite": "5.4.21",
-    "sharp": "^0.33.5"
+    "vite": "5.4.21"
   }
 }

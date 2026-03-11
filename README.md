@@ -59,12 +59,25 @@ Copy [.env.example](.env.example) to `.env` or `.env.local`. Main options:
 | Variable | Purpose |
 |----------|---------|
 | `API_KEY` / `GEMINI_API_KEY` | Google Gemini (horoscope, Rishi chat, blog fallback, images) |
+| `EMBEDDING_MODEL` | Optional: embedding model (default `text-embedding-004`; use Gemini Embedding 2 when available) |
 | `GROQ_API_KEY` | Groq (horoscope, chat, daily blog – fast) |
 | `PERPLEXITY_API_KEY` | Perplexity (horoscope, blog – web-grounded) |
 | `VITE_GOOGLE_API_KEY` | Google Maps (geocoding, timezone) |
 | `ASTROLOGY_API_KEYS` | Free Astrology API (Panchang, Muhurat) |
 
 See [.env.example](.env.example) and [BUILD_AND_RUN.md](BUILD_AND_RUN.md) for the full list.
+
+---
+
+## GitHub (push / CI / static deploy)
+
+When you push to GitHub:
+
+- **Build** (e.g. Deploy workflow) runs `npm run build` with optional secrets; the app builds even if no API keys are set (features that need keys are disabled at runtime).
+- **Static deploy** (e.g. GitHub Pages): the site works without a backend. Blog search uses **keyword** matching; **Related articles** appear when the repo has run the embeddings step (see below). Set `VITE_API_BASE_URL` in repo Secrets only if you deploy a separate backend.
+- **Daily blog workflow** (scheduled or manual): generates posts and commits `public/blog/daily-posts.json`, feed, and sitemaps. If `GEMINI_API_KEY` (or `API_KEY`) is set in repo Secrets, it also runs **blog:embeddings** (optional step; does not fail the job if it errors). That updates posts with `relatedIds` and adds `public/blog/daily-posts-embeddings.json` so related articles and backend semantic search work after deploy.
+
+Do not commit `.env` or `.env.local`; use repo **Secrets** for CI and follow [DEPLOY_WEB.md](DEPLOY_WEB.md) / [DEPLOY.md](DEPLOY.md).
 
 ---
 
@@ -84,6 +97,7 @@ To rank in the **top 10** for your category (free Kundali, daily horoscope, Panc
 | [DEPLOY_WEB.md](DEPLOY_WEB.md) | Static / GitHub Pages |
 | [DEPLOY_BACKEND.md](DEPLOY_BACKEND.md) | Backend (e.g. Cloud Run) |
 | [DYNAMIC_BLOG_SETUP.md](DYNAMIC_BLOG_SETUP.md) | Daily AI blog (Groq/Perplexity/Gemini) |
+| [Gemini Embedding 2](https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-embedding-2/) | Multimodal embeddings (blog related-articles, future RAG/semantic search) |
 | [SECURITY.md](SECURITY.md) | Security and hardening |
 | [ANDROID_WEB_APP.md](ANDROID_WEB_APP.md) | Capacitor Android build |
 | [docs/](docs/) | SEO, API, ChatGPT, revenue, more |
@@ -101,6 +115,9 @@ To rank in the **top 10** for your category (free Kundali, daily horoscope, Panc
 | `npm run preview` | Preview production build |
 | `npm run blog:generate` | Generate 2 AI blog posts (6am slot) |
 | `npm run blog:generate:12pm` | 12pm slot (etc. 6pm, 9pm) |
+| `npm run blog:embeddings` | Generate blog embeddings + related articles (Gemini Embedding API) |
+| `npm run video:generate` | Generate one AI video for 2am slot (Veo via Gemini API) |
+| `npm run video:generate:2am` | 2am slot (use 7am, 11am, 2pm, 5pm, 7pm, 10pm, 12am for others) |
 | `npm run android:build` | Build web + sync Capacitor Android |
 | `npm run audit` | Security audit |
 

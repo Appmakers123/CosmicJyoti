@@ -46,7 +46,13 @@
       "date": "2026-03-11",
       "timeSlot": "6am",
       "serviceLabel": "Horoscope / Daily Predictions",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-11-daily-horoscope-insights.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-11-daily-horoscope-insights.png",
+      "relatedIds": [
+        "2026-03-08-planetary-effects-on-you-today",
+        "2026-03-05-daily-horoscope-planetary-effects-march-5-2026",
+        "2026-03-03-planetary-effects-on-you-today",
+        "2026-03-04-daily-horoscope-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-11-kundali-milan-guide",
@@ -61,7 +67,13 @@
       "date": "2026-03-11",
       "timeSlot": "6am",
       "serviceLabel": "Compatibility / Match Making",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-11-kundali-milan-guide.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-11-kundali-milan-guide.png",
+      "relatedIds": [
+        "2026-02-24-kundali-matching-relationship-potential",
+        "2026-02-23-kundali-milan-relationship-compatibility",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-02-25-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-03-10-understanding-disha-shool-lucky-direction",
@@ -75,7 +87,13 @@
       "articleId": "2026-03-10-understanding-disha-shool-lucky-direction",
       "date": "2026-03-10",
       "timeSlot": "12pm",
-      "serviceLabel": "Disha Shool / Lucky Direction"
+      "serviceLabel": "Disha Shool / Lucky Direction",
+      "relatedIds": [
+        "2026-03-09-disha-shool-lucky-direction-guide-2026",
+        "2026-03-05-science-of-shubh-muhurat-auspicious-timing",
+        "2026-03-06-science-of-shubh-muhurat-cosmic-rhythms",
+        "2026-03-03-vedic-upay-astrological-remedies"
+      ]
     },
     {
       "id": "2026-03-10-tarot-reading-vedic-astrology-divination",
@@ -89,7 +107,13 @@
       "articleId": "2026-03-10-tarot-reading-vedic-astrology-divination",
       "date": "2026-03-10",
       "timeSlot": "12pm",
-      "serviceLabel": "Tarot Reading"
+      "serviceLabel": "Tarot Reading",
+      "relatedIds": [
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-03-07-vedic-compatibility-love-match-guide",
+        "2026-03-01-vedic-wellness-health-astrology",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-03-10-daily-horoscope-march-10-2026",
@@ -103,7 +127,13 @@
       "articleId": "2026-03-10-daily-horoscope-march-10-2026",
       "date": "2026-03-10",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-07-daily-horoscope-march-7-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-04-daily-horoscope-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
@@ -117,7 +147,13 @@
       "articleId": "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
       "date": "2026-03-10",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-01-understanding-ashtakoota-kundali-milan-compatibility",
+        "2026-03-04-kundali-milan-ashtakoota-compatibility-guide",
+        "2026-03-02-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-10-daily-horoscope-march-10-2026",
@@ -131,7 +167,13 @@
       "articleId": "2026-03-10-daily-horoscope-march-10-2026",
       "date": "2026-03-10",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-07-daily-horoscope-march-7-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-04-daily-horoscope-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-10-ashtakoota-vedic-compatibility-guide",
@@ -145,7 +187,13 @@
       "articleId": "2026-03-10-ashtakoota-vedic-compatibility-guide",
       "date": "2026-03-10",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-10-auspicious-events-muhurat-march-10-2026",
@@ -159,7 +207,13 @@
       "articleId": "2026-03-10-auspicious-events-muhurat-march-10-2026",
       "date": "2026-03-10",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 10, 2026"
+      "serviceLabel": "Auspicious Events March 10, 2026",
+      "relatedIds": [
+        "2026-03-05-auspicious-events-muhurat-march-5-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026",
+        "2026-03-09-auspicious-events-muhurat-march-9-2026",
+        "2026-03-08-auspicious-muhurat-panchang-march-8-2026"
+      ]
     },
     {
       "id": "2026-03-10-astrological-events-march-10-2026",
@@ -173,7 +227,13 @@
       "articleId": "2026-03-10-astrological-events-march-10-2026",
       "date": "2026-03-10",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 10, 2026"
+      "serviceLabel": "Astrological Events March 10, 2026",
+      "relatedIds": [
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-04-astrological-events-march-4-2026",
+        "2026-02-26-astrological-events-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-09-todays-planetary-positions-transits",
@@ -187,7 +247,13 @@
       "articleId": "2026-03-09-todays-planetary-positions-transits",
       "date": "2026-03-09",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-02-26-todays-planetary-positions-transits",
+        "2026-02-28-todays-planetary-positions-transits",
+        "2026-03-03-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-03-09-planetary-effects-on-you-today",
@@ -201,7 +267,13 @@
       "articleId": "2026-03-09-planetary-effects-on-you-today",
       "date": "2026-03-09",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-28-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today",
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-03-09-understanding-varshphal-yearly-horoscope-guide",
@@ -215,7 +287,13 @@
       "articleId": "2026-03-09-understanding-varshphal-yearly-horoscope-guide",
       "date": "2026-03-09",
       "timeSlot": "12pm",
-      "serviceLabel": "Varshphal / Yearly Horoscope"
+      "serviceLabel": "Varshphal / Yearly Horoscope",
+      "relatedIds": [
+        "2026-03-08-decoding-solar-return-varshphal-yearly-horoscope",
+        "2026-03-08-varshphal-2026-yearly-horoscope-tajika-system",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-03-03-kundali-birth-chart-analysis"
+      ]
     },
     {
       "id": "2026-03-09-disha-shool-lucky-direction-guide-2026",
@@ -229,7 +307,13 @@
       "articleId": "2026-03-09-disha-shool-lucky-direction-guide-2026",
       "date": "2026-03-09",
       "timeSlot": "12pm",
-      "serviceLabel": "Disha Shool / Lucky Direction"
+      "serviceLabel": "Disha Shool / Lucky Direction",
+      "relatedIds": [
+        "2026-03-10-understanding-disha-shool-lucky-direction",
+        "2026-03-05-science-of-shubh-muhurat-auspicious-timing",
+        "2026-02-26-vastu-shastra-home-energy",
+        "2026-03-03-vedic-upay-astrological-remedies"
+      ]
     },
     {
       "id": "2026-03-09-daily-horoscope-march-9-2026",
@@ -243,7 +327,13 @@
       "articleId": "2026-03-09-daily-horoscope-march-9-2026",
       "date": "2026-03-09",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-08-daily-horoscope-march-8-2026",
+        "2026-02-26-daily-horoscope-february-26-2026",
+        "2026-03-02-daily-horoscope-march-2-2026-leo-moon"
+      ]
     },
     {
       "id": "2026-03-09-vedic-matchmaking-kundali-milan-guide",
@@ -257,7 +347,13 @@
       "articleId": "2026-03-09-vedic-matchmaking-kundali-milan-guide",
       "date": "2026-03-09",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-07-kundali-milan-compatibility-guide",
+        "2026-03-08-cosmic-blueprint-love-vedic-compatibility-kundali-milan",
+        "2026-03-06-science-of-kundali-milan-compatibility"
+      ]
     },
     {
       "id": "2026-03-09-auspicious-events-muhurat-march-9-2026",
@@ -271,7 +367,13 @@
       "articleId": "2026-03-09-auspicious-events-muhurat-march-9-2026",
       "date": "2026-03-09",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 9, 2026"
+      "serviceLabel": "Auspicious Events March 9, 2026",
+      "relatedIds": [
+        "2026-03-04-auspicious-events-muhurat-march-4-2026",
+        "2026-03-10-auspicious-events-muhurat-march-10-2026",
+        "2026-03-05-auspicious-events-muhurat-march-5-2026",
+        "2026-02-26-auspicious-events-muhurat-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-09-key-astrological-events-march-9-2026",
@@ -285,7 +387,13 @@
       "articleId": "2026-03-09-key-astrological-events-march-9-2026",
       "date": "2026-03-09",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 9, 2026"
+      "serviceLabel": "Astrological Events March 9, 2026",
+      "relatedIds": [
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-10-astrological-events-march-10-2026",
+        "2026-03-04-astrological-events-march-4-2026",
+        "2026-02-26-astrological-events-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-08-todays-planetary-positions-transits",
@@ -299,7 +407,13 @@
       "articleId": "2026-03-08-todays-planetary-positions-transits",
       "date": "2026-03-08",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-02-27-todays-planetary-positions-transits",
+        "2026-02-22-todays-planetary-positions-transits",
+        "2026-02-23-todays-planetary-positions-transits",
+        "2026-02-24-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-03-08-planetary-effects-on-you-today",
@@ -313,7 +427,13 @@
       "articleId": "2026-03-08-planetary-effects-on-you-today",
       "date": "2026-03-08",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-03-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today",
+        "2026-02-27-planetary-effects-on-you-today",
+        "2026-02-26-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-03-08-cosmic-blueprint-love-vedic-compatibility-kundali-milan",
@@ -327,7 +447,13 @@
       "articleId": "2026-03-08-cosmic-blueprint-love-vedic-compatibility-kundali-milan",
       "date": "2026-03-08",
       "timeSlot": "12pm",
-      "serviceLabel": "Compatibility / Love Match"
+      "serviceLabel": "Compatibility / Love Match",
+      "relatedIds": [
+        "2026-03-08-sacred-science-kundali-milan-compatibility",
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-03-08-varshphal-2026-yearly-horoscope-tajika-system",
@@ -341,7 +467,13 @@
       "articleId": "2026-03-08-varshphal-2026-yearly-horoscope-tajika-system",
       "date": "2026-03-08",
       "timeSlot": "12pm",
-      "serviceLabel": "Varshphal / Yearly Horoscope"
+      "serviceLabel": "Varshphal / Yearly Horoscope",
+      "relatedIds": [
+        "2026-03-09-understanding-varshphal-yearly-horoscope-guide",
+        "2026-03-08-decoding-solar-return-varshphal-yearly-horoscope",
+        "2026-03-02-vedic-wellness-health-astrology-guide-2026",
+        "2026-03-04-understanding-power-vedic-kundali"
+      ]
     },
     {
       "id": "2026-03-08-sacred-science-kundali-milan-compatibility",
@@ -355,7 +487,13 @@
       "articleId": "2026-03-08-sacred-science-kundali-milan-compatibility",
       "date": "2026-03-08",
       "timeSlot": "12pm",
-      "serviceLabel": "Compatibility / Love Match"
+      "serviceLabel": "Compatibility / Love Match",
+      "relatedIds": [
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-08-cosmic-blueprint-love-vedic-compatibility-kundali-milan",
+        "2026-03-07-kundali-milan-compatibility-guide",
+        "2026-03-07-science-of-kundali-milan-compatibility"
+      ]
     },
     {
       "id": "2026-03-08-decoding-solar-return-varshphal-yearly-horoscope",
@@ -369,7 +507,13 @@
       "articleId": "2026-03-08-decoding-solar-return-varshphal-yearly-horoscope",
       "date": "2026-03-08",
       "timeSlot": "12pm",
-      "serviceLabel": "Varshphal / Yearly Horoscope"
+      "serviceLabel": "Varshphal / Yearly Horoscope",
+      "relatedIds": [
+        "2026-03-09-understanding-varshphal-yearly-horoscope-guide",
+        "2026-03-08-varshphal-2026-yearly-horoscope-tajika-system",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-03-03-kundali-birth-chart-analysis"
+      ]
     },
     {
       "id": "2026-03-08-daily-horoscope-march-8-2026",
@@ -383,7 +527,13 @@
       "articleId": "2026-03-08-daily-horoscope-march-8-2026",
       "date": "2026-03-08",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-07-daily-horoscope-march-7-2026",
+        "2026-03-02-daily-horoscope-march-2-2026-leo-moon",
+        "2026-02-26-daily-horoscope-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-08-ashtakoota-vedic-compatibility-guide",
@@ -397,7 +547,13 @@
       "articleId": "2026-03-08-ashtakoota-vedic-compatibility-guide",
       "date": "2026-03-08",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-04-kundali-milan-ashtakoota-compatibility-guide",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-03-01-understanding-ashtakoota-kundali-milan-compatibility"
+      ]
     },
     {
       "id": "2026-03-08-auspicious-muhurat-panchang-march-8-2026",
@@ -411,7 +567,13 @@
       "articleId": "2026-03-08-auspicious-muhurat-panchang-march-8-2026",
       "date": "2026-03-08",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 8, 2026"
+      "serviceLabel": "Auspicious Events March 8, 2026",
+      "relatedIds": [
+        "2026-03-07-auspicious-muhurat-panchang-march-7-2026",
+        "2026-03-02-auspicious-muhurat-march-2-2026",
+        "2026-03-03-auspicious-muhurat-panchang-march-3-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-08-astrological-events-festivals-march-8-2026",
@@ -425,7 +587,13 @@
       "articleId": "2026-03-08-astrological-events-festivals-march-8-2026",
       "date": "2026-03-08",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 8, 2026"
+      "serviceLabel": "Astrological Events March 8, 2026",
+      "relatedIds": [
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-02-astrological-events-march-2-2026",
+        "2026-03-03-astrological-events-march-3-2026-holika-dahan"
+      ]
     },
     {
       "id": "2026-03-07-daily-horoscope-march-7-2026",
@@ -439,7 +607,13 @@
       "articleId": "2026-03-07-daily-horoscope-march-7-2026",
       "date": "2026-03-07",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-07-daily-horoscope-march-7-2026",
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-08-daily-horoscope-march-8-2026"
+      ]
     },
     {
       "id": "2026-03-07-science-of-kundali-milan-compatibility",
@@ -453,7 +627,13 @@
       "articleId": "2026-03-07-science-of-kundali-milan-compatibility",
       "date": "2026-03-07",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-07-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-07-science-of-guna-milan-ashtakoota",
@@ -467,7 +647,13 @@
       "articleId": "2026-03-07-science-of-guna-milan-ashtakoota",
       "date": "2026-03-07",
       "timeSlot": "12pm",
-      "serviceLabel": "Guna Milan / Ashtakoot"
+      "serviceLabel": "Guna Milan / Ashtakoot",
+      "relatedIds": [
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-07-vedic-compatibility-love-match-guide",
@@ -481,7 +667,13 @@
       "articleId": "2026-03-07-vedic-compatibility-love-match-guide",
       "date": "2026-03-07",
       "timeSlot": "12pm",
-      "serviceLabel": "Compatibility / Love Match"
+      "serviceLabel": "Compatibility / Love Match",
+      "relatedIds": [
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota"
+      ]
     },
     {
       "id": "2026-03-07-daily-horoscope-march-7-2026",
@@ -495,7 +687,13 @@
       "articleId": "2026-03-07-daily-horoscope-march-7-2026",
       "date": "2026-03-07",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-07-daily-horoscope-march-7-2026",
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-08-daily-horoscope-march-8-2026"
+      ]
     },
     {
       "id": "2026-03-07-kundali-milan-compatibility-guide",
@@ -509,7 +707,13 @@
       "articleId": "2026-03-07-kundali-milan-compatibility-guide",
       "date": "2026-03-07",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-06-vedic-compatibility-kundali-milan-guide"
+      ]
     },
     {
       "id": "2026-03-07-auspicious-muhurat-panchang-march-7-2026",
@@ -523,7 +727,13 @@
       "articleId": "2026-03-07-auspicious-muhurat-panchang-march-7-2026",
       "date": "2026-03-07",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 7, 2026"
+      "serviceLabel": "Auspicious Events March 7, 2026",
+      "relatedIds": [
+        "2026-03-02-auspicious-muhurat-march-2-2026",
+        "2026-03-08-auspicious-muhurat-panchang-march-8-2026",
+        "2026-03-03-auspicious-muhurat-panchang-march-3-2026",
+        "2026-03-09-auspicious-events-muhurat-march-9-2026"
+      ]
     },
     {
       "id": "2026-03-07-astrological-events-planetary-alignments-march-7-2026",
@@ -537,7 +747,13 @@
       "articleId": "2026-03-07-astrological-events-planetary-alignments-march-7-2026",
       "date": "2026-03-07",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 7, 2026"
+      "serviceLabel": "Astrological Events March 7, 2026",
+      "relatedIds": [
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-04-astrological-events-march-4-2026",
+        "2026-03-10-astrological-events-march-10-2026",
+        "2026-03-05-astrological-events-march-5-2026"
+      ]
     },
     {
       "id": "2026-03-06-planetary-positions-march-6-2026",
@@ -551,7 +767,13 @@
       "articleId": "2026-03-06-planetary-positions-march-6-2026",
       "date": "2026-03-06",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-01-planetary-positions-march-1-2026",
+        "2026-03-05-planetary-positions-transits-march-5-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-03-02-planetary-positions-transits-march-2-2026"
+      ]
     },
     {
       "id": "2026-03-06-daily-horoscope-march-6-2026",
@@ -565,7 +787,13 @@
       "articleId": "2026-03-06-daily-horoscope-march-6-2026",
       "date": "2026-03-06",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-04-daily-horoscope-march-4-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-02-27-daily-vedic-horoscope-february-27-2026"
+      ]
     },
     {
       "id": "2026-03-06-daily-horoscope-march-6-2026",
@@ -579,7 +807,13 @@
       "articleId": "2026-03-06-daily-horoscope-march-6-2026",
       "date": "2026-03-06",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-04-daily-horoscope-march-4-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-02-27-daily-vedic-horoscope-february-27-2026"
+      ]
     },
     {
       "id": "2026-03-06-vedic-compatibility-kundali-milan-guide",
@@ -593,7 +827,13 @@
       "articleId": "2026-03-06-vedic-compatibility-kundali-milan-guide",
       "date": "2026-03-06",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-07-kundali-milan-compatibility-guide",
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-06-science-of-shubh-muhurat-cosmic-rhythms",
@@ -607,7 +847,13 @@
       "articleId": "2026-03-06-science-of-shubh-muhurat-cosmic-rhythms",
       "date": "2026-03-06",
       "timeSlot": "12pm",
-      "serviceLabel": "Muhurat / Auspicious Timing"
+      "serviceLabel": "Muhurat / Auspicious Timing",
+      "relatedIds": [
+        "2026-03-05-science-of-shubh-muhurat-auspicious-timing",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-03-05-vedic-matchmaking-ashtakoota-compatibility",
+        "2026-03-01-vedic-wellness-health-astrology"
+      ]
     },
     {
       "id": "2026-03-06-guna-milan-ashtakoota-marriage-compatibility",
@@ -621,7 +867,13 @@
       "articleId": "2026-03-06-guna-milan-ashtakoota-marriage-compatibility",
       "date": "2026-03-06",
       "timeSlot": "12pm",
-      "serviceLabel": "Guna Milan / Ashtakoot"
+      "serviceLabel": "Guna Milan / Ashtakoot",
+      "relatedIds": [
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
+        "2026-03-05-vedic-matchmaking-ashtakoota-compatibility",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota"
+      ]
     },
     {
       "id": "2026-03-06-daily-horoscope-march-6-2026",
@@ -635,7 +887,13 @@
       "articleId": "2026-03-06-daily-horoscope-march-6-2026",
       "date": "2026-03-06",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-04-daily-horoscope-march-4-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-02-27-daily-vedic-horoscope-february-27-2026"
+      ]
     },
     {
       "id": "2026-03-06-science-of-kundali-milan-compatibility",
@@ -649,7 +907,13 @@
       "articleId": "2026-03-06-science-of-kundali-milan-compatibility",
       "date": "2026-03-06",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-07-kundali-milan-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-05-planetary-positions-transits-march-5-2026",
@@ -663,7 +927,13 @@
       "articleId": "2026-03-05-planetary-positions-transits-march-5-2026",
       "date": "2026-03-05",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-06-planetary-positions-march-6-2026",
+        "2026-03-01-planetary-positions-march-1-2026",
+        "2026-02-28-todays-planetary-positions-transits",
+        "2026-03-09-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-03-05-daily-horoscope-planetary-effects-march-5-2026",
@@ -677,7 +947,13 @@
       "articleId": "2026-03-05-daily-horoscope-planetary-effects-march-5-2026",
       "date": "2026-03-05",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-03-08-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-03-05-mastering-vedic-panchang-celestial-almanac",
@@ -691,7 +967,13 @@
       "articleId": "2026-03-05-mastering-vedic-panchang-celestial-almanac",
       "date": "2026-03-05",
       "timeSlot": "12pm",
-      "serviceLabel": "Panchang"
+      "serviceLabel": "Panchang",
+      "relatedIds": [
+        "2026-03-04-navigating-life-daily-panchang",
+        "2026-03-02-vedic-wellness-health-astrology-guide-2026",
+        "2026-03-01-vedic-wellness-health-astrology",
+        "2026-03-05-planetary-positions-transits-march-5-2026"
+      ]
     },
     {
       "id": "2026-03-05-science-of-shubh-muhurat-auspicious-timing",
@@ -705,7 +987,13 @@
       "articleId": "2026-03-05-science-of-shubh-muhurat-auspicious-timing",
       "date": "2026-03-05",
       "timeSlot": "12pm",
-      "serviceLabel": "Muhurat / Auspicious Timing"
+      "serviceLabel": "Muhurat / Auspicious Timing",
+      "relatedIds": [
+        "2026-03-06-science-of-shubh-muhurat-cosmic-rhythms",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-03-03-kundali-birth-chart-analysis"
+      ]
     },
     {
       "id": "2026-03-05-daily-horoscope-march-5-2026",
@@ -719,7 +1007,13 @@
       "articleId": "2026-03-05-daily-horoscope-march-5-2026",
       "date": "2026-03-05",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-02-daily-horoscope-march-2-2026-leo-moon",
+        "2026-03-08-daily-horoscope-march-8-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-04-daily-horoscope-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-05-vedic-matchmaking-ashtakoota-compatibility",
@@ -733,7 +1027,13 @@
       "articleId": "2026-03-05-vedic-matchmaking-ashtakoota-compatibility",
       "date": "2026-03-05",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-02-kundali-milan-compatibility-guide",
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-05-auspicious-events-muhurat-march-5-2026",
@@ -747,7 +1047,13 @@
       "articleId": "2026-03-05-auspicious-events-muhurat-march-5-2026",
       "date": "2026-03-05",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 5, 2026"
+      "serviceLabel": "Auspicious Events March 5, 2026",
+      "relatedIds": [
+        "2026-03-10-auspicious-events-muhurat-march-10-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026",
+        "2026-03-09-auspicious-events-muhurat-march-9-2026",
+        "2026-02-25-auspicious-events-muhurat-february-25-2026"
+      ]
     },
     {
       "id": "2026-03-05-astrological-events-march-5-2026",
@@ -761,7 +1067,13 @@
       "articleId": "2026-03-05-astrological-events-march-5-2026",
       "date": "2026-03-05",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 5, 2026"
+      "serviceLabel": "Astrological Events March 5, 2026",
+      "relatedIds": [
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-04-astrological-events-march-4-2026",
+        "2026-03-10-astrological-events-march-10-2026",
+        "2026-02-26-astrological-events-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-04-understanding-power-vedic-kundali",
@@ -775,7 +1087,13 @@
       "articleId": "2026-03-04-understanding-power-vedic-kundali",
       "date": "2026-03-04",
       "timeSlot": "12pm",
-      "serviceLabel": "Birth Chart / Kundali"
+      "serviceLabel": "Birth Chart / Kundali",
+      "relatedIds": [
+        "2026-03-03-kundali-birth-chart-analysis",
+        "2026-03-03-understanding-your-kundali-birth-chart",
+        "2026-03-08-cosmic-blueprint-love-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-03-04-navigating-life-daily-panchang",
@@ -789,7 +1107,13 @@
       "articleId": "2026-03-04-navigating-life-daily-panchang",
       "date": "2026-03-04",
       "timeSlot": "12pm",
-      "serviceLabel": "Panchang"
+      "serviceLabel": "Panchang",
+      "relatedIds": [
+        "2026-03-05-mastering-vedic-panchang-celestial-almanac",
+        "2026-03-01-vedic-wellness-health-astrology",
+        "2026-03-06-science-of-shubh-muhurat-cosmic-rhythms",
+        "2026-03-04-understanding-power-vedic-kundali"
+      ]
     },
     {
       "id": "2026-03-04-daily-horoscope-march-4-2026",
@@ -803,7 +1127,13 @@
       "articleId": "2026-03-04-daily-horoscope-march-4-2026",
       "date": "2026-03-04",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026"
+      ]
     },
     {
       "id": "2026-03-04-kundali-milan-ashtakoota-compatibility-guide",
@@ -817,7 +1147,13 @@
       "articleId": "2026-03-04-kundali-milan-ashtakoota-compatibility-guide",
       "date": "2026-03-04",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-01-understanding-ashtakoota-kundali-milan-compatibility",
+        "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-03-07-science-of-kundali-milan-compatibility"
+      ]
     },
     {
       "id": "2026-03-04-auspicious-events-muhurat-march-4-2026",
@@ -831,7 +1167,13 @@
       "articleId": "2026-03-04-auspicious-events-muhurat-march-4-2026",
       "date": "2026-03-04",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 4, 2026"
+      "serviceLabel": "Auspicious Events March 4, 2026",
+      "relatedIds": [
+        "2026-03-05-auspicious-events-muhurat-march-5-2026",
+        "2026-03-10-auspicious-events-muhurat-march-10-2026",
+        "2026-03-09-auspicious-events-muhurat-march-9-2026",
+        "2026-03-08-auspicious-muhurat-panchang-march-8-2026"
+      ]
     },
     {
       "id": "2026-03-04-astrological-events-march-4-2026",
@@ -845,7 +1187,13 @@
       "articleId": "2026-03-04-astrological-events-march-4-2026",
       "date": "2026-03-04",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 4, 2026"
+      "serviceLabel": "Astrological Events March 4, 2026",
+      "relatedIds": [
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-10-astrological-events-march-10-2026",
+        "2026-02-26-astrological-events-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-03-todays-planetary-positions-transits",
@@ -860,7 +1208,13 @@
       "date": "2026-03-03",
       "timeSlot": "6pm",
       "serviceLabel": "Planetary Positions Today",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-todays-planetary-positions-transits.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-todays-planetary-positions-transits.png",
+      "relatedIds": [
+        "2026-02-28-todays-planetary-positions-transits",
+        "2026-03-09-todays-planetary-positions-transits",
+        "2026-02-26-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-03-03-planetary-effects-on-you-today",
@@ -875,7 +1229,13 @@
       "date": "2026-03-03",
       "timeSlot": "6pm",
       "serviceLabel": "Planetary Effects Today",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-planetary-effects-on-you-today.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-planetary-effects-on-you-today.png",
+      "relatedIds": [
+        "2026-03-08-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today",
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-03-03-vedic-astrological-remedies-upay",
@@ -890,7 +1250,13 @@
       "date": "2026-03-03",
       "timeSlot": "12pm",
       "serviceLabel": "Upay / Vedic Remedies",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-vedic-astrological-remedies-upay.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-vedic-astrological-remedies-upay.png",
+      "relatedIds": [
+        "2026-03-03-vedic-upay-astrological-remedies",
+        "2026-03-02-power-of-upay-vedic-remedies-guide",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-02-25-vedic-gemstones-planetary-remedies"
+      ]
     },
     {
       "id": "2026-03-03-understanding-your-kundali-birth-chart",
@@ -905,7 +1271,13 @@
       "date": "2026-03-03",
       "timeSlot": "12pm",
       "serviceLabel": "Birth Chart / Kundali",
-      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-understanding-your-kundali-birth-chart.png"
+      "imageUrl": "https://www.cosmicjyoti.com/blog/images/2026-03-03-understanding-your-kundali-birth-chart.png",
+      "relatedIds": [
+        "2026-03-03-kundali-birth-chart-analysis",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-02-24-kundali-matching-relationship-potential",
+        "2026-02-23-kundali-milan-relationship-compatibility"
+      ]
     },
     {
       "id": "2026-03-03-vedic-upay-astrological-remedies",
@@ -919,7 +1291,13 @@
       "articleId": "2026-03-03-vedic-upay-astrological-remedies",
       "date": "2026-03-03",
       "timeSlot": "12pm",
-      "serviceLabel": "Upay / Vedic Remedies"
+      "serviceLabel": "Upay / Vedic Remedies",
+      "relatedIds": [
+        "2026-03-03-vedic-astrological-remedies-upay",
+        "2026-03-02-power-of-upay-vedic-remedies-guide",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-02-25-vedic-gemstones-planetary-remedies"
+      ]
     },
     {
       "id": "2026-03-03-kundali-birth-chart-analysis",
@@ -933,7 +1311,13 @@
       "articleId": "2026-03-03-kundali-birth-chart-analysis",
       "date": "2026-03-03",
       "timeSlot": "12pm",
-      "serviceLabel": "Birth Chart / Kundali"
+      "serviceLabel": "Birth Chart / Kundali",
+      "relatedIds": [
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-03-03-understanding-your-kundali-birth-chart",
+        "2026-02-23-kundali-milan-relationship-compatibility",
+        "2026-02-24-kundali-matching-relationship-potential"
+      ]
     },
     {
       "id": "2026-03-03-auspicious-muhurat-panchang-march-3-2026",
@@ -947,7 +1331,13 @@
       "articleId": "2026-03-03-auspicious-muhurat-panchang-march-3-2026",
       "date": "2026-03-03",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 3, 2026"
+      "serviceLabel": "Auspicious Events March 3, 2026",
+      "relatedIds": [
+        "2026-03-08-auspicious-muhurat-panchang-march-8-2026",
+        "2026-03-02-auspicious-muhurat-march-2-2026",
+        "2026-03-07-auspicious-muhurat-panchang-march-7-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-03-astrological-events-march-3-2026-holika-dahan",
@@ -961,7 +1351,13 @@
       "articleId": "2026-03-03-astrological-events-march-3-2026-holika-dahan",
       "date": "2026-03-03",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 3, 2026"
+      "serviceLabel": "Astrological Events March 3, 2026",
+      "relatedIds": [
+        "2026-03-02-astrological-events-march-2-2026",
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-04-astrological-events-march-4-2026"
+      ]
     },
     {
       "id": "2026-03-02-planetary-positions-transits-march-2-2026",
@@ -975,7 +1371,13 @@
       "articleId": "2026-03-02-planetary-positions-transits-march-2-2026",
       "date": "2026-03-02",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-01-planetary-positions-march-1-2026",
+        "2026-03-06-planetary-positions-march-6-2026",
+        "2026-03-07-astrological-events-planetary-alignments-march-7-2026",
+        "2026-03-02-astrological-events-march-2-2026"
+      ]
     },
     {
       "id": "2026-03-02-daily-horoscope-remedies-march-2-2026",
@@ -989,7 +1391,13 @@
       "articleId": "2026-03-02-daily-horoscope-remedies-march-2-2026",
       "date": "2026-03-02",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-02-22-planetary-effects-on-you-today",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-03-08-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-03-02-vedic-wellness-health-astrology-guide-2026",
@@ -1003,7 +1411,13 @@
       "articleId": "2026-03-02-vedic-wellness-health-astrology-guide-2026",
       "date": "2026-03-02",
       "timeSlot": "12pm",
-      "serviceLabel": "Cosmic Health"
+      "serviceLabel": "Cosmic Health",
+      "relatedIds": [
+        "2026-03-01-vedic-wellness-health-astrology",
+        "2026-03-05-mastering-vedic-panchang-celestial-almanac",
+        "2026-03-09-understanding-varshphal-yearly-horoscope-guide",
+        "2026-03-08-varshphal-2026-yearly-horoscope-tajika-system"
+      ]
     },
     {
       "id": "2026-03-02-power-of-upay-vedic-remedies-guide",
@@ -1017,7 +1431,13 @@
       "articleId": "2026-03-02-power-of-upay-vedic-remedies-guide",
       "date": "2026-03-02",
       "timeSlot": "12pm",
-      "serviceLabel": "Upay / Vedic Remedies"
+      "serviceLabel": "Upay / Vedic Remedies",
+      "relatedIds": [
+        "2026-03-03-vedic-astrological-remedies-upay",
+        "2026-03-03-vedic-upay-astrological-remedies",
+        "2026-02-24-vedic-mantras-planetary-harmony",
+        "2026-03-04-understanding-power-vedic-kundali"
+      ]
     },
     {
       "id": "2026-03-02-daily-horoscope-march-2-2026-leo-moon",
@@ -1031,7 +1451,13 @@
       "articleId": "2026-03-02-daily-horoscope-march-2-2026-leo-moon",
       "date": "2026-03-02",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-10-daily-horoscope-march-10-2026",
+        "2026-03-08-daily-horoscope-march-8-2026",
+        "2026-03-05-daily-horoscope-march-5-2026",
+        "2026-02-26-daily-horoscope-february-26-2026"
+      ]
     },
     {
       "id": "2026-03-02-kundali-milan-compatibility-guide",
@@ -1045,7 +1471,13 @@
       "articleId": "2026-03-02-kundali-milan-compatibility-guide",
       "date": "2026-03-02",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-07-science-of-kundali-milan-compatibility",
+        "2026-03-06-science-of-kundali-milan-compatibility",
+        "2026-03-05-vedic-matchmaking-ashtakoota-compatibility",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide"
+      ]
     },
     {
       "id": "2026-03-02-auspicious-muhurat-march-2-2026",
@@ -1059,7 +1491,13 @@
       "articleId": "2026-03-02-auspicious-muhurat-march-2-2026",
       "date": "2026-03-02",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events March 2, 2026"
+      "serviceLabel": "Auspicious Events March 2, 2026",
+      "relatedIds": [
+        "2026-03-07-auspicious-muhurat-panchang-march-7-2026",
+        "2026-03-08-auspicious-muhurat-panchang-march-8-2026",
+        "2026-03-03-auspicious-muhurat-panchang-march-3-2026",
+        "2026-03-09-auspicious-events-muhurat-march-9-2026"
+      ]
     },
     {
       "id": "2026-03-02-astrological-events-march-2-2026",
@@ -1073,7 +1511,13 @@
       "articleId": "2026-03-02-astrological-events-march-2-2026",
       "date": "2026-03-02",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events March 2, 2026"
+      "serviceLabel": "Astrological Events March 2, 2026",
+      "relatedIds": [
+        "2026-03-03-astrological-events-march-3-2026-holika-dahan",
+        "2026-03-05-astrological-events-march-5-2026",
+        "2026-03-09-key-astrological-events-march-9-2026",
+        "2026-03-07-astrological-events-planetary-alignments-march-7-2026"
+      ]
     },
     {
       "id": "2026-03-01-planetary-positions-march-1-2026",
@@ -1087,7 +1531,13 @@
       "articleId": "2026-03-01-planetary-positions-march-1-2026",
       "date": "2026-03-01",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-06-planetary-positions-march-6-2026",
+        "2026-03-02-planetary-positions-transits-march-2-2026",
+        "2026-03-01-daily-horoscope-march-1-2026",
+        "2026-03-05-planetary-positions-transits-march-5-2026"
+      ]
     },
     {
       "id": "2026-03-01-daily-horoscope-march-1-2026",
@@ -1101,7 +1551,13 @@
       "articleId": "2026-03-01-daily-horoscope-march-1-2026",
       "date": "2026-03-01",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-04-daily-horoscope-march-4-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026"
+      ]
     },
     {
       "id": "2026-03-01-power-of-sacred-geometry-yantra",
@@ -1115,7 +1571,13 @@
       "articleId": "2026-03-01-power-of-sacred-geometry-yantra",
       "date": "2026-03-01",
       "timeSlot": "12pm",
-      "serviceLabel": "Yantra"
+      "serviceLabel": "Yantra",
+      "relatedIds": [
+        "2026-02-28-harnessing-the-power-of-yantras",
+        "2026-02-27-harmonizing-your-home-vastu-shastra",
+        "2026-02-26-vastu-shastra-home-energy",
+        "2026-02-27-unlocking-the-power-of-rudraksha"
+      ]
     },
     {
       "id": "2026-03-01-vedic-wellness-health-astrology",
@@ -1129,7 +1591,13 @@
       "articleId": "2026-03-01-vedic-wellness-health-astrology",
       "date": "2026-03-01",
       "timeSlot": "12pm",
-      "serviceLabel": "Cosmic Health"
+      "serviceLabel": "Cosmic Health",
+      "relatedIds": [
+        "2026-03-02-vedic-wellness-health-astrology-guide-2026",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-02-25-vedic-gemstones-planetary-remedies"
+      ]
     },
     {
       "id": "2026-03-01-daily-horoscope-march-1-2026",
@@ -1143,7 +1611,13 @@
       "articleId": "2026-03-01-daily-horoscope-march-1-2026",
       "date": "2026-03-01",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-03-06-daily-horoscope-march-6-2026",
+        "2026-03-04-daily-horoscope-march-4-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026"
+      ]
     },
     {
       "id": "2026-03-01-understanding-ashtakoota-kundali-milan-compatibility",
@@ -1157,7 +1631,13 @@
       "articleId": "2026-03-01-understanding-ashtakoota-kundali-milan-compatibility",
       "date": "2026-03-01",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-03-04-kundali-milan-ashtakoota-compatibility-guide",
+        "2026-03-10-science-of-ashtakoota-kundali-milan-guide",
+        "2026-03-10-ashtakoota-vedic-compatibility-guide",
+        "2026-02-25-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-02-28-daily-vedic-horoscope-february-28-2026",
@@ -1171,7 +1651,13 @@
       "articleId": "2026-02-28-daily-vedic-horoscope-february-28-2026",
       "date": "2026-02-28",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-27-daily-vedic-horoscope-february-27-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-03-06-daily-horoscope-march-6-2026"
+      ]
     },
     {
       "id": "2026-02-28-vedic-compatibility-kundali-milan",
@@ -1185,7 +1671,13 @@
       "articleId": "2026-02-28-vedic-compatibility-kundali-milan",
       "date": "2026-02-28",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-02-23-kundali-milan-relationship-compatibility"
+      ]
     },
     {
       "id": "2026-02-28-todays-planetary-positions-transits",
@@ -1199,7 +1691,13 @@
       "articleId": "2026-02-28-todays-planetary-positions-transits",
       "date": "2026-02-28",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-09-todays-planetary-positions-transits",
+        "2026-02-26-todays-planetary-positions-transits",
+        "2026-03-03-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-28-planetary-effects-on-you-today",
@@ -1213,7 +1711,13 @@
       "articleId": "2026-02-28-planetary-effects-on-you-today",
       "date": "2026-02-28",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-23-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today",
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-27-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-28-unlocking-the-power-of-rudraksha",
@@ -1227,7 +1731,13 @@
       "articleId": "2026-02-28-unlocking-the-power-of-rudraksha",
       "date": "2026-02-28",
       "timeSlot": "12pm",
-      "serviceLabel": "Rudraksh"
+      "serviceLabel": "Rudraksh",
+      "relatedIds": [
+        "2026-02-27-unlocking-the-power-of-rudraksha",
+        "2026-02-25-vedic-gemstones-planetary-remedies",
+        "2026-02-28-harnessing-the-power-of-yantras",
+        "2026-02-24-vedic-mantras-planetary-harmony"
+      ]
     },
     {
       "id": "2026-02-28-harnessing-the-power-of-yantras",
@@ -1241,7 +1751,13 @@
       "articleId": "2026-02-28-harnessing-the-power-of-yantras",
       "date": "2026-02-28",
       "timeSlot": "12pm",
-      "serviceLabel": "Yantra"
+      "serviceLabel": "Yantra",
+      "relatedIds": [
+        "2026-03-01-power-of-sacred-geometry-yantra",
+        "2026-02-24-vedic-mantras-planetary-harmony",
+        "2026-02-28-unlocking-the-power-of-rudraksha",
+        "2026-02-25-vedic-gemstones-planetary-remedies"
+      ]
     },
     {
       "id": "2026-02-28-daily-vedic-horoscope-february-28-2026",
@@ -1255,7 +1771,13 @@
       "articleId": "2026-02-28-daily-vedic-horoscope-february-28-2026",
       "date": "2026-02-28",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-27-daily-vedic-horoscope-february-27-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-03-06-daily-horoscope-march-6-2026"
+      ]
     },
     {
       "id": "2026-02-28-vedic-compatibility-kundali-milan",
@@ -1269,7 +1791,13 @@
       "articleId": "2026-02-28-vedic-compatibility-kundali-milan",
       "date": "2026-02-28",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-02-23-kundali-milan-relationship-compatibility"
+      ]
     },
     {
       "id": "2026-02-28-auspicious-events-muhurat-february-28-2026",
@@ -1283,7 +1811,13 @@
       "articleId": "2026-02-28-auspicious-events-muhurat-february-28-2026",
       "date": "2026-02-28",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events February 28, 2026"
+      "serviceLabel": "Auspicious Events February 28, 2026",
+      "relatedIds": [
+        "2026-02-26-auspicious-events-muhurat-february-26-2026",
+        "2026-02-25-auspicious-events-muhurat-february-25-2026",
+        "2026-02-23-auspicious-events-muhurat-february-23-2026",
+        "2026-02-28-key-astrological-events-february-28-2026"
+      ]
     },
     {
       "id": "2026-02-28-key-astrological-events-february-28-2026",
@@ -1297,7 +1831,13 @@
       "articleId": "2026-02-28-key-astrological-events-february-28-2026",
       "date": "2026-02-28",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events February 28, 2026"
+      "serviceLabel": "Astrological Events February 28, 2026",
+      "relatedIds": [
+        "2026-02-26-astrological-events-february-26-2026",
+        "2026-02-25-key-astrological-events-february-25-2026",
+        "2026-02-23-astrological-events-february-23-2026",
+        "2026-02-24-astrological-events-february-24-2026"
+      ]
     },
     {
       "id": "2026-02-27-todays-planetary-positions-transits",
@@ -1311,7 +1851,13 @@
       "articleId": "2026-02-27-todays-planetary-positions-transits",
       "date": "2026-02-27",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-08-todays-planetary-positions-transits",
+        "2026-02-23-todays-planetary-positions-transits",
+        "2026-02-22-todays-planetary-positions-transits",
+        "2026-02-24-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-27-planetary-effects-on-you-today",
@@ -1325,7 +1871,13 @@
       "articleId": "2026-02-27-planetary-effects-on-you-today",
       "date": "2026-02-27",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-27-harmonizing-your-home-vastu-shastra",
@@ -1339,7 +1891,13 @@
       "articleId": "2026-02-27-harmonizing-your-home-vastu-shastra",
       "date": "2026-02-27",
       "timeSlot": "12pm",
-      "serviceLabel": "Vastu"
+      "serviceLabel": "Vastu",
+      "relatedIds": [
+        "2026-02-26-vastu-shastra-home-energy",
+        "2026-03-01-power-of-sacred-geometry-yantra",
+        "2026-03-09-disha-shool-lucky-direction-guide-2026",
+        "2026-03-10-understanding-disha-shool-lucky-direction"
+      ]
     },
     {
       "id": "2026-02-27-unlocking-the-power-of-rudraksha",
@@ -1353,7 +1911,13 @@
       "articleId": "2026-02-27-unlocking-the-power-of-rudraksha",
       "date": "2026-02-27",
       "timeSlot": "12pm",
-      "serviceLabel": "Rudraksh"
+      "serviceLabel": "Rudraksh",
+      "relatedIds": [
+        "2026-02-28-unlocking-the-power-of-rudraksha",
+        "2026-02-25-vedic-gemstones-planetary-remedies",
+        "2026-02-28-harnessing-the-power-of-yantras",
+        "2026-02-24-vedic-mantras-planetary-harmony"
+      ]
     },
     {
       "id": "2026-02-27-daily-vedic-horoscope-february-27-2026",
@@ -1367,7 +1931,13 @@
       "articleId": "2026-02-27-daily-vedic-horoscope-february-27-2026",
       "date": "2026-02-27",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-03-06-daily-horoscope-march-6-2026"
+      ]
     },
     {
       "id": "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
@@ -1381,7 +1951,13 @@
       "articleId": "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
       "date": "2026-02-27",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-24-kundali-matching-relationship-potential"
+      ]
     },
     {
       "id": "2026-02-26-todays-planetary-positions-transits",
@@ -1395,7 +1971,13 @@
       "articleId": "2026-02-26-todays-planetary-positions-transits",
       "date": "2026-02-26",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-03-09-todays-planetary-positions-transits",
+        "2026-02-28-todays-planetary-positions-transits",
+        "2026-03-03-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-26-planetary-effects-on-you-today",
@@ -1409,7 +1991,13 @@
       "articleId": "2026-02-26-planetary-effects-on-you-today",
       "date": "2026-02-26",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-27-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-26-birthstone-by-rashi",
@@ -1423,7 +2011,13 @@
       "articleId": "2026-02-26-birthstone-by-rashi",
       "date": "2026-02-26",
       "timeSlot": "12pm",
-      "serviceLabel": "Birthstone by Rashi"
+      "serviceLabel": "Birthstone by Rashi",
+      "relatedIds": [
+        "2026-02-25-birthstone-by-rashi-vedic-astrology",
+        "2026-02-25-vedic-gemstones-planetary-remedies",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-03-03-vedic-upay-astrological-remedies"
+      ]
     },
     {
       "id": "2026-02-26-vastu-shastra-home-energy",
@@ -1437,7 +2031,13 @@
       "articleId": "2026-02-26-vastu-shastra-home-energy",
       "date": "2026-02-26",
       "timeSlot": "12pm",
-      "serviceLabel": "Vastu"
+      "serviceLabel": "Vastu",
+      "relatedIds": [
+        "2026-02-27-harmonizing-your-home-vastu-shastra",
+        "2026-03-09-disha-shool-lucky-direction-guide-2026",
+        "2026-03-10-understanding-disha-shool-lucky-direction",
+        "2026-03-01-power-of-sacred-geometry-yantra"
+      ]
     },
     {
       "id": "2026-02-26-daily-horoscope-february-26-2026",
@@ -1451,7 +2051,13 @@
       "articleId": "2026-02-26-daily-horoscope-february-26-2026",
       "date": "2026-02-26",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-24-daily-horoscope-february-24-2026",
+        "2026-02-23-daily-horoscope-february-23-2026",
+        "2026-03-08-daily-horoscope-march-8-2026",
+        "2026-03-10-daily-horoscope-march-10-2026"
+      ]
     },
     {
       "id": "2026-02-26-kundali-milan-relationship-harmony-vedic-astrology",
@@ -1465,7 +2071,13 @@
       "articleId": "2026-02-26-kundali-milan-relationship-harmony-vedic-astrology",
       "date": "2026-02-26",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-24-kundali-matching-relationship-potential",
+        "2026-02-23-kundali-milan-relationship-compatibility",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-02-26-auspicious-events-muhurat-february-26-2026",
@@ -1479,7 +2091,13 @@
       "articleId": "2026-02-26-auspicious-events-muhurat-february-26-2026",
       "date": "2026-02-26",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events February 26, 2026"
+      "serviceLabel": "Auspicious Events February 26, 2026",
+      "relatedIds": [
+        "2026-02-25-auspicious-events-muhurat-february-25-2026",
+        "2026-02-28-auspicious-events-muhurat-february-28-2026",
+        "2026-02-23-auspicious-events-muhurat-february-23-2026",
+        "2026-02-24-auspicious-events-muhurat-february-24-2026"
+      ]
     },
     {
       "id": "2026-02-26-astrological-events-february-26-2026",
@@ -1493,7 +2111,13 @@
       "articleId": "2026-02-26-astrological-events-february-26-2026",
       "date": "2026-02-26",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events February 26, 2026"
+      "serviceLabel": "Astrological Events February 26, 2026",
+      "relatedIds": [
+        "2026-02-25-key-astrological-events-february-25-2026",
+        "2026-02-23-astrological-events-february-23-2026",
+        "2026-02-28-key-astrological-events-february-28-2026",
+        "2026-02-24-astrological-events-february-24-2026"
+      ]
     },
     {
       "id": "2026-02-25-vedic-gemstones-planetary-remedies",
@@ -1507,7 +2131,13 @@
       "articleId": "2026-02-25-vedic-gemstones-planetary-remedies",
       "date": "2026-02-25",
       "timeSlot": "12pm",
-      "serviceLabel": "Gemstones"
+      "serviceLabel": "Gemstones",
+      "relatedIds": [
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-02-25-birthstone-by-rashi-vedic-astrology",
+        "2026-02-26-birthstone-by-rashi",
+        "2026-03-03-vedic-astrological-remedies-upay"
+      ]
     },
     {
       "id": "2026-02-25-birthstone-by-rashi-vedic-astrology",
@@ -1521,7 +2151,13 @@
       "articleId": "2026-02-25-birthstone-by-rashi-vedic-astrology",
       "date": "2026-02-25",
       "timeSlot": "12pm",
-      "serviceLabel": "Birthstone by Rashi"
+      "serviceLabel": "Birthstone by Rashi",
+      "relatedIds": [
+        "2026-02-26-birthstone-by-rashi",
+        "2026-02-25-vedic-gemstones-planetary-remedies",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-03-03-vedic-astrological-remedies-upay"
+      ]
     },
     {
       "id": "2026-02-25-daily-vedic-horoscope-february-25-2026",
@@ -1535,7 +2171,13 @@
       "articleId": "2026-02-25-daily-vedic-horoscope-february-25-2026",
       "date": "2026-02-25",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-27-daily-vedic-horoscope-february-27-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-02-28-daily-vedic-horoscope-february-28-2026",
+        "2026-03-06-daily-horoscope-march-6-2026"
+      ]
     },
     {
       "id": "2026-02-25-vedic-compatibility-kundali-milan",
@@ -1549,7 +2191,13 @@
       "articleId": "2026-02-25-vedic-compatibility-kundali-milan",
       "date": "2026-02-25",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-24-kundali-matching-relationship-potential"
+      ]
     },
     {
       "id": "2026-02-25-auspicious-events-muhurat-february-25-2026",
@@ -1563,7 +2211,13 @@
       "articleId": "2026-02-25-auspicious-events-muhurat-february-25-2026",
       "date": "2026-02-25",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events February 25, 2026"
+      "serviceLabel": "Auspicious Events February 25, 2026",
+      "relatedIds": [
+        "2026-02-26-auspicious-events-muhurat-february-26-2026",
+        "2026-02-24-auspicious-events-muhurat-february-24-2026",
+        "2026-02-23-auspicious-events-muhurat-february-23-2026",
+        "2026-03-05-auspicious-events-muhurat-march-5-2026"
+      ]
     },
     {
       "id": "2026-02-25-key-astrological-events-february-25-2026",
@@ -1577,7 +2231,13 @@
       "articleId": "2026-02-25-key-astrological-events-february-25-2026",
       "date": "2026-02-25",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events February 25, 2026"
+      "serviceLabel": "Astrological Events February 25, 2026",
+      "relatedIds": [
+        "2026-02-26-astrological-events-february-26-2026",
+        "2026-02-23-astrological-events-february-23-2026",
+        "2026-02-24-astrological-events-february-24-2026",
+        "2026-02-28-key-astrological-events-february-28-2026"
+      ]
     },
     {
       "id": "2026-02-24-todays-planetary-positions-transits",
@@ -1591,7 +2251,13 @@
       "articleId": "2026-02-24-todays-planetary-positions-transits",
       "date": "2026-02-24",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-02-22-todays-planetary-positions-transits",
+        "2026-02-27-todays-planetary-positions-transits",
+        "2026-02-23-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-24-planetary-effects-on-you-today",
@@ -1605,7 +2271,13 @@
       "articleId": "2026-02-24-planetary-effects-on-you-today",
       "date": "2026-02-24",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-27-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-24-vedic-mantras-planetary-harmony",
@@ -1619,7 +2291,13 @@
       "articleId": "2026-02-24-vedic-mantras-planetary-harmony",
       "date": "2026-02-24",
       "timeSlot": "12pm",
-      "serviceLabel": "Mantra"
+      "serviceLabel": "Mantra",
+      "relatedIds": [
+        "2026-03-03-vedic-upay-astrological-remedies",
+        "2026-02-24-vedic-gemstones-planetary-remedies",
+        "2026-03-03-vedic-astrological-remedies-upay",
+        "2026-03-02-power-of-upay-vedic-remedies-guide"
+      ]
     },
     {
       "id": "2026-02-24-vedic-gemstones-planetary-remedies",
@@ -1633,7 +2311,13 @@
       "articleId": "2026-02-24-vedic-gemstones-planetary-remedies",
       "date": "2026-02-24",
       "timeSlot": "12pm",
-      "serviceLabel": "Gemstones"
+      "serviceLabel": "Gemstones",
+      "relatedIds": [
+        "2026-02-25-vedic-gemstones-planetary-remedies",
+        "2026-02-25-birthstone-by-rashi-vedic-astrology",
+        "2026-03-03-vedic-astrological-remedies-upay",
+        "2026-02-26-birthstone-by-rashi"
+      ]
     },
     {
       "id": "2026-02-24-daily-horoscope-february-24-2026",
@@ -1647,7 +2331,13 @@
       "articleId": "2026-02-24-daily-horoscope-february-24-2026",
       "date": "2026-02-24",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-26-daily-horoscope-february-26-2026",
+        "2026-02-23-daily-horoscope-february-23-2026",
+        "2026-02-25-daily-vedic-horoscope-february-25-2026",
+        "2026-03-10-daily-horoscope-march-10-2026"
+      ]
     },
     {
       "id": "2026-02-24-kundali-matching-relationship-potential",
@@ -1661,7 +2351,13 @@
       "articleId": "2026-02-24-kundali-matching-relationship-potential",
       "date": "2026-02-24",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-23-kundali-milan-relationship-compatibility",
+        "2026-02-27-vedic-compatibility-kundali-milan-ashtakoota",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-02-24-auspicious-events-muhurat-february-24-2026",
@@ -1675,7 +2371,13 @@
       "articleId": "2026-02-24-auspicious-events-muhurat-february-24-2026",
       "date": "2026-02-24",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events February 24, 2026"
+      "serviceLabel": "Auspicious Events February 24, 2026",
+      "relatedIds": [
+        "2026-02-25-auspicious-events-muhurat-february-25-2026",
+        "2026-02-23-auspicious-events-muhurat-february-23-2026",
+        "2026-02-26-auspicious-events-muhurat-february-26-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026"
+      ]
     },
     {
       "id": "2026-02-24-astrological-events-february-24-2026",
@@ -1689,7 +2391,13 @@
       "articleId": "2026-02-24-astrological-events-february-24-2026",
       "date": "2026-02-24",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events February 24, 2026"
+      "serviceLabel": "Astrological Events February 24, 2026",
+      "relatedIds": [
+        "2026-02-26-astrological-events-february-26-2026",
+        "2026-02-25-key-astrological-events-february-25-2026",
+        "2026-02-23-astrological-events-february-23-2026",
+        "2026-02-28-key-astrological-events-february-28-2026"
+      ]
     },
     {
       "id": "2026-02-23-todays-planetary-positions-transits",
@@ -1703,7 +2411,13 @@
       "articleId": "2026-02-23-todays-planetary-positions-transits",
       "date": "2026-02-23",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-02-22-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits",
+        "2026-02-27-todays-planetary-positions-transits",
+        "2026-02-24-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-23-planetary-effects-on-you-today",
@@ -1717,7 +2431,13 @@
       "articleId": "2026-02-23-planetary-effects-on-you-today",
       "date": "2026-02-23",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-02-27-planetary-effects-on-you-today",
+        "2026-02-24-planetary-effects-on-you-today",
+        "2026-02-26-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-23-daily-horoscope-february-23-2026",
@@ -1731,7 +2451,13 @@
       "articleId": "2026-02-23-daily-horoscope-february-23-2026",
       "date": "2026-02-23",
       "timeSlot": "6am",
-      "serviceLabel": "Horoscope / Daily Predictions"
+      "serviceLabel": "Horoscope / Daily Predictions",
+      "relatedIds": [
+        "2026-02-24-daily-horoscope-february-24-2026",
+        "2026-02-26-daily-horoscope-february-26-2026",
+        "2026-03-08-daily-horoscope-march-8-2026",
+        "2026-03-10-daily-horoscope-march-10-2026"
+      ]
     },
     {
       "id": "2026-02-23-kundali-milan-relationship-compatibility",
@@ -1745,7 +2471,13 @@
       "articleId": "2026-02-23-kundali-milan-relationship-compatibility",
       "date": "2026-02-23",
       "timeSlot": "6am",
-      "serviceLabel": "Compatibility / Match Making"
+      "serviceLabel": "Compatibility / Match Making",
+      "relatedIds": [
+        "2026-02-25-vedic-compatibility-kundali-milan",
+        "2026-02-28-vedic-compatibility-kundali-milan",
+        "2026-02-24-kundali-matching-relationship-potential",
+        "2026-02-28-vedic-compatibility-kundali-milan"
+      ]
     },
     {
       "id": "2026-02-23-auspicious-events-muhurat-february-23-2026",
@@ -1759,7 +2491,13 @@
       "articleId": "2026-02-23-auspicious-events-muhurat-february-23-2026",
       "date": "2026-02-23",
       "timeSlot": "9pm",
-      "serviceLabel": "Auspicious Events February 23, 2026"
+      "serviceLabel": "Auspicious Events February 23, 2026",
+      "relatedIds": [
+        "2026-02-24-auspicious-events-muhurat-february-24-2026",
+        "2026-02-25-auspicious-events-muhurat-february-25-2026",
+        "2026-02-26-auspicious-events-muhurat-february-26-2026",
+        "2026-03-04-auspicious-events-muhurat-march-4-2026"
+      ]
     },
     {
       "id": "2026-02-23-astrological-events-february-23-2026",
@@ -1773,7 +2511,13 @@
       "articleId": "2026-02-23-astrological-events-february-23-2026",
       "date": "2026-02-23",
       "timeSlot": "9pm",
-      "serviceLabel": "Astrological Events February 23, 2026"
+      "serviceLabel": "Astrological Events February 23, 2026",
+      "relatedIds": [
+        "2026-02-26-astrological-events-february-26-2026",
+        "2026-02-25-key-astrological-events-february-25-2026",
+        "2026-02-24-astrological-events-february-24-2026",
+        "2026-02-28-key-astrological-events-february-28-2026"
+      ]
     },
     {
       "id": "2026-02-22-todays-planetary-positions-transits",
@@ -1787,7 +2531,13 @@
       "articleId": "2026-02-22-todays-planetary-positions-transits",
       "date": "2026-02-22",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Positions Today"
+      "serviceLabel": "Planetary Positions Today",
+      "relatedIds": [
+        "2026-02-23-todays-planetary-positions-transits",
+        "2026-03-08-todays-planetary-positions-transits",
+        "2026-02-27-todays-planetary-positions-transits",
+        "2026-02-24-todays-planetary-positions-transits"
+      ]
     },
     {
       "id": "2026-02-22-planetary-effects-on-you-today",
@@ -1801,7 +2551,13 @@
       "articleId": "2026-02-22-planetary-effects-on-you-today",
       "date": "2026-02-22",
       "timeSlot": "6pm",
-      "serviceLabel": "Planetary Effects Today"
+      "serviceLabel": "Planetary Effects Today",
+      "relatedIds": [
+        "2026-03-03-planetary-effects-on-you-today",
+        "2026-03-08-planetary-effects-on-you-today",
+        "2026-02-28-planetary-effects-on-you-today",
+        "2026-02-23-planetary-effects-on-you-today"
+      ]
     },
     {
       "id": "2026-02-22-numerology-career-guidance",
@@ -1815,7 +2571,13 @@
       "articleId": "2026-02-22-numerology-career-guidance",
       "date": "2026-02-22",
       "timeSlot": "12pm",
-      "serviceLabel": "Numerology & Career"
+      "serviceLabel": "Numerology & Career",
+      "relatedIds": [
+        "2026-02-22-palmistry-hand-reading-guide",
+        "2026-03-03-understanding-your-kundali-birth-chart",
+        "2026-03-09-disha-shool-lucky-direction-guide-2026",
+        "2026-03-03-kundali-birth-chart-analysis"
+      ]
     },
     {
       "id": "2026-02-22-palmistry-hand-reading-guide",
@@ -1829,7 +2591,16 @@
       "articleId": "2026-02-22-palmistry-hand-reading-guide",
       "date": "2026-02-22",
       "timeSlot": "12pm",
-      "serviceLabel": "Palmistry"
+      "serviceLabel": "Palmistry",
+      "relatedIds": [
+        "2026-03-03-understanding-your-kundali-birth-chart",
+        "2026-03-03-kundali-birth-chart-analysis",
+        "2026-03-04-understanding-power-vedic-kundali",
+        "2026-02-22-numerology-career-guidance"
+      ]
     }
-  ]
+  ],
+  "embeddingModel": "gemini-embedding-001",
+  "embeddingDimensions": 768,
+  "relatedGeneratedAt": "2026-03-11T12:54:50.658Z"
 }

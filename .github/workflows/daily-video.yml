@@ -1,0 +1,100 @@
+# Generate one AI video per run for the given slot (Veo via Gemini API).
+# Slots: 2am, 7am, 11am, 2pm, 5pm, 7pm, 10pm, 12am (IST). Run 8 times per day for 8 videos.
+# Requires: GEMINI_API_KEY (or API_KEY) in repo Secrets.
+# IST to UTC (approx): 2am IST = 20:30 UTC (prev day), 7am = 01:30, 11am = 05:30, 2pm = 08:30, 5pm = 11:30, 7pm = 13:30, 10pm = 16:30, 12am = 18:30.
+name: Generate Daily AI Video
+permissions:
+  contents: write
+on:
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'Time slot'
+        required: true
+        default: '2am'
+        type: choice
+        options:
+          - '2am'
+          - '7am'
+          - '11am'
+          - '2pm'
+          - '5pm'
+          - '7pm'
+          - '10pm'
+          - '12am'
+  schedule:
+    # 8 runs per day (UTC): adjust to your timezone (e.g. IST = UTC+5:30)
+    - cron: '30 20 * * *'   # 20:30 UTC ≈ 2am IST
+    - cron: '30 1 * * *'    # 01:30 UTC ≈ 7am IST
+    - cron: '30 5 * * *'    # 05:30 UTC ≈ 11am IST
+    - cron: '30 8 * * *'    # 08:30 UTC ≈ 2pm IST
+    - cron: '30 11 * * *'   # 11:30 UTC ≈ 5pm IST
+    - cron: '30 13 * * *'   # 13:30 UTC ≈ 7pm IST
+    - cron: '30 16 * * *'   # 16:30 UTC ≈ 10pm IST
+    - cron: '30 18 * * *'   # 18:30 UTC ≈ 12am IST (midnight)
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Resolve slot for scheduled run
+        id: slot
+        run: |
+          H=$(date -u +%H)
+          case "$H" in
+            20) echo "slot=2am" >> $GITHUB_OUTPUT ;;
+            01) echo "slot=7am" >> $GITHUB_OUTPUT ;;
+            05) echo "slot=11am" >> $GITHUB_OUTPUT ;;
+            08) echo "slot=2pm" >> $GITHUB_OUTPUT ;;
+            11) echo "slot=5pm" >> $GITHUB_OUTPUT ;;
+            13) echo "slot=7pm" >> $GITHUB_OUTPUT ;;
+            16) echo "slot=10pm" >> $GITHUB_OUTPUT ;;
+            18) echo "slot=12am" >> $GITHUB_OUTPUT ;;
+            *) echo "slot=2am" >> $GITHUB_OUTPUT ;;
+          esac
+          echo "Resolved slot: ${{ steps.slot.outputs.slot }}"
+
+      - name: Check Gemini API key
+        run: |
+          if [ -z "${{ secrets.GEMINI_API_KEY }}${{ secrets.API_KEY }}" ]; then
+            echo "::error::Set GEMINI_API_KEY or API_KEY in repo Secrets for video generation."
+            exit 1
+          fi
+          echo "Gemini API key is set."
+
+      - name: Generate AI video
+        run: node scripts/generate-daily-video.mjs ${{ github.event.inputs.slot || steps.slot.outputs.slot }}
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS }}
+          API_KEY: ${{ secrets.API_KEY }}
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/blog/daily-videos.json public/blog/videos/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: add daily AI video (${{ github.event.inputs.slot || steps.slot.outputs.slot || '2am' }})"
+            git fetch origin main
+            git pull origin main --no-rebase --no-edit -X ours
+            git push origin main
+          fi

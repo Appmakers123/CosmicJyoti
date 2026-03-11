@@ -655,7 +655,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
         console.log("Geocoding location before submission:", formData.location);
         const geocodedData = await geocodeSelectedLocation(formData.location);
         if (geocodedData) {
-          dataToSubmit = geocodedData;
+          dataToSubmit = { ...formData, ...geocodedData };
           console.log("Geocoding successful, coordinates:", geocodedData.lat, geocodedData.lon);
         } else {
           console.warn("Geocoding failed, submitting without coordinates - backend will handle it");
@@ -667,7 +667,7 @@ const KundaliForm: React.FC<KundaliFormProps> = ({
     } else {
       console.log("Using existing coordinates:", formData.lat, formData.lon);
     }
-    
+    dataToSubmit = { ...dataToSubmit, name: (dataToSubmit.name ?? formData.name ?? '').trim() || formData.name || 'Seeker' };
     console.log("Submitting kundali form with data:", {
       name: dataToSubmit.name,
       location: dataToSubmit.location,

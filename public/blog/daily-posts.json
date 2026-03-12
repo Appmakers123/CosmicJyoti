@@ -1,8 +1,36 @@
 {
   "lastGenerated": "2026-03-12",
-  "generatedAt": "2026-03-12T03:15:47.349Z",
-  "totalPosts": 134,
+  "generatedAt": "2026-03-12T07:27:44.996Z",
+  "totalPosts": 136,
   "posts": [
+    {
+      "id": "2026-03-12-numerology-life-path-destiny-number",
+      "title": "Unlocking the Secrets of Numerology: Understanding Your Life Path and Destiny Number",
+      "slug": "numerology-life-path-destiny-number",
+      "excerpt": "Discover the ancient science of Numerology and how it can reveal your life's purpose and destiny. Learn about the significance of your Life Path and Destiny Number.",
+      "content": "         <h2>Introduction to Numerology</h2>         <p>Numerology is an ancient science that has been used for centuries to understand an individual's personality, strengths, and weaknesses. It is based on the belief that numbers have a profound impact on our lives and can reveal our life's purpose and destiny.</p>         <h2>Understanding Your Life Path Number</h2>         <p>Your Life Path Number is calculated based on your birth date and is believed to reveal your life's purpose and challenges. It is a significant number that can help you understand your strengths and weaknesses and make informed decisions about your life.</p>         <h3>Calculating Your Life Path Number</h3>         <p>To calculate your Life Path Number, you need to add up the individual digits of your birth date and reduce them to a single digit, unless the result is a master number (11, 22, or 33). For example, if your birth date is 12/12/1990, your Life Path Number would be 1+2+1+2+1+9+9+0 = 25, which reduces to 7.</p>         <h2>Understanding Your Destiny Number</h2>         <p>Your Destiny Number, also known as your Expression Number, is calculated based on the letters of your birth name. It is believed to reveal your life's purpose and destiny and can help you understand your strengths and weaknesses.</p>         <h3>Calculating Your Destiny Number</h3>         <p>To calculate your Destiny Number, you need to assign a numerical value to each letter of your birth name and add them up. Each letter has a specific numerical value, from 1 to 9, based on the Pythagorean system.</p>         <h2>Conclusion</h2>         <p>Numerology is a powerful tool that can help you understand your life's purpose and destiny. By calculating your Life Path and Destiny Number, you can gain valuable insights into your strengths and weaknesses and make informed decisions about your life. Try our Numerology tool at cosmicjyoti.com to discover your Life Path and Destiny Number and unlock the secrets of your destiny.</p>       ",
+      "readingTime": "6 min",
+      "topic": "Numerology",
+      "serviceMode": "numerology",
+      "articleId": "2026-03-12-numerology-life-path-destiny-number",
+      "date": "2026-03-12",
+      "timeSlot": "12pm",
+      "serviceLabel": "Numerology"
+    },
+    {
+      "id": "2026-03-12-palmistry-hand-reading",
+      "title": "The Ancient Art of Palmistry: Unlocking the Secrets of Your Hand",
+      "slug": "palmistry-hand-reading",
+      "excerpt": "Discover the ancient art of Palmistry and how it can reveal your personality, strengths, and weaknesses. Learn about the different types of hand shapes and lines and how they can impact your life.",
+      "content": "         <h2>Introduction to Palmistry</h2>         <p>Palmistry, also known as hand reading, is an ancient art that has been used for centuries to understand an individual's personality, strengths, and weaknesses. It is based on the belief that the lines and shapes on your hands can reveal your character and destiny.</p>         <h2>Understanding Your Hand Shape</h2>         <p>There are four main types of hand shapes in Palmistry: Earth, Air, Fire, and Water. Each hand shape is associated with specific personality traits and characteristics. For example, people with Earth hands are often practical and grounded, while those with Air hands are often intellectual and communicative.</p>         <h3>Types of Hand Shapes</h3>         <ul>           <li>Earth hands: square-shaped with thick fingers and a thick palm</li>           <li>Air hands: square-shaped with long fingers and a thin palm</li>           <li>Fire hands: rectangular-shaped with short fingers and a thick palm</li>           <li>Water hands: oval-shaped with long fingers and a thin palm</li>         </ul>         <h2>Understanding Your Palm Lines</h2>         <p>The lines on your palm can reveal a lot about your life, including your relationships, career, and health. The main lines on your palm are the Heart Line, Head Line, and Life Line. Each line has its own unique characteristics and can provide valuable insights into your life.</p>         <h3>Types of Palm Lines</h3>         <ol>           <li>Heart Line: reveals your emotional nature and relationships</li>           <li>Head Line: reveals your intellectual abilities and communication style</li>           <li>Life Line: reveals your physical and mental health and overall well-being</li>         </ol>         <h2>Conclusion</h2>         <p>Palmistry is a powerful tool that can help you understand your personality, strengths, and weaknesses. By analyzing your hand shape and palm lines, you can gain valuable insights into your life and make informed decisions about your future. Try our Palmistry tool at cosmicjyoti.com to discover the secrets of your hand and unlock the doors to your destiny.</p>       ",
+      "readingTime": "6 min",
+      "topic": "Palmistry",
+      "serviceMode": "palm-reading",
+      "articleId": "2026-03-12-palmistry-hand-reading",
+      "date": "2026-03-12",
+      "timeSlot": "12pm",
+      "serviceLabel": "Palmistry"
+    },
     {
       "id": "2026-03-12-daily-horoscope-insights",
       "title": "Daily Horoscope Insights: Unveiling the Secrets of the Zodiac",
@@ -2695,8 +2723,5 @@
         "2026-03-12-kundali-milan-guide"
       ]
     }
-  ],
-  "embeddingModel": "gemini-embedding-001",
-  "embeddingDimensions": 768,
-  "relatedGeneratedAt": "2026-03-12T03:15:54.141Z"
+  ]
 }

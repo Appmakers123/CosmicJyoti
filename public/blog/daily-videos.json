@@ -1,6 +1,19 @@
 {
-  "lastUpdated": "2026-03-11",
+  "lastUpdated": "2026-03-12",
   "videos": [
+    {
+      "id": "2026-03-12-2am",
+      "date": "2026-03-12",
+      "slot": "2am",
+      "title": "Shubh Muhurat: Shubh samay ka chunav",
+      "titleHi": "शुभ मुहूर्त: शुभ समय का चुनाव",
+      "titleHinglish": "Shubh Muhurat: Shubh samay ka chunav",
+      "descriptionHi": "विवाह, गृहप्रवेश, व्यापार शुरुआत जैसे कार्यों के लिए शुभ मुहूर्त। पंचांग और तिथि के अनुसार सही समय।",
+      "descriptionHinglish": "Vivah, grihapravesh, vyapar shuruat ke liye shubh muhurat. Panchang aur tithi ke anusar sahi samay.",
+      "appMode": "muhurat",
+      "videoUrl": "/blog/videos/2026-03-12-2am.mp4",
+      "generatedAt": "2026-03-12T03:56:59.121Z"
+    },
     {
       "id": "2026-03-11-2am",
       "date": "2026-03-11",

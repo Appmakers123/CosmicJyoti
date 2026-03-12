@@ -1,28 +1,22 @@
-# Generate 2 AI blog posts per time slot using Perplexity only.
-# Requires: Repository secrets PERPLEXITY_API_KEY or PERPLEXITY_API_KEYS.
-# Slots (IST): 6am, 12pm, 6pm, 9pm. Cron uses UTC (6am IST = 00:30 UTC).
-# Note: Scheduled runs may be delayed; slot is resolved by current UTC hour.
+# Generate 2 AI blog posts once per day (1 run/day to save API cost).
+# Requires: PERPLEXITY_API_KEY or GROQ_API_KEY / GEMINI_API_KEY in repo Secrets.
+# Runs at 00:30 UTC (≈ 6am IST).
 name: Generate Daily Blog
 permissions:
   contents: write
 on:
   schedule:
-    - cron: '30 0 * * *'   # 00:30 UTC ≈ 6am IST – Horoscope + Compatibility
-    - cron: '30 6 * * *'   # 06:30 UTC ≈ 12pm IST – All modules (Kundali, Panchang, Tarot, Guna Milan, Muhurat, etc.) rotating
-    - cron: '30 12 * * *'  # 12:30 UTC ≈ 6pm IST – Planetary position and effect
-    - cron: '30 15 * * *'  # 15:30 UTC ≈ 9pm IST – Events for next day
+    - cron: '30 0 * * *'   # 00:30 UTC ≈ 6am IST (once per day)
   workflow_dispatch:
     inputs:
       slot:
-        description: 'Time slot (6am, 12pm, 6pm, 9pm)'
-        required: true
+        description: 'Slot (scheduled run uses 6am)'
+        required: false
         default: '6am'
         type: choice
         options:
           - '6am'
-          - '12pm'
           - '6pm'
-          - '9pm'
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -46,14 +40,8 @@ jobs:
       - name: Resolve slot for scheduled run
         id: slot
         run: |
-          H=$(date -u +%H)
-          echo "UTC hour=$H"
-          if [ "$H" = "00" ] || [ "$H" = "01" ] || [ "$H" = "02" ]; then echo "slot=6am" >> $GITHUB_OUTPUT
-          elif [ "$H" = "06" ] || [ "$H" = "07" ]; then echo "slot=12pm" >> $GITHUB_OUTPUT
-          elif [ "$H" = "12" ] || [ "$H" = "13" ]; then echo "slot=6pm" >> $GITHUB_OUTPUT
-          elif [ "$H" = "15" ] || [ "$H" = "16" ]; then echo "slot=9pm" >> $GITHUB_OUTPUT
-          else echo "slot=6am" >> $GITHUB_OUTPUT; fi
-          echo "Resolved slot: ${{ steps.slot.outputs.slot }}"
+          echo "slot=6am" >> $GITHUB_OUTPUT
+          echo "Resolved slot: 6am (once per day)"
 
       - name: Check API secrets (Groq, Perplexity or Gemini)
         run: |
@@ -76,9 +64,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           API_KEY: ${{ secrets.API_KEY }}
 
-      - name: Generate blog embeddings (related articles + semantic search data)
+      - name: Generate blog embeddings (once per day to save cost)
         continue-on-error: true
-        run: npm run blog:embeddings
+        run: |
+          SLOT="${{ github.event.inputs.slot || steps.slot.outputs.slot }}"
+          if [ "$SLOT" = "6am" ]; then
+            npm run blog:embeddings
+          else
+            echo "Skipping embeddings (run only at 6am slot to save embedding API cost)."
+          fi
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS }}

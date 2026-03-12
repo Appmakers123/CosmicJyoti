@@ -76,6 +76,20 @@ See [.env.example](https://github.com/Appmakers123/CosmicJyoti/blob/main/.env.ex
 
 ---
 
+## Cost control (Gemini / Google AI Studio)
+
+To keep **Gemini API spend around ₹800/month**:
+
+1. **Set a monthly spend cap:** In [Google AI Studio → Usage](https://aistudio.google.com/usage), click **Edit spend cap** and set it to **₹800**. This hard-limits billing (overages may occur for up to ~30 minutes; resets on the 1st of each month PST).
+2. **What we already do to reduce cost:**
+   - **Blog search:** Query embeddings are cached for 1 hour (same search = no extra embed call).
+   - **Blog embeddings:** Run only once per day (6am slot), not on every blog run.
+   - **Daily blog:** 2 runs per day (6am, 6pm) instead of 4.
+   - **Daily AI video:** 1 video per day (02:00 UTC).
+3. **Free-tier limits** in the app (Kundali, horoscope, tarot, etc.) cap how often unsubscribed users can call AI; adjust in `utils/freeUsageLimits.ts` if needed.
+
+---
+
 ## Deployment
 
 ### Frontend (e.g. GitHub Pages)
@@ -120,8 +134,8 @@ When `VITE_API_BASE_URL` is set in the build, the site uses that backend for Kun
 | Workflow | Trigger | Purpose |
 |----------|---------|---------|
 | **Deploy to GitHub Pages** | Push to `main` / manual | Builds frontend, starts backend for verification, deploys to Pages |
-| **Generate Daily Blog** | Schedule / manual | Generates 2 AI blog posts, feed, sitemaps; commits `daily-posts.json` and images |
-| **Generate Daily AI Video** | Schedule / manual | Generates AI video per slot; commits video + `daily-videos.json` |
+| **Generate Daily Blog** | Once per day (6am IST) / manual | Generates 2 AI blog posts, feed, sitemaps, embeddings (saves cost) |
+| **Generate Daily AI Video** | Once per day (02:00 UTC) / manual | One AI video per day; commits video + `daily-videos.json` (saves cost) |
 
 Secrets used by workflows: `GEMINI_API_KEY`, `VITE_API_BASE_URL`, `VITE_ASTROLOGY_API_KEYS`, `PERPLEXITY_API_KEYS` (blog), etc. See the workflow files in `.github/workflows/`.
 

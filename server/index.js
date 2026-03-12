@@ -110,6 +110,9 @@ const cache = new NodeCache({
   checkperiod: 600 // Check for expired keys every 10 minutes
 });
 
+// Blog search: cache query embeddings to avoid hitting Gemini every time (saves cost).
+const blogEmbedCache = new NodeCache({ stdTTL: 3600, maxKeys: 300, checkperiod: 600 });
+
 // Cache helper function
 const getCachedOrCompute = async (key, computeFn, ttl = 3600) => {
   const cached = cache.get(key);
@@ -610,25 +613,34 @@ app.get('/api/blog-search', async (req, res) => {
       ? embeddingsData.model
       : `models/${embeddingsData.model}`;
     const dimensions = embeddingsData.dimensions || 768;
-    const embedUrl = `https://generativelanguage.googleapis.com/v1beta/${modelId}:embedContent?key=${encodeURIComponent(apiKey)}`;
-    const embedRes = await fetch(embedUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: modelId,
-        content: { parts: [{ text: q.slice(0, 8192) }] },
-        taskType: 'RETRIEVAL_QUERY',
-        outputDimensionality: dimensions,
-      }),
-    });
-    if (!embedRes.ok) {
-      const err = await embedRes.text();
-      console.error('Blog search embed error:', embedRes.status, err);
-      return res.status(502).json({ error: 'Embedding API error' });
+
+    // Cache key: same query reuses embedding for 1 hour (saves embedding API cost)
+    const cacheKey = `blog_embed:${modelId}:${dimensions}:${q.toLowerCase().slice(0, 200)}`;
+    let queryVec = blogEmbedCache.get(cacheKey);
+    if (!queryVec || !Array.isArray(queryVec)) {
+      const embedUrl = `https://generativelanguage.googleapis.com/v1beta/${modelId}:embedContent?key=${encodeURIComponent(apiKey)}`;
+      const embedRes = await fetch(embedUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: modelId,
+          content: { parts: [{ text: q.slice(0, 8192) }] },
+          taskType: 'RETRIEVAL_QUERY',
+          outputDimensionality: dimensions,
+        }),
+      });
+      if (!embedRes.ok) {
+        const err = await embedRes.text();
+        console.error('Blog search embed error:', embedRes.status, err);
+        return res.status(502).json({ error: 'Embedding API error' });
+      }
+      const embedBody = await embedRes.json();
+      queryVec = embedBody.embedding?.values || embedBody.embeddings?.[0]?.values || [];
+      if (queryVec && queryVec.length) {
+        blogEmbedCache.set(cacheKey, queryVec);
+      }
     }
-    const embedBody = await embedRes.json();
-    const queryVec = embedBody.embedding?.values || embedBody.embeddings?.[0]?.values || [];
-    if (!queryVec.length) {
+    if (!queryVec || !queryVec.length) {
       return res.json({ postIds: [] });
     }
     const withScore = list.map(({ id, embedding }) => ({

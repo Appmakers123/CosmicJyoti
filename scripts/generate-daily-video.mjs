@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Generate one short AI video per time slot using Google Veo via the Gemini API.
+ * Generate one short AI video per day using Google Veo via the Gemini API (one video per day to save cost).
  * After generation, adds Hindi voiceover (TTS) and burned-in subtitles when available.
  *
- * Slots (run with slot argument; schedule via cron or GitHub Actions):
- * 2am, 7am, 11am, 2pm, 5pm, 7pm, 10pm, 12am — 8 videos per day, ~8 seconds each
+ * Default: one run per day with slot 2am (e.g. GitHub Actions schedule runs once at 02:00 UTC).
+ * Optional slots: 2am, 7am, 11am, 2pm, 5pm, 7pm, 10pm, 12am — for manual runs only.
  *
  * Requires: GEMINI_API_KEY (or API_KEY).
  * Optional for audio: npm optional dependency text2wav (Hindi TTS).
@@ -12,7 +12,7 @@
  *
  * Usage:
  *   node scripts/generate-daily-video.mjs [slot]     — generate video for slot (default 2am)
- *   node scripts/generate-daily-video.mjs postprocess <date> <slot>  — add audio+subs+watermark to existing video (e.g. postprocess 2026-03-11 7am)
+ *   node scripts/generate-daily-video.mjs postprocess <date> <slot>  — add audio+subs+watermark to existing video
  *
  * Output: public/blog/videos/{date}-{slot}.mp4 and appends to public/blog/daily-videos.json
  *

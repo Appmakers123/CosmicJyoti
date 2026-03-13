@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-13-daily-horoscope-insights/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-13T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope Insights: Unlocking the Secrets of the Zodiac</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-13-kundali-milan-compatibility/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-13T06:00:00+05:30</news:publication_date>
+      <news:title>The Art of Kundali Milan: Unlocking the Secrets of Compatibility</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-03-12-numerology-life-path-destiny-number/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>
@@ -109,94 +131,6 @@
       </news:publication>
       <news:publication_date>2026-03-11T06:00:00+05:30</news:publication_date>
       <news:title>Unlocking the Secrets of Kundali Milan: A Guide to Compatibility and Match Making</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-understanding-disha-shool-lucky-direction/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>Navigating Success: Understanding Disha Shool and Finding Your Lucky Direction Today</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-tarot-reading-vedic-astrology-divination/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>The Mirror of the Soul: How Tarot Reading Complements Vedic Wisdom</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-daily-horoscope-march-10-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope for March 10, 2026: Navigating the Mars-Moon Synergy</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-science-of-ashtakoota-kundali-milan-guide/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>The Science of Ashtakoota: Why Kundali Milan is Essential for Lasting Unions</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-daily-horoscope-march-10-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope: March 10, 2026 – Navigating the Lunar Transition and Planetary Shifts</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-ashtakoota-vedic-compatibility-guide/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>The Science of Ashtakoota: A Deep Dive into Vedic Compatibility and Kundali Milan</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-auspicious-events-muhurat-march-10-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>Auspicious Events and Muhurat for March 10, 2026: Best Times for Important Activities</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-10-astrological-events-march-10-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-10T06:00:00+05:30</news:publication_date>
-      <news:title>Key Astrological Events on March 10, 2026: Festivals, Yogas, and Planetary Alignments</news:title>
     </news:news>
   </url>
 </urlset>

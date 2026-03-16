@@ -1072,9 +1072,8 @@ const calculateGulikAndMandi = (
     return { gulik: gulikResult, maandi: maandiResult };
 };
 
-// Import backend service
+// Import backend service (Kundali does not use backend – always direct, as resolved earlier)
 import {
-  generateKundaliFromBackend,
   generateMuhuratFromBackend,
   generateGocharaFromBackend,
   generateGenericTransitsFromBackend,
@@ -1085,24 +1084,16 @@ import {
   generateTarotFromBackend,
 } from './backendService';
 
-/** Normalize form data so backend/direct never receive empty required fields (e.g. after deploy, state can be empty). */
+/** Normalize form data so direct API never receives empty required fields (e.g. after deploy, state can be empty). */
 function normalizeKundaliFormData(formData: KundaliFormData): KundaliFormData {
     const name = (formData.name ?? '').trim() || 'Seeker';
     return { ...formData, name };
 }
 
+/** Kundali is always generated via direct astrology API (no backend) – avoids CORS/backend failures; resolved earlier. */
 export const generateKundali = async (formData: KundaliFormData, language: Language = 'en'): Promise<KundaliResponse> => {
     const normalized = normalizeKundaliFormData(formData);
     normalized.name = (normalized.name && String(normalized.name).trim()) || 'Seeker';
-    if (isBackendConfigured()) {
-        try {
-            const backendResponse = await generateKundaliFromBackend(normalized, language);
-            return transformBackendResponse(backendResponse);
-        } catch (error: any) {
-            console.warn('Backend Kundali failed, falling back to direct API:', error?.message || error);
-            return await generateKundaliDirect(normalized, language);
-        }
-    }
     return await generateKundaliDirect(normalized, language);
 };
 

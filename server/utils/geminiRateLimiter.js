@@ -77,8 +77,7 @@ export function recordUsage(modelId, inputTokens, outputTokens) {
   const tokens = (inputTokens ?? 0) + (outputTokens ?? 0) || 500;
   const log = getOrCreateLog(modelId);
   log.push({ ts: Date.now(), tokens });
-  const limit = getModelLimit(modelId);
-  if (limit) prune(modelId, limit);
+  prune(modelId, limit);
 }
 
 export { getTextModelOrder };

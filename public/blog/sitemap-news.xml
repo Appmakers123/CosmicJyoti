@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-16-daily-horoscope-insights/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-16T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope Insights: Unveiling the Secrets of the Zodiac</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-03-16-kundali-milan-guide/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-03-16T06:00:00+05:30</news:publication_date>
+      <news:title>Unlocking the Secrets of Kundali Milan: A Guide to Compatibility and Match Making</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-03-15-daily-horoscope-march-15-2026/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>
@@ -43,28 +65,6 @@
       </news:publication>
       <news:publication_date>2026-03-14T06:00:00+05:30</news:publication_date>
       <news:title>Unlocking the Secrets of Compatibility: A Guide to Kundali Milan and Ashtakoota</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-13-daily-horoscope-insights/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-13T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope Insights: Unlocking the Secrets of the Zodiac</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-03-13-kundali-milan-compatibility/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-03-13T06:00:00+05:30</news:publication_date>
-      <news:title>The Art of Kundali Milan: Unlocking the Secrets of Compatibility</news:title>
     </news:news>
   </url>
 </urlset>

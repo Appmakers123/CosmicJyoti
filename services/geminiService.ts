@@ -9,7 +9,6 @@ import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTrans
 import { generateHoroscopeFromGroq, hasGroqKey, generateGenericTransitsFromGroq } from "./groqService";
 import { askRishiFromBackend, isBackendConfigured, getBackendBaseUrl } from "./backendService";
 import { getTextModelOrder, getDefaultTextModel } from "../utils/geminiTierLimits";
-import { checkLimit, recordUsage, waitIfNeededThenModel } from "../utils/geminiRateLimiter";
 
 const getAI = () => {
   const apiKey = getNextGeminiKey();
@@ -207,20 +206,18 @@ const parseJSONFromResponse = <T>(text: string, fallback: T): T => {
 };
 
 /**
- * Common Logic for all Occult Lab Interpretations. Uses rate limiter when GEMINI_TIER=paid.
+ * Common Logic for all Occult Lab Interpretations.
  */
 const generateInterpretativeReading = async (prompt: string, systemInstruction: string, model: string = GEMINI_FLASH_MODEL, language: Language = 'en') => {
     const languageName = getLanguageName(language);
     const order = getTextModelOrder();
-    const modelToUse = await waitIfNeededThenModel(order.includes(model) ? order : [model, ...order]);
+    const modelToUse = order.includes(model) ? model : (order[0] ?? model);
     const ai = getAI();
     const response = await ai.models.generateContent({
         model: modelToUse,
         contents: `${prompt} IMPORTANT: Respond in ${languageName} language.`,
         config: { systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. ` + systemInstruction }
     });
-    const usage = (response as any)?.usageMetadata;
-    recordUsage(modelToUse, usage?.promptTokenCount, usage?.candidatesTokenCount);
     return response.text || "";
 };
 
@@ -482,14 +479,6 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
 
       let lastError: unknown;
       for (const model of HOROSCOPE_MODEL_FALLBACKS) {
-        const limitCheck = checkLimit(model);
-        if (!limitCheck.allowed && limitCheck.reason === 'RPD') {
-          console.warn(`Horoscope model ${model} at RPD limit, trying next.`);
-          continue;
-        }
-        if (!limitCheck.allowed && limitCheck.waitMs != null && limitCheck.waitMs > 0) {
-          await new Promise((r) => setTimeout(r, limitCheck.waitMs));
-        }
         try {
           const response = await ai.models.generateContent({
             model,
@@ -500,8 +489,6 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
               maxOutputTokens: 2048,
             },
           });
-          const usage = (response as any)?.usageMetadata;
-          recordUsage(model, usage?.promptTokenCount, usage?.candidatesTokenCount);
           const text = (response as { text?: string }).text ?? '';
           if (text && text.trim().length >= 50) {
             return parseHoroscopeResponse(text);
@@ -519,7 +506,6 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
                 backendUrl
               );
               if (restResult.text && restResult.text.length >= 50) {
-                recordUsage(model, 0, 0);
                 return parseHoroscopeResponse(restResult.text);
               }
             } catch (restErr) {

@@ -6,7 +6,7 @@ This document summarizes security measures in CosmicJyoti and how to harden your
 
 - **Helmet**: Secure HTTP headers (X-Content-Type-Options, X-Frame-Options, etc.). CSP is disabled by default; set it at your reverse proxy or static host if needed.
 - **CORS**: Allowed origins are configurable via `CORS_ORIGIN` (comma-separated). Default includes `http://localhost:5173` and `http://127.0.0.1:5173`. In production, set `CORS_ORIGIN` to your frontend URL(s).
-- **Rate limiting**: 100 requests per 15 minutes per IP (configurable via `RATE_LIMIT_MAX`).
+- **Rate limiting**: Disabled (was 100 req/15 min per IP; removed).
 - **Body size**: JSON body limit 500 KB to reduce DoS risk.
 - **Input validation**: Prompt/context length limits on Ask Rishi (e.g. prompt max 10k chars, context 5k).
 - **Cache clear**: Optional protection with `CACHE_CLEAR_SECRET`. If set, `POST /api/cache/clear` requires `?secret=...` or `body.secret` to match.

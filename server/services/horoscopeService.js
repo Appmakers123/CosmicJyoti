@@ -1,7 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { post } from '../lib/freeAstrologyApi.js';
 import { getTextModelOrder } from '../utils/geminiTierLimits.js';
-import { checkLimit, recordUsage } from '../utils/geminiRateLimiter.js';
 import { generateContentViaRest } from '../utils/geminiRestClient.js';
 
 // Lazy read so dotenv has run (index.js loads .env after importing this module)
@@ -148,19 +147,9 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
     let horoscopeText = '';
     let lastError = null;
     for (const modelId of HOROSCOPE_MODEL_FALLBACKS) {
-      const limitCheck = checkLimit(modelId);
-      if (!limitCheck.allowed && limitCheck.reason === 'RPD') {
-        console.warn('Horoscope model', modelId, 'at RPD limit, trying next.');
-        continue;
-      }
-      if (!limitCheck.allowed && limitCheck.waitMs > 0) {
-        await new Promise((r) => setTimeout(r, limitCheck.waitMs));
-      }
       try {
         const model = genAI.getGenerativeModel({ model: modelId });
         const result = await model.generateContent(prompt);
-        const usage = result?.response?.usageMetadata;
-        recordUsage(modelId, usage?.promptTokenCount, usage?.candidatesTokenCount);
         const response = result.response;
         if (typeof response.text === 'function') {
           horoscopeText = response.text();
@@ -183,7 +172,6 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
           const restResult = await generateContentViaRest(apiKey, modelId, prompt, { maxOutputTokens: 2048 });
           if (restResult.text && restResult.text.length >= 50) {
             horoscopeText = restResult.text;
-            recordUsage(modelId, 0, 0);
             break;
           }
         } catch (restErr) {

@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import NodeCache from 'node-cache';
 import { GoogleGenerativeAI } from '@google/generative-ai';
@@ -93,15 +92,6 @@ app.use(cors({
   },
   credentials: true,
 }));
-
-// Rate limit: 100 requests per 15 minutes per IP (adjust as needed)
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.RATE_LIMIT_MAX ? parseInt(process.env.RATE_LIMIT_MAX, 10) : 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
 
 // Body size limit to prevent large payload attacks
 app.use(express.json({ limit: '500kb' }));

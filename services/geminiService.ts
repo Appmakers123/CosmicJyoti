@@ -463,20 +463,21 @@ ${period !== 'day' ? `
 (2-3 bullet points with dates or phases to watch.)` : ''}
 
 RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respond in ${languageName}.`;
-      const config = {
-        tools: [{ googleSearch: {} }],
-        systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Output the horoscope field as markdown with ## headers (Intro, Career, Love, Health, Finance). Use - for bullets and **bold** for key words. Deterministic output.`,
-        responseMimeType: "application/json" as const,
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            horoscope: { type: Type.STRING },
-            luckyNumber: { type: Type.INTEGER },
-            luckyColor: { type: Type.STRING },
-            mood: { type: Type.STRING },
-            compatibility: { type: Type.STRING }
-          }
-        }
+      const systemInstruction = MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. Output the horoscope as markdown with ## headers (Intro, Career, Love, Health, Finance). Use - for bullets and **bold** for key words.`;
+
+      const parseHoroscopeResponse = (text: string | undefined): HoroscopeResponse => {
+        if (!text || typeof text !== 'string') return { horoscope: '', luckyNumber: Math.floor(Math.random() * 9) + 1, luckyColor: 'Gold', mood: 'Balanced', compatibility: '' };
+        try {
+          const parsed = JSON.parse(text) as HoroscopeResponse;
+          if (parsed?.horoscope) return parsed;
+        } catch (_) {}
+        return parseJSONFromResponse<HoroscopeResponse>(text, {
+          horoscope: text.substring(0, 8000),
+          luckyNumber: Math.floor(Math.random() * 9) + 1,
+          luckyColor: 'Gold',
+          mood: 'Balanced',
+          compatibility: '',
+        });
       };
 
       let lastError: unknown;
@@ -493,49 +494,33 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
           const response = await ai.models.generateContent({
             model,
             contents,
-            config
+            config: {
+              systemInstruction,
+              temperature: 0.7,
+              maxOutputTokens: 2048,
+            },
           });
           const usage = (response as any)?.usageMetadata;
           recordUsage(model, usage?.promptTokenCount, usage?.candidatesTokenCount);
-          try {
-            return JSON.parse(response.text!) as HoroscopeResponse;
-          } catch {
-            return parseJSONFromResponse<HoroscopeResponse>(response.text || "", {
-              horoscope: response.text?.substring(0, 500) || "",
-              luckyNumber: Math.floor(Math.random() * 9) + 1,
-              luckyColor: "Gold",
-              mood: "Balanced",
-              compatibility: "All signs"
-            });
+          const text = (response as { text?: string }).text ?? '';
+          if (text && text.trim().length >= 50) {
+            return parseHoroscopeResponse(text);
           }
         } catch (e) {
           lastError = e;
-          const apiKey = getAllGeminiKeys()[0];
-          if (apiKey) {
+          const backendUrl = getBackendBaseUrl();
+          if (backendUrl && getAllGeminiKeys()[0]) {
             try {
               const restResult = await generateContentViaRest(
-                apiKey,
+                getAllGeminiKeys()[0]!,
                 model,
                 contents,
-                {
-                  systemInstruction: (config as { systemInstruction?: string }).systemInstruction as string,
-                  maxOutputTokens: 2048,
-                },
-                getBackendBaseUrl()
+                { systemInstruction, maxOutputTokens: 2048 },
+                backendUrl
               );
-              if (restResult.text && restResult.text.length >= 100) {
+              if (restResult.text && restResult.text.length >= 50) {
                 recordUsage(model, 0, 0);
-                try {
-                  return JSON.parse(restResult.text) as HoroscopeResponse;
-                } catch {
-                  return parseJSONFromResponse<HoroscopeResponse>(restResult.text, {
-                    horoscope: restResult.text,
-                    luckyNumber: Math.floor(Math.random() * 9) + 1,
-                    luckyColor: 'Gold',
-                    mood: 'Balanced',
-                    compatibility: 'All signs',
-                  });
-                }
+                return parseHoroscopeResponse(restResult.text);
               }
             } catch (restErr) {
               console.warn(`Horoscope REST ${model} failed:`, (restErr as Error)?.message);

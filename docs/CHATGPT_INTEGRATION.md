@@ -1,6 +1,6 @@
 # Integrate CosmicJyoti Backend with ChatGPT
 
-Your API is live at: **https://cosmicjyoti-api-265360069232.europe-west1.run.app**
+Your API is live at: **https://cosmicjyoti-cw3xpp2qxq-ew.a.run.app**
 
 Use the OpenAPI schema so ChatGPT can call your endpoints (Panchang, Horoscope, Kundali, Ask Rishi, etc.).
 
@@ -48,7 +48,7 @@ The schema is in **`server/openapi.yaml`** in your repo. You can:
 4. **Server / base URL:**  
    - If the schema’s `servers` block has your Cloud Run URL, it should be used automatically.  
    - If there’s a field for “Server URL” or “Override URL”, set it to:  
-     `https://cosmicjyoti-api-265360069232.europe-west1.run.app`  
+     `https://cosmicjyoti-cw3xpp2qxq-ew.a.run.app`  
      (no trailing slash).
 5. Save the Action.
 

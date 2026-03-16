@@ -73,7 +73,7 @@ The frontend must know **where your backend is running** so it can call your API
 
    Examples (use **one** — set the secret to the backend you want the site to use):
    - Render: `VITE_API_BASE_URL` = `https://cosmicjyoti.onrender.com`
-   - Google Cloud Run: `VITE_API_BASE_URL` = `https://cosmicjyoti-753579758080.europe-west1.run.app`
+   - Google Cloud Run: `VITE_API_BASE_URL` = `https://cosmicjyoti-cw3xpp2qxq-ew.a.run.app`
    - Your own server: `VITE_API_BASE_URL` = `https://api.yourdomain.com`
 
    **Important:** Use `https://` in production (no trailing slash).

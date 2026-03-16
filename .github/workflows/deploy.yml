@@ -65,7 +65,7 @@ jobs:
       - name: Build frontend
         run: npm run build
         env:
-          # Backend: set VITE_API_BASE_URL in Secrets to one backend URL (no trailing slash). Examples: https://cosmicjyoti.onrender.com or https://cosmicjyoti-753579758080.europe-west1.run.app
+          # Backend: set VITE_API_BASE_URL in Secrets to one backend URL (no trailing slash). Examples: https://cosmicjyoti.onrender.com or https://cosmicjyoti-cw3xpp2qxq-ew.a.run.app
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL || '' }}
           API_KEY: ${{ secrets.API_KEY || '' }}
           API_KEYS: ${{ secrets.API_KEYS || '' }}

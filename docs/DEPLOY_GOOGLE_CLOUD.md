@@ -171,7 +171,7 @@ Ensure the trigger’s service account has permissions to deploy to Cloud Run an
    `https://YOUR_SERVICE_URL/health` should return `{"status":"ok",...}`.
 
 2. **Frontend:**  
-   Set `VITE_API_BASE_URL` to your Cloud Run URL (e.g. `https://cosmicjyoti-api-xxxxx-uc.a.run.app`) when building the web app, then redeploy the frontend.
+   Set `VITE_API_BASE_URL` to your Cloud Run URL (e.g. `https://cosmicjyoti-cw3xpp2qxq-ew.a.run.app`) when building the web app, then redeploy the frontend.
 
 3. **ChatGPT / external apps:**  
    Use the same Cloud Run URL as the API base. Requests with no `Origin` are already allowed by your CORS logic.

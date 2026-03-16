@@ -17,6 +17,7 @@ All endpoints used by the CosmicSutra frontend when `VITE_API_BASE_URL` is set.
 | POST | `/api/ashtakoota` | Ashtakoota score (boy + girl charts) |
 | POST | `/api/ask-rishi` | AI Rishi Q&A |
 | POST | `/api/tarot` | Tarot reading |
+| POST | `/api/gemini-generate` | Gemini REST proxy (body: `prompt`, `modelId?`, `systemInstruction?`) |
 | GET | `/api/blog-search` | Blog search by query (`q`, `limit`) |
 | GET | `/api/sync` | Get user sync data (`userId`) |
 | POST | `/api/sync` | Save user sync data (`userId`, `data`) |

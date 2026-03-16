@@ -165,6 +165,7 @@ app.get('/api', (req, res) => {
       { method: 'POST', path: '/api/ashtakoota', usage: 'Ashtakoota score (boy + girl charts)' },
       { method: 'POST', path: '/api/ask-rishi', usage: 'AI Rishi Q&A (prompt, language, context, persona)' },
       { method: 'POST', path: '/api/tarot', usage: 'Tarot reading (spread, question, language)' },
+      { method: 'POST', path: '/api/gemini-generate', usage: 'Gemini REST proxy (prompt, modelId, systemInstruction)' },
       { method: 'GET', path: '/api/blog-search', usage: 'Blog search by query (q, limit)' },
       { method: 'GET', path: '/api/sync', usage: 'Get user sync data (userId)' },
       { method: 'POST', path: '/api/sync', usage: 'Save user sync data (userId, data)' },
@@ -567,6 +568,28 @@ ${contextInfo}`;
   } catch (error) {
     console.error('Ask Rishi API error:', error);
     res.status(500).json({ error: error.message || 'Failed to get AI response' });
+  }
+});
+
+// Gemini REST proxy (for frontend REST fallback – avoids CORS when browser calls our backend instead of Google)
+app.post('/api/gemini-generate', async (req, res) => {
+  try {
+    const { prompt, modelId, systemInstruction } = req.body || {};
+    if (!prompt || typeof prompt !== 'string') {
+      return res.status(400).json({ error: 'Missing prompt' });
+    }
+    if (!geminiKey) {
+      return res.status(503).json({ error: 'Gemini API key not configured' });
+    }
+    const model = (modelId || getDefaultTextModel()).replace(/^models\//, '');
+    const restResult = await generateContentViaRest(geminiKey, model, prompt.trim(), {
+      systemInstruction: typeof systemInstruction === 'string' ? systemInstruction : undefined,
+      maxOutputTokens: 8192,
+    });
+    return res.json({ text: restResult.text, modelId: restResult.modelId });
+  } catch (e) {
+    console.warn('Gemini generate proxy error:', e?.message);
+    res.status(502).json({ error: e?.message || 'Generation failed' });
   }
 });
 

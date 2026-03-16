@@ -7,7 +7,7 @@ import { generateContentViaRest } from "../utils/geminiRestClient";
 import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { generateHoroscopeFromGroq, hasGroqKey, generateGenericTransitsFromGroq } from "./groqService";
-import { askRishiFromBackend, isBackendConfigured } from "./backendService";
+import { askRishiFromBackend, isBackendConfigured, getBackendBaseUrl } from "./backendService";
 import { getTextModelOrder, getDefaultTextModel } from "../utils/geminiTierLimits";
 import { checkLimit, recordUsage, waitIfNeededThenModel } from "../utils/geminiRateLimiter";
 
@@ -513,10 +513,16 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
           const apiKey = getAllGeminiKeys()[0];
           if (apiKey) {
             try {
-              const restResult = await generateContentViaRest(apiKey, model, contents, {
-                systemInstruction: (config as { systemInstruction?: string }).systemInstruction as string,
-                maxOutputTokens: 2048,
-              });
+              const restResult = await generateContentViaRest(
+                apiKey,
+                model,
+                contents,
+                {
+                  systemInstruction: (config as { systemInstruction?: string }).systemInstruction as string,
+                  maxOutputTokens: 2048,
+                },
+                getBackendBaseUrl()
+              );
               if (restResult.text && restResult.text.length >= 100) {
                 recordUsage(model, 0, 0);
                 try {

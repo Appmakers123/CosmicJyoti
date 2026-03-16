@@ -1,7 +1,7 @@
 /**
  * REST fallback for Gemini when SDK fails (network, 503, 429 quota).
- * Uses: POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}
- * Keeps the product working when one path fails.
+ * When backendBaseUrl is set, calls our backend /api/gemini-generate (avoids CORS).
+ * Otherwise calls Google directly (key in URL: ?key=... – required by the API).
  */
 
 const REST_BASE = 'https://generativelanguage.googleapis.com/v1beta';
@@ -14,15 +14,37 @@ export interface RestGenerateOptions {
 
 /**
  * Call Gemini generateContent via REST (no SDK).
- * Returns the generated text.
+ * Pass backendBaseUrl when you have a backend so the request goes through it (no CORS, key stays on server).
  */
 export async function generateContentViaRest(
   apiKey: string,
   modelId: string,
   prompt: string,
-  opts: RestGenerateOptions = {}
+  opts: RestGenerateOptions = {},
+  backendBaseUrl?: string | null
 ): Promise<{ text: string; modelId: string }> {
   const model = modelId.replace(/^models\//, '');
+
+  if (backendBaseUrl && backendBaseUrl.trim()) {
+    const url = `${backendBaseUrl.replace(/\/$/, '')}/api/gemini-generate`;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt: prompt.trim(),
+        modelId: model,
+        systemInstruction: opts.systemInstruction?.trim() || undefined,
+      }),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Gemini REST ${res.status}: ${errText.slice(0, 200)}`);
+    }
+    const data = await res.json();
+    const text = data?.text ?? '';
+    return { text: String(text).trim(), modelId: model };
+  }
+
   const url = `${REST_BASE}/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
   const body: Record<string, unknown> = {
     contents: [{ role: 'user', parts: [{ text: prompt }] }],

@@ -35,37 +35,31 @@ gcloud services enable cloudbuild.googleapis.com
 
 From your **repo root** (where `server/` lives):
 
+**Option A – One command (recommended):** Build and deploy using `cloudbuild.yaml`:
+
+```bash
+gcloud builds submit --config cloudbuild.yaml .
+```
+
+This builds the image and deploys to Cloud Run. Existing env vars (e.g. `GEMINI_API_KEY`, `CORS_ORIGIN`) on the service are kept. **CORS:** The server now allows `https://cosmicjyoti.com` and `https://www.cosmicjyoti.com` by default, so you don’t need to set `CORS_ORIGIN` unless you want to restrict or add other origins.
+
+**Option B – Build image then deploy:**
+
 ```bash
 # Build the image (context = repo root, Dockerfile in server/)
 gcloud builds submit --tag gcr.io/YOUR_PROJECT_ID/cosmicjyoti-api .
 
-# Or with Artifact Registry (recommended)
-gcloud artifacts repositories create cosmicjyoti --repository-format=docker --location=YOUR_REGION
-gcloud builds submit --tag YOUR_REGION-docker.pkg.dev/YOUR_PROJECT_ID/cosmicjyoti/cosmicjyoti-api .
-```
-
-**Important:** The Dockerfile uses `COPY server/` so the build context must be the **repo root**. Use a `cloudbuild.yaml` that runs the build from the repo root (see section 4), or run from root:
-
-```bash
-# From repo root - Docker needs to be told where Dockerfile is and use current dir as context
-docker build -f server/Dockerfile -t gcr.io/YOUR_PROJECT_ID/cosmicjyoti-api .
-docker push gcr.io/YOUR_PROJECT_ID/cosmicjyoti-api
-```
-
-Then deploy to Cloud Run:
-
-```bash
+# Deploy to Cloud Run (set env vars if first time)
 gcloud run deploy cosmicjyoti-api \
   --image gcr.io/YOUR_PROJECT_ID/cosmicjyoti-api \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
   --set-env-vars "NODE_ENV=production" \
-  --set-env-vars "GEMINI_API_KEY=your_gemini_api_key_here" \
-  --set-env-vars "CORS_ORIGIN=https://www.cosmicjyoti.com,https://cosmicjyoti.com"
+  --set-env-vars "GEMINI_API_KEY=your_gemini_api_key_here"
 ```
 
-Replace `YOUR_PROJECT_ID`, `your_gemini_api_key_here`, and CORS origins as needed. You’ll get a URL like `https://cosmicjyoti-api-xxxxx-uc.a.run.app`.
+Replace `YOUR_PROJECT_ID` and `your_gemini_api_key_here`. CORS defaults include cosmicjyoti.com; to override: `--set-env-vars "CORS_ORIGIN=https://www.cosmicjyoti.com,https://cosmicjyoti.com"`. You’ll get a URL like `https://cosmicjyoti-api-xxxxx-uc.a.run.app`.
 
 ---
 

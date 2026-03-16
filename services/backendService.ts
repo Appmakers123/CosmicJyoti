@@ -399,8 +399,16 @@ export async function generateHoroscopeFromBackend(
 
     return await response.json();
   } catch (error: any) {
+    const msg = error?.message || String(error);
+    const isCorsOrNetwork = /Failed to fetch|cors|network|Load failed/i.test(msg) || error?.name === 'TypeError';
+    const is5xx = /50\d|503|502/.test(msg);
     console.error('Backend Horoscope API error:', error);
-    // Re-throw to trigger fallback to direct API calls
+    if (isCorsOrNetwork) {
+      console.warn('[Backend] If the app is at cosmicjyoti.com, ensure the server has CORS_ORIGIN including https://cosmicjyoti.com (or use default origins).');
+    }
+    if (is5xx) {
+      console.warn('[Backend] Server returned 5xx (e.g. cold start). Retry or use direct Gemini.');
+    }
     throw error;
   }
 }

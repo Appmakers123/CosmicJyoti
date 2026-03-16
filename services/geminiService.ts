@@ -56,6 +56,13 @@ function isRetryableGeminiError(e: unknown): boolean {
   return /503|429|UNAVAILABLE|high demand|try again later|RESOURCE_EXHAUSTED|Failed to fetch/i.test(msg);
 }
 
+/** True when error is 429 (quota/rate limit) so we can wait and retry. */
+function is429Error(e: unknown): boolean {
+  return (e as { status?: number })?.status === 429 || /429|rate limit|quota|RESOURCE_EXHAUSTED/i.test(e instanceof Error ? e.message : String(e ?? ''));
+}
+
+const RETRY_429_DELAY_MS = 3500;
+
 // Mentor-like tone: warm, human, supportive (MyNitya/Co-Star style)
 const MENTOR_TONE = `TONE & STYLE: Be like a wise, caring friend who truly understands. Use a warm, conversational tone—never robotic or cold. Show empathy. Acknowledge the user's feelings. Give practical, actionable advice. Be encouraging but honest. Use "you" and "your" naturally. Avoid jargon unless you explain it. Keep responses focused and digestible.`;
 
@@ -479,7 +486,7 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
 
       let lastError: unknown;
       for (const model of HOROSCOPE_MODEL_FALLBACKS) {
-        try {
+        const tryModel = async (): Promise<HoroscopeResponse | null> => {
           const response = await ai.models.generateContent({
             model,
             contents,
@@ -490,11 +497,24 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
             },
           });
           const text = (response as { text?: string }).text ?? '';
-          if (text && text.trim().length >= 50) {
-            return parseHoroscopeResponse(text);
-          }
+          if (text && text.trim().length >= 50) return parseHoroscopeResponse(text);
+          return null;
+        };
+        try {
+          const result = await tryModel();
+          if (result) return result;
         } catch (e) {
           lastError = e;
+          if (is429Error(e)) {
+            console.warn(`Horoscope 429 on ${model}, waiting ${RETRY_429_DELAY_MS}ms then retrying...`);
+            await new Promise((r) => setTimeout(r, RETRY_429_DELAY_MS));
+            try {
+              const result = await tryModel();
+              if (result) return result;
+            } catch (retryErr) {
+              lastError = retryErr;
+            }
+          }
           const backendUrl = getBackendBaseUrl();
           if (backendUrl && getAllGeminiKeys()[0]) {
             try {
@@ -509,6 +529,21 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
                 return parseHoroscopeResponse(restResult.text);
               }
             } catch (restErr) {
+              if (is429Error(restErr)) {
+                await new Promise((r) => setTimeout(r, RETRY_429_DELAY_MS));
+                try {
+                  const restResult2 = await generateContentViaRest(
+                    getAllGeminiKeys()[0]!,
+                    model,
+                    contents,
+                    { systemInstruction, maxOutputTokens: 2048 },
+                    backendUrl
+                  );
+                  if (restResult2.text && restResult2.text.length >= 50) {
+                    return parseHoroscopeResponse(restResult2.text);
+                  }
+                } catch (_) {}
+              }
               console.warn(`Horoscope REST ${model} failed:`, (restErr as Error)?.message);
               lastError = restErr;
             }

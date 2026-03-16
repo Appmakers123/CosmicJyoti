@@ -38,7 +38,7 @@ All endpoints used by the CosmicSutra frontend when `VITE_API_BASE_URL` is set.
 - **Ashtakoota:** same `{ boy, girl, language? }` → ashtakoota score.
 - **Ask-rishi:** `{ prompt, language?, context?, persona? }` → AI response.
 - **Tarot:** `{ spread, question, language? }` → tarot reading.
-- **Blog-search:** `?q=...&limit=...` → search results.
-- **Sync GET:** `?userId=...` → `{ data }`. **Sync POST:** `{ userId, data }` → ok.
+- **Blog-search:** `?q=...` → `{ postIds }` (keyword-only over daily-posts.json; no embeddings/Gemini).
+- **Sync GET:** `?userId=...` → `{ profile, reports }`. **Sync POST:** `{ userId, profile, reports }` → ok.
 
 Frontend uses backend when `VITE_API_BASE_URL` is set; otherwise it calls direct/third-party APIs where applicable (e.g. Kundali falls back to direct astrology API if backend fails).

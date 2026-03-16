@@ -112,9 +112,6 @@ const cache = new NodeCache({
   checkperiod: 600 // Check for expired keys every 10 minutes
 });
 
-// Blog search: cache query embeddings to avoid hitting Gemini every time (saves cost).
-const blogEmbedCache = new NodeCache({ stdTTL: 3600, maxKeys: 300, checkperiod: 600 });
-
 // Cache helper function
 const getCachedOrCompute = async (key, computeFn, ttl = 3600) => {
   const cached = cache.get(key);
@@ -654,20 +651,20 @@ app.post('/api/sync', (req, res) => {
   }
 });
 
-// Semantic blog search: embed query with Gemini, compare to precomputed post embeddings, return ranked post ids.
-const BLOG_EMBEDDINGS_PATH = path.join(__dirname, '..', 'public', 'blog', 'daily-posts-embeddings.json');
+// Blog search: keyword-only (no embeddings, no Gemini cost). Uses daily-posts.json.
+const BLOG_POSTS_PATH = path.join(__dirname, '..', 'public', 'blog', 'daily-posts.json');
 const BLOG_SEARCH_TOP_K = 24;
 
-function cosineSimilarity(a, b) {
-  if (!a?.length || !b?.length || a.length !== b.length) return 0;
-  let dot = 0, normA = 0, normB = 0;
-  for (let i = 0; i < a.length; i++) {
-    dot += a[i] * b[i];
-    normA += a[i] * a[i];
-    normB += b[i] * b[i];
+function keywordScore(query, text) {
+  if (!query || !text) return 0;
+  const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const lower = text.toLowerCase();
+  let score = 0;
+  for (const w of words) {
+    if (w.length < 2) continue;
+    if (lower.includes(w)) score += 1;
   }
-  const denom = Math.sqrt(normA) * Math.sqrt(normB);
-  return denom === 0 ? 0 : dot / denom;
+  return score;
 }
 
 app.get('/api/blog-search', async (req, res) => {
@@ -676,63 +673,26 @@ app.get('/api/blog-search', async (req, res) => {
     if (!q) {
       return res.status(400).json({ error: 'Missing query (q)' });
     }
-    const apiKey = geminiKey;
-    if (!apiKey) {
-      return res.status(503).json({ error: 'Blog semantic search requires GEMINI_API_KEY' });
-    }
-    let embeddingsData;
+    let data;
     try {
-      const raw = fs.readFileSync(BLOG_EMBEDDINGS_PATH, 'utf8');
-      embeddingsData = JSON.parse(raw);
+      const raw = fs.readFileSync(BLOG_POSTS_PATH, 'utf8');
+      data = JSON.parse(raw);
     } catch (e) {
-      return res.status(503).json({
-        error: 'Blog embeddings not found. Run: npm run blog:embeddings',
-      });
-    }
-    const list = embeddingsData.embeddings || [];
-    if (!list.length) {
       return res.json({ postIds: [] });
     }
-    const modelId = (embeddingsData.model || 'gemini-embedding-001').startsWith('models/')
-      ? embeddingsData.model
-      : `models/${embeddingsData.model}`;
-    const dimensions = embeddingsData.dimensions || 768;
-
-    // Cache key: same query reuses embedding for 1 hour (saves embedding API cost)
-    const cacheKey = `blog_embed:${modelId}:${dimensions}:${q.toLowerCase().slice(0, 200)}`;
-    let queryVec = blogEmbedCache.get(cacheKey);
-    if (!queryVec || !Array.isArray(queryVec)) {
-      const embedUrl = `https://generativelanguage.googleapis.com/v1beta/${modelId}:embedContent?key=${encodeURIComponent(apiKey)}`;
-      const embedRes = await fetch(embedUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: modelId,
-          content: { parts: [{ text: q.slice(0, 8192) }] },
-          taskType: 'RETRIEVAL_QUERY',
-          outputDimensionality: dimensions,
-        }),
-      });
-      if (!embedRes.ok) {
-        const err = await embedRes.text();
-        console.error('Blog search embed error:', embedRes.status, err);
-        return res.status(502).json({ error: 'Embedding API error' });
-      }
-      const embedBody = await embedRes.json();
-      queryVec = embedBody.embedding?.values || embedBody.embeddings?.[0]?.values || [];
-      if (queryVec && queryVec.length) {
-        blogEmbedCache.set(cacheKey, queryVec);
-      }
-    }
-    if (!queryVec || !queryVec.length) {
-      return res.json({ postIds: [] });
-    }
-    const withScore = list.map(({ id, embedding }) => ({
-      id,
-      score: cosineSimilarity(queryVec, embedding),
-    }));
+    const posts = data.posts || [];
+    if (!posts.length) return res.json({ postIds: [] });
+    const withScore = posts.map((p) => {
+      const text = [p.title, p.excerpt].filter(Boolean).join(' ');
+      const score = keywordScore(q, text);
+      return { id: p.articleId || p.id, score };
+    });
     withScore.sort((a, b) => b.score - a.score);
-    const postIds = withScore.slice(0, BLOG_SEARCH_TOP_K).map((x) => x.id).filter(Boolean);
+    const postIds = withScore
+      .filter((x) => x.score > 0)
+      .slice(0, BLOG_SEARCH_TOP_K)
+      .map((x) => x.id)
+      .filter(Boolean);
     res.json({ postIds });
   } catch (e) {
     console.error('Blog search error:', e);

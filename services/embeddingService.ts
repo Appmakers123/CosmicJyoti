@@ -1,11 +1,8 @@
 /**
- * Gemini text embeddings for semantic search and related content.
+ * Gemini text embeddings (costly – avoid for high traffic).
+ * Blog search no longer uses this; it uses keyword-only search (no Gemini).
+ * Kept for optional/advanced use only.
  *
- * Uses the Gemini API (text-embedding-004 by default). For Gemini Embedding 2
- * (multimodal, 3072/1536/768 dims), set EMBEDDING_MODEL in env when the model ID
- * is available (e.g. text-embedding-005 or as documented at ai.google.dev).
- *
- * @see https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-embedding-2/
  * @see https://ai.google.dev/gemini-api/docs/embeddings
  */
 

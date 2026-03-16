@@ -399,14 +399,16 @@ export const generateHoroscope = async (signName: string, language: Language = '
     console.warn('Backend horoscope failed for', period, ', using Gemini:', error?.message);
   }
   // 3. Use Gemini direct when backend unavailable, returned basic, or for week/month when response was poor
+  let lastDirectError: any = null;
   if (hasGeminiKeys()) {
     try {
       return await generateHoroscopeDirect(signName, language, period);
     } catch (e) {
+      lastDirectError = e;
       console.warn('Gemini direct failed for', period, e);
     }
   }
-  // 4. No Gemini key in frontend: return backend basic response if we have it, else throw helpful error
+  // 4. Return backend basic response if we have it, else throw a user-friendly message (technical details only in console)
   if (backendResponse) {
     const h = backendResponse.horoscope;
     const text = typeof h === 'string' ? h : (typeof h?.general === 'string' ? h.general : (h ? String(h) : 'Horoscope analysis in progress...'));
@@ -418,12 +420,13 @@ export const generateHoroscope = async (signName: string, language: Language = '
       compatibility: backendResponse.horoscope?.love || ''
     };
   }
+  // Technical details for developers (console only)
   const isProd = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD;
-  const ghHint = isProd ? ' On GitHub: add GEMINI_API_KEYS or API_KEY to repo Secrets (Settings → Secrets and variables → Actions) and redeploy.' : '';
-  const backendHint = isBackendConfigured()
-    ? ' Backend is configured but failed or returned nothing. Ensure the server is running and has GEMINI_API_KEYS in its .env.local.' + ghHint
-    : ' Either run the server (with GEMINI_API_KEYS in .env.local) and set VITE_API_BASE_URL, or add VITE_GEMINI_API_KEY or GEMINI_API_KEYS to .env.local for frontend.' + ghHint;
-  throw new Error('Horoscope unavailable.' + backendHint);
+  const devHint = isBackendConfigured()
+    ? 'Backend is configured but failed or returned nothing. Ensure server is running and has GEMINI_API_KEYS.'
+    : 'No backend or frontend Gemini key. Set VITE_API_BASE_URL + server keys, or GEMINI_API_KEYS / VITE_GEMINI_API_KEY in build.';
+  console.warn('[Horoscope]', devHint, isProd ? 'Add GEMINI_API_KEYS or API_KEY to repo Secrets and redeploy.' : '', lastDirectError?.message || '');
+  throw new Error('Horoscope is temporarily unavailable. Please try again in a moment.');
 };
 
   async function generateHoroscopeDirect(signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> {

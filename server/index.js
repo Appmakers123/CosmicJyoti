@@ -16,7 +16,7 @@ import { generateTarot } from './services/tarotService.js';
 import { generatePredictions } from './services/predictionService.js';
 import { generateChartBasedHealthAnalysis } from './services/healthService.js';
 import { runRishiAgent } from './agent/rishiAgent.js';
-import { getDefaultTextModel } from './utils/geminiTierLimits.js';
+import { getDefaultTextModel, getGeminiTier } from './utils/geminiTierLimits.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -167,7 +167,8 @@ try {
     : (process.env.GEMINI_API_KEY || process.env.API_KEY);
   if (apiKey) {
     genAI = new GoogleGenerativeAI(apiKey);
-    console.log('✅ Gemini AI initialized for predictions');
+    const tier = getGeminiTier();
+    console.log('✅ Gemini AI initialized for predictions. Tier:', tier, tier === 1 ? '(paid – tier 1 limits)' : '(free – tier 0 limits)');
   } else {
     console.warn('⚠️  Gemini API key not found - predictions will be limited');
   }

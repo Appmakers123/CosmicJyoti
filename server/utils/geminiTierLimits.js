@@ -1,6 +1,7 @@
 /**
  * Gemini API tier and model order for server.
  * GEMINI_TIER: 0 = free, 1 = paid (tier 1). Also accepts "free" | "paid".
+ * Tier 1 = higher RPM/TPM/RPD limits in-app; it does NOT change Google's billing/spending cap (set in Google Cloud Console → Billing).
  */
 
 function getGeminiTier() {

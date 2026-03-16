@@ -70,8 +70,21 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           : 'Backend error. Check the server or set VITE_ASTROLOGY_API_KEYS in GitHub Secrets and redeploy.';
       }
 
-      // API errors - Quota/Rate limit
+      // Horoscope temporarily unavailable (backend/direct failed – technical details logged to console)
+      if (message.includes('Horoscope') && (message.includes('unavailable') || message.includes('temporarily'))) {
+        return language === 'hi'
+          ? 'राशिफल इस समय उपलब्ध नहीं है। कृपया कुछ देर बाद पुनः प्रयास करें।'
+          : 'Horoscope is temporarily unavailable. Please try again in a moment.';
+      }
+
+      // API errors - Quota/Rate limit (generic)
       if (message.includes('429') || message.includes('quota') || message.includes('rate limit') || message.includes('exceeded') || message.includes('RESOURCE_EXHAUSTED')) {
+        // Spending cap is a billing limit in Google Cloud – different from per-minute quota
+        if (message.includes('spending cap') || message.includes('exceeded its spending')) {
+          return language === 'hi'
+            ? 'इस समय सेवा सीमा पूरी हो गई है। कृपया कुछ समय बाद पुनः प्रयास करें।'
+            : 'Service limit reached for now. Please try again later.';
+        }
         return language === 'hi'
           ? 'ब्रह्मांड तारों को संरेखित करने में व्यस्त है। कृपया कुछ समय बाद पुनः प्रयास करें।'
           : 'Cosmic is busy aligning the stars. Please try again after some time.';

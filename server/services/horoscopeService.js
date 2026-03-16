@@ -29,7 +29,13 @@ const HOROSCOPE_MODEL_FALLBACKS = getTextModelOrder();
 
 function isRetryableGeminiError(e) {
   const msg = e?.message || String(e || '');
+  if (/spending cap|exceeded its spending/i.test(msg)) return false; // same project billing – trying another model won't help
   return /503|UNAVAILABLE|high demand|try again later/i.test(msg);
+}
+
+function isSpendingCapError(e) {
+  const msg = e?.message || String(e || '') || '';
+  return /429|RESOURCE_EXHAUSTED/i.test(msg) && /spending cap|exceeded its spending/i.test(msg);
 }
 
 /**
@@ -156,6 +162,10 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
         break;
       } catch (e) {
         lastError = e;
+        if (isSpendingCapError(e)) {
+          console.error('Gemini 429: project spending cap exceeded. Increase or remove the spending cap in Google Cloud Console → Billing (project that owns the API key).');
+          throw e;
+        }
         if (isRetryableGeminiError(e)) {
           console.warn('Horoscope model', modelId, 'unavailable (503/high demand), trying next fallback.');
           continue;

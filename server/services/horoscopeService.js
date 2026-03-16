@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { post } from '../lib/freeAstrologyApi.js';
+import { getTextModelOrder } from '../utils/geminiTierLimits.js';
+import { checkLimit, recordUsage } from '../utils/geminiRateLimiter.js';
 
 // Lazy read so dotenv has run (index.js loads .env after importing this module)
 function getGeminiApiKey() {
@@ -23,7 +25,7 @@ const getLanguageName = (lang) => {
   return LANGUAGE_NAMES[lang] || 'English';
 };
 
-const HOROSCOPE_MODEL_FALLBACKS = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+const HOROSCOPE_MODEL_FALLBACKS = getTextModelOrder();
 
 function isRetryableGeminiError(e) {
   const msg = e?.message || String(e || '');
@@ -138,9 +140,19 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
     let result = null;
     let lastError = null;
     for (const modelId of HOROSCOPE_MODEL_FALLBACKS) {
+      const limitCheck = checkLimit(modelId);
+      if (!limitCheck.allowed && limitCheck.reason === 'RPD') {
+        console.warn('Horoscope model', modelId, 'at RPD limit, trying next.');
+        continue;
+      }
+      if (!limitCheck.allowed && limitCheck.waitMs > 0) {
+        await new Promise((r) => setTimeout(r, limitCheck.waitMs));
+      }
       try {
         const model = genAI.getGenerativeModel({ model: modelId });
         result = await model.generateContent(prompt);
+        const usage = result?.response?.usageMetadata;
+        recordUsage(modelId, usage?.promptTokenCount, usage?.candidatesTokenCount);
         break;
       } catch (e) {
         lastError = e;

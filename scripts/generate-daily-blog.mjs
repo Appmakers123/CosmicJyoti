@@ -269,7 +269,11 @@ function getGeminiKey() {
 }
 
 const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GEMINI_MODELS = ['gemini-3-flash-preview', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+// Paid tier: use high-quota models first (2 Flash → 2.5 → 3 Flash) to stay within limits
+const GEMINI_TIER = (process.env.GEMINI_TIER || '').toString().toLowerCase().trim();
+const GEMINI_MODELS = GEMINI_TIER === 'paid'
+  ? ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-1.5-flash']
+  : ['gemini-3-flash-preview', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));

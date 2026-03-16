@@ -87,6 +87,7 @@ To keep **Gemini API spend around ₹800/month**:
    - **Daily blog:** 2 runs per day (6am, 6pm) instead of 4.
    - **Daily AI video:** 1 video per day (02:00 UTC).
 3. **Free-tier limits** in the app (Kundali, horoscope, tarot, etc.) cap how often unsubscribed users can call AI; adjust in `utils/freeUsageLimits.ts` if needed.
+4. **Gemini API tier:** `GEMINI_TIER=0` (free) or `1` (paid / tier 1). Also accepts `free` | `paid`. Rate limiter enforces RPM/TPM/RPD: free = Gemini 3 Flash only (4 RPM, 3.56K TPM, 27 RPD); paid = high-quota models first. Set `VITE_GEMINI_TIER` for frontend build. See `utils/geminiTierLimits.ts`.
 
 ---
 

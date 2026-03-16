@@ -1,3 +1,5 @@
+import { getDefaultTextModel } from '../utils/geminiTierLimits.js';
+
 // Language name mapping for AI prompts
 const LANGUAGE_NAMES = {
   'en': 'English',
@@ -21,7 +23,7 @@ const getLanguageInstruction = (lang) => {
  */
 export async function generatePredictions(kundaliData, language = 'en', genAI) {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+    const model = genAI.getGenerativeModel({ model: getDefaultTextModel() });
     const languageName = getLanguageName(language);
 
     // Build comprehensive chart analysis prompt

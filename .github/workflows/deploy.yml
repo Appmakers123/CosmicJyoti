@@ -75,6 +75,8 @@ jobs:
           VITE_GOOGLE_API_KEY: ${{ secrets.VITE_GOOGLE_API_KEY || '' }}
           VITE_PROFILE_SUBMIT_URL: ${{ secrets.VITE_PROFILE_SUBMIT_URL || '' }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID || '' }}
+          # Gemini tier (free | paid): paid uses high-quota models first to stay within RPM/TPM/RPD.
+          VITE_GEMINI_TIER: ${{ secrets.VITE_GEMINI_TIER || '' }}
           # Kundali (birth chart): set ASTROLOGY_API_KEYS or VITE_ASTROLOGY_API_KEYS (comma-separated keys from freeastrologyapi.com).
           ASTROLOGY_API_KEYS: ${{ secrets.ASTROLOGY_API_KEYS || secrets.VITE_ASTROLOGY_API_KEYS || '' }}
           VITE_ASTROLOGY_API_KEYS: ${{ secrets.VITE_ASTROLOGY_API_KEYS || secrets.ASTROLOGY_API_KEYS || '' }}

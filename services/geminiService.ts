@@ -7,6 +7,8 @@ import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { generateHoroscopeFromGroq, hasGroqKey, generateGenericTransitsFromGroq } from "./groqService";
 import { askRishiFromBackend, isBackendConfigured } from "./backendService";
+import { getTextModelOrder, getDefaultTextModel } from "../utils/geminiTierLimits";
+import { checkLimit, recordUsage, waitIfNeededThenModel } from "../utils/geminiRateLimiter";
 
 const getAI = () => {
   const apiKey = getNextGeminiKey();
@@ -43,10 +45,9 @@ function cleanPredictionText(text: string | undefined): string {
 
 const MASTER_MENTOR_PROMPT = "You are a world-class mentor for CosmicJyoti. Your goal is to explain occult sciences like astrology, palmistry, and numerology with deep scholarly insight but simple words. IMPORTANT: You must respond ONLY in the language requested by the user. Use bullet points and clear headers.";
 
-/** Default flash model (3.1 not yet in API; use 3.0 until available). */
-export const GEMINI_FLASH_MODEL = 'gemini-3-flash-preview';
-/** Fallback order when primary returns 503 / high demand. Add gemini-3.1-flash at front when API supports it. */
-const HOROSCOPE_MODEL_FALLBACKS = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+/** Default text model and fallback order from tier (GEMINI_TIER=paid uses high-quota models first to save cost). */
+export const GEMINI_FLASH_MODEL = getDefaultTextModel();
+const HOROSCOPE_MODEL_FALLBACKS = getTextModelOrder();
 
 function isRetryableGeminiError(e: unknown): boolean {
   const msg = e instanceof Error ? e.message : String(e ?? '');
@@ -203,20 +204,21 @@ const parseJSONFromResponse = <T>(text: string, fallback: T): T => {
 };
 
 /**
- * Common Logic for all Occult Lab Interpretations
+ * Common Logic for all Occult Lab Interpretations. Uses rate limiter when GEMINI_TIER=paid.
  */
 const generateInterpretativeReading = async (prompt: string, systemInstruction: string, model: string = GEMINI_FLASH_MODEL, language: Language = 'en') => {
     const languageName = getLanguageName(language);
-    return (async () => {
-        const ai = getAI();
-        const response = await ai.models.generateContent({
-            model: model,
-            contents: `${prompt} IMPORTANT: Respond in ${languageName} language.`,
-            config: { systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. ` + systemInstruction }
-        });
-        return response.text || "";
-        }
-    )();
+    const order = getTextModelOrder();
+    const modelToUse = await waitIfNeededThenModel(order.includes(model) ? order : [model, ...order]);
+    const ai = getAI();
+    const response = await ai.models.generateContent({
+        model: modelToUse,
+        contents: `${prompt} IMPORTANT: Respond in ${languageName} language.`,
+        config: { systemInstruction: MASTER_MENTOR_PROMPT + ` Respond in ${languageName}. ` + systemInstruction }
+    });
+    const usage = (response as any)?.usageMetadata;
+    recordUsage(modelToUse, usage?.promptTokenCount, usage?.candidatesTokenCount);
+    return response.text || "";
 };
 
 export const generatePalmInterpretation = async (lines: string[], language: Language): Promise<string> => 
@@ -468,12 +470,22 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
 
       let lastError: unknown;
       for (const model of HOROSCOPE_MODEL_FALLBACKS) {
+        const limitCheck = checkLimit(model);
+        if (!limitCheck.allowed && limitCheck.reason === 'RPD') {
+          console.warn(`Horoscope model ${model} at RPD limit, trying next.`);
+          continue;
+        }
+        if (!limitCheck.allowed && limitCheck.waitMs != null && limitCheck.waitMs > 0) {
+          await new Promise((r) => setTimeout(r, limitCheck.waitMs));
+        }
         try {
           const response = await ai.models.generateContent({
             model,
             contents,
             config
           });
+          const usage = (response as any)?.usageMetadata;
+          recordUsage(model, usage?.promptTokenCount, usage?.candidatesTokenCount);
           try {
             return JSON.parse(response.text!) as HoroscopeResponse;
           } catch {
@@ -1018,7 +1030,8 @@ const calculateGulikAndMandi = (
 };
 
 // Import backend service
-import { 
+import {
+  generateKundaliFromBackend,
   generateMuhuratFromBackend,
   generateGocharaFromBackend,
   generateGenericTransitsFromBackend,
@@ -1026,7 +1039,7 @@ import {
   generatePanchangFromBackend,
   generateMatchmakingFromBackend,
   generateAshtakootaFromBackend,
-  generateTarotFromBackend
+  generateTarotFromBackend,
 } from './backendService';
 
 /** Normalize form data so backend/direct never receive empty required fields (e.g. after deploy, state can be empty). */
@@ -1038,7 +1051,15 @@ function normalizeKundaliFormData(formData: KundaliFormData): KundaliFormData {
 export const generateKundali = async (formData: KundaliFormData, language: Language = 'en'): Promise<KundaliResponse> => {
     const normalized = normalizeKundaliFormData(formData);
     normalized.name = (normalized.name && String(normalized.name).trim()) || 'Seeker';
-    // Kundali is always generated via direct astrology API (no backend)
+    if (isBackendConfigured()) {
+        try {
+            const backendResponse = await generateKundaliFromBackend(normalized, language);
+            return transformBackendResponse(backendResponse);
+        } catch (error: any) {
+            console.warn('Backend Kundali failed, falling back to direct API:', error?.message || error);
+            return await generateKundaliDirect(normalized, language);
+        }
+    }
     return await generateKundaliDirect(normalized, language);
 };
 

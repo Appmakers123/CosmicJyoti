@@ -2,6 +2,8 @@
  * Cosmic Health - Vedic astrology-based health analysis
  * Uses birth chart to suggest dosha remedies and health guidance
  */
+import { getDefaultTextModel } from '../utils/geminiTierLimits.js';
+
 const getLanguageName = (lang) => (lang === 'hi' ? 'Hindi' : 'English');
 
 function getDefaultRemedies(language) {
@@ -62,7 +64,7 @@ EXISTING HEALTH PREDICTION: ${healthPred}
 
 Respond ONLY with valid JSON. Language: ${getLanguageName(language)}.`;
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+    const model = genAI.getGenerativeModel({ model: getDefaultTextModel() });
     const fullPrompt = HEALTH_SYSTEM_PROMPT + '\n\n' + chartContext + '\n\n' + prompt;
     const result = await model.generateContent(fullPrompt);
     const response = await result.response;

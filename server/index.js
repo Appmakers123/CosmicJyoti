@@ -16,6 +16,7 @@ import { generateTarot } from './services/tarotService.js';
 import { generatePredictions } from './services/predictionService.js';
 import { generateChartBasedHealthAnalysis } from './services/healthService.js';
 import { runRishiAgent } from './agent/rishiAgent.js';
+import { getDefaultTextModel } from './utils/geminiTierLimits.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -129,6 +130,32 @@ const getCachedOrCompute = async (key, computeFn, ttl = 3600) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// API index: list all endpoints used by the frontend (end-to-end)
+app.get('/api', (req, res) => {
+  res.json({
+    description: 'CosmicSutra backend API – all endpoints used by the frontend',
+    basePath: '/api',
+    endpoints: [
+      { method: 'POST', path: '/api/kundali', usage: 'Birth chart (D1) + optional AI predictions' },
+      { method: 'POST', path: '/api/navamsha', usage: 'D9 chart (same birth data)' },
+      { method: 'POST', path: '/api/cosmic-health', usage: 'Chart-based health analysis' },
+      { method: 'POST', path: '/api/muhurat', usage: 'Auspicious timings for activity + location' },
+      { method: 'POST', path: '/api/transits/generic', usage: 'Generic transits for location + rashi + date' },
+      { method: 'POST', path: '/api/gochara', usage: 'Gochara (transits) for rashi + date' },
+      { method: 'POST', path: '/api/horoscope', usage: 'Daily/weekly/monthly/yearly horoscope by sign' },
+      { method: 'POST', path: '/api/panchang', usage: 'Panchang for date + location' },
+      { method: 'POST', path: '/api/matchmaking', usage: 'Kundali matchmaking (boy + girl charts)' },
+      { method: 'POST', path: '/api/ashtakoota', usage: 'Ashtakoota score (boy + girl charts)' },
+      { method: 'POST', path: '/api/ask-rishi', usage: 'AI Rishi Q&A (prompt, language, context, persona)' },
+      { method: 'POST', path: '/api/tarot', usage: 'Tarot reading (spread, question, language)' },
+      { method: 'GET', path: '/api/blog-search', usage: 'Blog search by query (q, limit)' },
+      { method: 'GET', path: '/api/sync', usage: 'Get user sync data (userId)' },
+      { method: 'POST', path: '/api/sync', usage: 'Save user sync data (userId, data)' },
+    ],
+    health: { method: 'GET', path: '/health', usage: 'Liveness check' },
+  });
 });
 
 // Initialize Gemini AI (prefer GEMINI_API_KEYS, first key if comma-separated)
@@ -496,7 +523,7 @@ You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like 
 IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
 ${contextInfo}`;
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+      const model = genAI.getGenerativeModel({ model: getDefaultTextModel() });
       const fullPrompt = `${systemInstruction}\n\n---\n\n${safeContext ? 'Module context: ' + safeContext + '\n\n' : ''}User: ${trimmedPrompt}`;
       const result = await model.generateContent(fullPrompt);
       const response = result.response;

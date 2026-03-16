@@ -21,6 +21,7 @@ All endpoints used by the CosmicSutra frontend when `VITE_API_BASE_URL` is set.
 | GET | `/api/sync` | Get user sync data (`userId`) |
 | POST | `/api/sync` | Save user sync data (`userId`, `data`) |
 | GET | `/health` | Liveness check |
+| GET | `/api/env-check` | Which keys are set (gemini, astrology, googleMaps, tier, corsOrigin) – no values |
 
 ## Request/response (summary)
 

@@ -54,6 +54,7 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(get('VITE_FIREBASE_API_KEY') || ''),
       'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(get('VITE_GEMINI_API_KEY') || get('GEMINI_API_KEY') || get('API_KEY') || ''),
       'import.meta.env.VITE_GEMINI_API_KEYS': JSON.stringify(get('VITE_GEMINI_API_KEYS') || get('GEMINI_API_KEYS') || get('API_KEYS') || ''),
+      'import.meta.env.VITE_GEMINI_TIER': JSON.stringify(get('VITE_GEMINI_TIER') || get('GEMINI_TIER') || ''),
       'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(get('VITE_FIREBASE_PROJECT_ID') || ''),
       'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(get('VITE_FIREBASE_AUTH_DOMAIN') || '')
     },

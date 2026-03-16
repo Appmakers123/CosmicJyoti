@@ -20,7 +20,7 @@ async function getCoordinates(location, lat, lon) {
   }
 
   try {
-    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+    const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || process.env.VITE_GOOGLE_API_KEY;
     if (!GOOGLE_API_KEY) {
       console.warn("Google API key not found, using default coordinates");
       return { lat: 19.0760, lon: 72.8777, timezone: 5.5 };

@@ -132,6 +132,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Env check: which keys are set (no values) – for debugging "keys set but module not working"
+app.get('/api/env-check', (req, res) => {
+  const gk = process.env.GEMINI_API_KEYS || process.env.API_KEYS || process.env.GEMINI_API_KEY || process.env.API_KEY;
+  const ak = process.env.ASTROLOGY_API_KEYS || '';
+  const google = process.env.GOOGLE_API_KEY || process.env.VITE_GOOGLE_API_KEY || '';
+  res.json({
+    gemini: !!(gk && String(gk).trim()),
+    astrology: !!(ak && String(ak).trim().length > 0),
+    googleMaps: !!(google && String(google).trim()),
+    tier: (process.env.GEMINI_TIER || '').toString().trim() || '0',
+    corsOrigin: !!(process.env.CORS_ORIGIN && process.env.CORS_ORIGIN.trim()),
+  });
+});
+
 // API index: list all endpoints used by the frontend (end-to-end)
 app.get('/api', (req, res) => {
   res.json({

@@ -109,6 +109,17 @@ export function getSafeErrorMessage(error: unknown, language: Language = 'en'): 
           : 'Invalid time. Enter time in 24-hour format (e.g. 14:30).';
       }
 
+      // Any other API/technical-looking error: show friendly message so product never feels broken
+      if (
+        message.includes('Gemini') || message.includes('REST') || message.includes('generateContent') ||
+        message.includes('502') || message.includes('503') || message.includes('504') ||
+        message.includes('API_KEY') || message.includes('API key') || message.includes('not configured')
+      ) {
+        return language === 'hi'
+          ? 'सेवा अस्थायी रूप से व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।'
+          : 'Service is briefly busy. Please try again in a moment.';
+      }
+
       // Return sanitized error message (limit length to prevent UI issues)
       const safeMessage = message.substring(0, 200);
       return safeMessage || (language === 'hi' ? 'एक त्रुटि हुई।' : 'An error occurred.');

@@ -71,3 +71,6 @@ For **GitHub Actions** build: add in **Settings → Secrets and variables → Ac
 5. **Tier not applied**  
    Server: `GEMINI_TIER=1` in server env.  
    Frontend: `VITE_GEMINI_TIER=1` in build env (inlined; tier 1 = higher in-app limits).
+
+6. **Backup when Gemini fails**  
+   The app tries the main path first (SDK or primary model). If that fails with 503, 429 (quota), or network errors, it automatically tries the **REST API** (`https://generativelanguage.googleapis.com/v1beta/models/...:generateContent`) and then the **next model** in the tier order (e.g. gemini-2.0-flash → gemini-2-flash → …). So one failing model or path does not break the feature; the product keeps working with a backup.

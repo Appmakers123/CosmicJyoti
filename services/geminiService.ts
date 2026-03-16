@@ -2,7 +2,8 @@
 import { GoogleGenAI, Type, Modality } from "@google/genai";
 import { HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, NumerologyResponse, MatchMakingInput, MatchMakingResponse, MuhuratItem, TransitResponse, PlanetaryPosition, ImportantPoint } from "../types";
 import { fetchWithKeyRotation } from "../utils/astrologyApiKeys";
-import { getNextGeminiKey, hasGeminiKeys } from "../utils/geminiApiKeys";
+import { getNextGeminiKey, hasGeminiKeys, getAllGeminiKeys } from "../utils/geminiApiKeys";
+import { generateContentViaRest } from "../utils/geminiRestClient";
 import { getLanguageDisplayName } from "../utils/languageNames";
 import { generateHoroscopeFromPerplexity, hasPerplexityKey, generateGenericTransitsFromPerplexity } from "./perplexityService";
 import { generateHoroscopeFromGroq, hasGroqKey, generateGenericTransitsFromGroq } from "./groqService";
@@ -51,7 +52,9 @@ const HOROSCOPE_MODEL_FALLBACKS = getTextModelOrder();
 
 function isRetryableGeminiError(e: unknown): boolean {
   const msg = e instanceof Error ? e.message : String(e ?? '');
-  return /503|UNAVAILABLE|high demand|try again later/i.test(msg);
+  if (/spending cap|exceeded its spending/i.test(msg)) return false;
+  if ((e as { status?: number })?.status === 429) return true;
+  return /503|429|UNAVAILABLE|high demand|try again later|RESOURCE_EXHAUSTED|Failed to fetch/i.test(msg);
 }
 
 // Mentor-like tone: warm, human, supportive (MyNitya/Co-Star style)
@@ -507,8 +510,34 @@ RULES: Minimum 150 words total. No one-liners. Be specific and practical. Respon
           }
         } catch (e) {
           lastError = e;
+          const apiKey = getAllGeminiKeys()[0];
+          if (apiKey) {
+            try {
+              const restResult = await generateContentViaRest(apiKey, model, contents, {
+                systemInstruction: (config as { systemInstruction?: string }).systemInstruction as string,
+                maxOutputTokens: 2048,
+              });
+              if (restResult.text && restResult.text.length >= 100) {
+                recordUsage(model, 0, 0);
+                try {
+                  return JSON.parse(restResult.text) as HoroscopeResponse;
+                } catch {
+                  return parseJSONFromResponse<HoroscopeResponse>(restResult.text, {
+                    horoscope: restResult.text,
+                    luckyNumber: Math.floor(Math.random() * 9) + 1,
+                    luckyColor: 'Gold',
+                    mood: 'Balanced',
+                    compatibility: 'All signs',
+                  });
+                }
+              }
+            } catch (restErr) {
+              console.warn(`Horoscope REST ${model} failed:`, (restErr as Error)?.message);
+              lastError = restErr;
+            }
+          }
           if (isRetryableGeminiError(e)) {
-            console.warn(`Horoscope model ${model} unavailable (503/high demand), trying next fallback.`);
+            console.warn(`Horoscope model ${model} unavailable, trying next fallback.`);
             continue;
           }
           throw e;

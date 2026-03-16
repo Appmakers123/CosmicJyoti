@@ -16,7 +16,8 @@ import { generateTarot } from './services/tarotService.js';
 import { generatePredictions } from './services/predictionService.js';
 import { generateChartBasedHealthAnalysis } from './services/healthService.js';
 import { runRishiAgent } from './agent/rishiAgent.js';
-import { getDefaultTextModel, getGeminiTier } from './utils/geminiTierLimits.js';
+import { getDefaultTextModel, getGeminiTier, getTextModelOrder } from './utils/geminiTierLimits.js';
+import { generateContentViaRest } from './utils/geminiRestClient.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -538,12 +539,30 @@ You are CosmicJyoti Sage, an expert Vedic astrologer. Provide warm, mentor-like 
 IMPORTANT: Always respond in ${langName} language. Be practical and supportive.
 ${contextInfo}`;
 
-      const model = genAI.getGenerativeModel({ model: getDefaultTextModel() });
       const fullPrompt = `${systemInstruction}\n\n---\n\n${safeContext ? 'Module context: ' + safeContext + '\n\n' : ''}User: ${trimmedPrompt}`;
-      const result = await model.generateContent(fullPrompt);
-      const response = result.response;
-      const text = response?.text?.() || 'The cosmic library is currently undergoing maintenance. Please try again soon.';
-      return res.json({ text, sources: [] });
+      let text = '';
+      try {
+        const model = genAI.getGenerativeModel({ model: getDefaultTextModel() });
+        const result = await model.generateContent(fullPrompt);
+        const response = result.response;
+        text = response?.text?.() || '';
+      } catch (sdkErr) {
+        if (geminiKey) {
+          const modelOrder = getTextModelOrder();
+          for (const modelId of modelOrder) {
+            try {
+              const restResult = await generateContentViaRest(geminiKey, modelId, fullPrompt, { maxOutputTokens: 1024 });
+              if (restResult.text) {
+                text = restResult.text;
+                break;
+              }
+            } catch (restErr) {
+              console.warn('Rishi REST fallback', modelId, 'failed:', restErr?.message);
+            }
+          }
+        }
+      }
+      return res.json({ text: text || 'The cosmic library is briefly unavailable. Please try again in a moment.', sources: [] });
     }
   } catch (error) {
     console.error('Ask Rishi API error:', error);

@@ -1,4 +1,14 @@
-import { getDefaultTextModel } from '../utils/geminiTierLimits.js';
+import { getDefaultTextModel, getTextModelOrder } from '../utils/geminiTierLimits.js';
+import { generateContentViaRest } from '../utils/geminiRestClient.js';
+
+function getGeminiApiKey() {
+  const keys = process.env.GEMINI_API_KEYS || process.env.API_KEYS;
+  if (keys && typeof keys === 'string') {
+    const first = keys.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return process.env.GEMINI_API_KEY || process.env.API_KEY || null;
+}
 
 // Language name mapping for AI prompts
 const LANGUAGE_NAMES = {
@@ -56,14 +66,32 @@ IMPORTANT: Provide all answers in ${languageName} language. ${getLanguageInstruc
 
 Format your response as JSON with these exact keys: general, career, love, health, finance, education, family, spirituality`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    let text;
+    try {
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      text = response.text();
+    } catch (sdkError) {
+      const apiKey = getGeminiApiKey();
+      if (apiKey) {
+        for (const modelId of getTextModelOrder()) {
+          try {
+            const restResult = await generateContentViaRest(apiKey, modelId, prompt, { maxOutputTokens: 4096 });
+            if (restResult.text) {
+              text = restResult.text;
+              break;
+            }
+          } catch (restErr) {
+            console.warn('Predictions REST fallback', modelId, 'failed:', restErr?.message);
+          }
+        }
+      }
+      if (!text) throw sdkError;
+    }
 
     // Parse JSON response
     let predictions;
     try {
-      // Extract JSON from markdown code blocks if present
       const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/```\s*([\s\S]*?)\s*```/);
       const jsonText = jsonMatch ? jsonMatch[1] : text;
       predictions = JSON.parse(jsonText);

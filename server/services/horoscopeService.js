@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { post } from '../lib/freeAstrologyApi.js';
 import { getTextModelOrder } from '../utils/geminiTierLimits.js';
 import { checkLimit, recordUsage } from '../utils/geminiRateLimiter.js';
+import { generateContentViaRest } from '../utils/geminiRestClient.js';
 
 // Lazy read so dotenv has run (index.js loads .env after importing this module)
 function getGeminiApiKey() {
@@ -30,7 +31,8 @@ const HOROSCOPE_MODEL_FALLBACKS = getTextModelOrder();
 function isRetryableGeminiError(e) {
   const msg = e?.message || String(e || '');
   if (/spending cap|exceeded its spending/i.test(msg)) return false; // same project billing – trying another model won't help
-  return /503|UNAVAILABLE|high demand|try again later/i.test(msg);
+  if (e?.status === 429) return true; // quota RPM/TPM – try next model
+  return /503|429|UNAVAILABLE|high demand|try again later|RESOURCE_EXHAUSTED/i.test(msg);
 }
 
 function isSpendingCapError(e) {
@@ -143,7 +145,7 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    let result = null;
+    let horoscopeText = '';
     let lastError = null;
     for (const modelId of HOROSCOPE_MODEL_FALLBACKS) {
       const limitCheck = checkLimit(modelId);
@@ -156,10 +158,18 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
       }
       try {
         const model = genAI.getGenerativeModel({ model: modelId });
-        result = await model.generateContent(prompt);
+        const result = await model.generateContent(prompt);
         const usage = result?.response?.usageMetadata;
         recordUsage(modelId, usage?.promptTokenCount, usage?.candidatesTokenCount);
-        break;
+        const response = result.response;
+        if (typeof response.text === 'function') {
+          horoscopeText = response.text();
+        } else if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
+          horoscopeText = response.candidates[0].content.parts[0].text;
+        } else {
+          horoscopeText = response.text || '';
+        }
+        if (horoscopeText && horoscopeText.trim().length >= 50) break;
       } catch (e) {
         lastError = e;
         if (isSpendingCapError(e)) {
@@ -167,31 +177,26 @@ RULES: Minimum 150 words total. No one-liners. Be specific, practical, and compa
           throw e;
         }
         if (isRetryableGeminiError(e)) {
-          console.warn('Horoscope model', modelId, 'unavailable (503/high demand), trying next fallback.');
-          continue;
+          console.warn('Horoscope SDK model', modelId, 'unavailable, trying REST fallback.');
         }
+        try {
+          const restResult = await generateContentViaRest(apiKey, modelId, prompt, { maxOutputTokens: 2048 });
+          if (restResult.text && restResult.text.length >= 50) {
+            horoscopeText = restResult.text;
+            recordUsage(modelId, 0, 0);
+            break;
+          }
+        } catch (restErr) {
+          if (isSpendingCapError(restErr)) throw restErr;
+          console.warn('Horoscope REST model', modelId, 'failed:', restErr?.message);
+          lastError = restErr;
+        }
+        if (isRetryableGeminiError(e)) continue;
         throw e;
       }
     }
-    if (!result) throw lastError;
-    const response = result.response;
-    let horoscopeText = '';
-    try {
-      if (typeof response.text === 'function') {
-        horoscopeText = response.text();
-      } else if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
-        horoscopeText = response.candidates[0].content.parts[0].text;
-      } else {
-        horoscopeText = response.text || '';
-      }
-    } catch (e) {
-      console.warn('Gemini response text failed for', period, e?.message);
-      if (result.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-        horoscopeText = result.response.candidates[0].content.parts[0].text;
-      }
-    }
     if (!horoscopeText || typeof horoscopeText !== 'string' || horoscopeText.trim().length < 50) {
-      console.warn('Gemini returned empty/short horoscope for', period, '- using basic fallback');
+      if (lastError) console.warn('All models failed for horoscope, using basic fallback:', lastError?.message);
       const basic = generateBasicHoroscope(sign, date, language);
       horoscopeText = typeof basic === 'object' && basic.general ? basic.general : String(basic);
     }

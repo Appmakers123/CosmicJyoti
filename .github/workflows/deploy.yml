@@ -68,6 +68,8 @@ jobs:
           API_KEYS: ${{ secrets.API_KEYS || '' }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY || secrets.API_KEY || '' }}
           GEMINI_API_KEYS: ${{ secrets.GEMINI_API_KEYS || secrets.API_KEYS || '' }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY || secrets.GEMINI_API_KEY || secrets.API_KEY || '' }}
+          VITE_GEMINI_API_KEYS: ${{ secrets.VITE_GEMINI_API_KEYS || secrets.GEMINI_API_KEYS || secrets.API_KEYS || '' }}
           GEMINI_FALLBACK_KEY: ${{ secrets.GEMINI_FALLBACK_KEY || '' }}
           PERPLEXITY_API_KEYS: ${{ secrets.PERPLEXITY_API_KEYS || secrets.PERPLEXITY_API_KEY || '' }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY || '' }}

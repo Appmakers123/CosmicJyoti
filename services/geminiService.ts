@@ -418,7 +418,12 @@ export const generateHoroscope = async (signName: string, language: Language = '
       compatibility: backendResponse.horoscope?.love || ''
     };
   }
-  throw new Error('Horoscope unavailable. Add GEMINI_API_KEYS to server .env.local, or VITE_GEMINI_API_KEY (or API_KEY) to .env.local for frontend.');
+  const isProd = typeof import.meta !== 'undefined' && (import.meta as any).env?.PROD;
+  const ghHint = isProd ? ' On GitHub: add GEMINI_API_KEYS or API_KEY to repo Secrets (Settings → Secrets and variables → Actions) and redeploy.' : '';
+  const backendHint = isBackendConfigured()
+    ? ' Backend is configured but failed or returned nothing. Ensure the server is running and has GEMINI_API_KEYS in its .env.local.' + ghHint
+    : ' Either run the server (with GEMINI_API_KEYS in .env.local) and set VITE_API_BASE_URL, or add VITE_GEMINI_API_KEY or GEMINI_API_KEYS to .env.local for frontend.' + ghHint;
+  throw new Error('Horoscope unavailable.' + backendHint);
 };
 
   async function generateHoroscopeDirect(signName: string, language: Language = 'en', period: HoroscopePeriod = 'day'): Promise<HoroscopeResponse> {

@@ -38,8 +38,8 @@ export default defineConfig(({ mode }) => {
       // Gemini API keys (from .env or process.env in CI)
       'process.env.API_KEY': JSON.stringify(get('API_KEY') || get('GEMINI_API_KEY') || ''),
       'process.env.API_KEYS': JSON.stringify(get('API_KEYS') || get('GEMINI_API_KEYS') || ''),
-      'process.env.GEMINI_API_KEY': JSON.stringify(get('GEMINI_API_KEY') || get('API_KEY') || ''),
-      'process.env.GEMINI_API_KEYS': JSON.stringify(get('GEMINI_API_KEYS') || get('API_KEYS') || ''),
+      'process.env.GEMINI_API_KEY': JSON.stringify(get('GEMINI_API_KEY') || get('VITE_GEMINI_API_KEY') || get('API_KEY') || ''),
+      'process.env.GEMINI_API_KEYS': JSON.stringify(get('GEMINI_API_KEYS') || get('VITE_GEMINI_API_KEYS') || get('API_KEYS') || ''),
       // Perplexity API keys
       'process.env.PERPLEXITY_API_KEY': JSON.stringify(get('PERPLEXITY_API_KEY') || ''),
       'process.env.PERPLEXITY_API_KEYS': JSON.stringify(get('PERPLEXITY_API_KEYS') || get('PERPLEXITY_API_KEY') || ''),
@@ -52,6 +52,8 @@ export default defineConfig(({ mode }) => {
       'import.meta.env.VITE_PROFILE_SUBMIT_URL': JSON.stringify(get('VITE_PROFILE_SUBMIT_URL') || ''),
       'import.meta.env.VITE_API_BASE_URL': JSON.stringify(get('VITE_API_BASE_URL') || ''),
       'import.meta.env.VITE_FIREBASE_API_KEY': JSON.stringify(get('VITE_FIREBASE_API_KEY') || ''),
+      'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(get('VITE_GEMINI_API_KEY') || get('GEMINI_API_KEY') || get('API_KEY') || ''),
+      'import.meta.env.VITE_GEMINI_API_KEYS': JSON.stringify(get('VITE_GEMINI_API_KEYS') || get('GEMINI_API_KEYS') || get('API_KEYS') || ''),
       'import.meta.env.VITE_FIREBASE_PROJECT_ID': JSON.stringify(get('VITE_FIREBASE_PROJECT_ID') || ''),
       'import.meta.env.VITE_FIREBASE_AUTH_DOMAIN': JSON.stringify(get('VITE_FIREBASE_AUTH_DOMAIN') || '')
     },

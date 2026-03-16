@@ -11,15 +11,15 @@ function parseKeyList(value: string): string[] {
   return value.split(',').map((k) => k.trim()).filter(Boolean);
 }
 
-// Literal process.env.KEY so Vite define inlines values at build (CI secrets). No runtime process dependency.
+// process.env.* are inlined by Vite define at build; import.meta.env.VITE_* are available when set in env.
 function getKeys(): string[] {
-  const fromGeminiKeys = process.env.GEMINI_API_KEYS || '';
+  const fromGeminiKeys = process.env.GEMINI_API_KEYS || (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEYS) || '';
   let parsed = parseKeyList(fromGeminiKeys);
   if (parsed.length > 0) return parsed;
   const fromApiKeys = process.env.API_KEYS || '';
   parsed = parseKeyList(fromApiKeys);
   if (parsed.length > 0) return parsed;
-  const singleGemini = process.env.GEMINI_API_KEY || '';
+  const singleGemini = process.env.GEMINI_API_KEY || (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) || '';
   parsed = parseKeyList(singleGemini);
   if (parsed.length > 0) return parsed;
   const singleApi = process.env.API_KEY || '';

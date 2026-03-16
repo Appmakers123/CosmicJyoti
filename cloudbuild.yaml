@@ -1,10 +1,12 @@
 # Google Cloud Build - CosmicJyoti Backend
 # Build context: repo root. Dockerfile: server/Dockerfile
 # Run from repo root: gcloud builds submit --config cloudbuild.yaml .
+# --platform=linux/amd64 avoids Cloud Run "Manifest.Layers vs ConfigFile.RootFS.DiffIDs" error.
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '--platform=linux/amd64'
       - '-f'
       - 'server/Dockerfile'
       - '-t'

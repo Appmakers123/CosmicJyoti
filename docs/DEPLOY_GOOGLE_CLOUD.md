@@ -197,7 +197,7 @@ This usually means the container image has a manifest/config mismatch (e.g. from
    ```bash
    gcloud builds submit --config cloudbuild.yaml .
    ```
-   Then deploy that image to Cloud Run. This uses `docker build` and the `server/Dockerfile`, which produces a valid image.
+   The repo `cloudbuild.yaml` runs `docker build --platform=linux/amd64` with `server/Dockerfile`, which produces an image Cloud Run accepts. Do **not** use "Deploy from source" with Buildpacks—that often causes this error.
 
 3. **If you use "Deploy from source"** (e.g. GitHub → Cloud Run) – In the trigger or service settings, set the build to use the **Dockerfile** at the repo root (or `server/Dockerfile` with context = repo root). Do not use "Buildpacks" for this repo.
 

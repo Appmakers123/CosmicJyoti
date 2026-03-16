@@ -8,7 +8,8 @@ WORKDIR /app
 COPY server/package*.json ./
 RUN npm install --omit=dev
 
-COPY server/ .
+COPY server/ ./
+
 EXPOSE 3001
 
 ENV NODE_ENV=production

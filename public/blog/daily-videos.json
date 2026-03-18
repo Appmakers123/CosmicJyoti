@@ -1,6 +1,19 @@
 {
-  "lastUpdated": "2026-03-12",
+  "lastUpdated": "2026-03-18",
   "videos": [
+    {
+      "id": "2026-03-18-2am",
+      "date": "2026-03-18",
+      "slot": "2am",
+      "title": "Rudraksh: Rudraksh dharan ke fayde",
+      "titleHi": "रुद्राक्ष: रुद्राक्ष धारण के फायदे",
+      "titleHinglish": "Rudraksh: Rudraksh dharan ke fayde",
+      "descriptionHi": "रुद्राक्ष माला और ग्रहों से रक्षा। मुखी के अनुसार अलग-अलग प्रभाव। धारण करने का सही तरीका।",
+      "descriptionHinglish": "Rudraksh mala aur grahon se raksha. Mukhi ke anusar alag-alag prabhav. Dharan karne ka sahi tarika.",
+      "appMode": "rudraksh",
+      "videoUrl": "/blog/videos/2026-03-18-2am.mp4",
+      "generatedAt": "2026-03-18T04:23:19.515Z"
+    },
     {
       "id": "2026-03-12-2am",
       "date": "2026-03-12",

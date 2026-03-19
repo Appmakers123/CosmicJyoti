@@ -1,8 +1,36 @@
 {
-  "lastGenerated": "2026-03-18",
-  "generatedAt": "2026-03-18T03:24:08.765Z",
-  "totalPosts": 148,
+  "lastGenerated": "2026-03-19",
+  "generatedAt": "2026-03-19T03:24:22.039Z",
+  "totalPosts": 150,
   "posts": [
+    {
+      "id": "2026-03-19-daily-horoscope-march-19-2026",
+      "title": "Daily Horoscope Insights for March 19, 2026",
+      "slug": "daily-horoscope-march-19-2026",
+      "excerpt": "Get your daily horoscope insights for March 19, 2026, and discover what the stars have in store for you. Read your zodiac-wise predictions and find out what each rashi can expect. From career and finance to love and relationships, we've got you covered.",
+      "content": "         <h2>Daily Horoscope Overview</h2>         <p>Welcome to your daily horoscope for March 19, 2026. The stars are aligned in a unique pattern, bringing a mix of opportunities and challenges for each zodiac sign. In this article, we'll delve into the daily predictions for each rashi, covering various aspects of life, including career, finance, love, and relationships.</p>         <h2>Zodiac-Wise Predictions</h2>         <h3>Aries to Gemini</h3>         <ul>           <li>Aries: Expect a boost in energy and confidence, making it an ideal day to take on new challenges.</li>           <li>Taurus: Be cautious with your finances, as unnecessary expenses might lead to stress.</li>           <li>Gemini: Your communication skills will be put to the test, so be prepared to negotiate and persuade.</li>         </ul>         <h3>Cancer to Sagittarius</h3>         <ol>           <li>Cancer: Focus on your emotional well-being, and take time to relax and recharge.</li>           <li>Leo: Your creativity will shine, making it an excellent day for artistic pursuits.</li>           <li>Virgo: Your attention to detail will serve you well, but be mindful of perfectionism.</li>           <li>Libra: Balance is key, so make sure to prioritize your relationships and personal life.</li>           <li>Scorpio: Your intuition will be strong, guiding you through complex situations.</li>           <li>Sagittarius: Expand your horizons, and be open to new experiences and learning opportunities.</li>         </ol>         <h2>Love and Relationships</h2>         <p>For those in relationships, today is a great day to reconnect with your partner and strengthen your bond. Singles, on the other hand, might meet someone special, so keep your heart and mind open.</p>         <h2>Conclusion and Call to Action</h2>         <p>Stay ahead of the game by knowing what the stars have in store for you. Visit <strong>cosmicjyoti.com</strong> to get your personalized daily horoscope and discover the secrets of the universe. Try our daily predictions tool today and unlock the full potential of Vedic astrology!</p>       ",
+      "readingTime": "6 min",
+      "topic": "Horoscope / Daily Predictions",
+      "serviceMode": "daily",
+      "articleId": "2026-03-19-daily-horoscope-march-19-2026",
+      "date": "2026-03-19",
+      "timeSlot": "6am",
+      "serviceLabel": "Horoscope / Daily Predictions"
+    },
+    {
+      "id": "2026-03-19-kundali-milan-for-harmonious-relationship",
+      "title": "Unlocking the Secrets of Kundali Milan for a Harmonious Relationship",
+      "slug": "kundali-milan-for-harmonious-relationship",
+      "excerpt": "Kundali Milan, also known as Ashtakoota, is an ancient Vedic astrology technique used to determine the compatibility of two individuals. Learn how to unlock the secrets of Kundali Milan and discover the key to a harmonious relationship. Get expert guidance on match making and relationship compatibility.",
+      "content": "         <h2>Introduction to Kundali Milan</h2>         <p>Kundali Milan, also known as Ashtakoota, is a traditional Vedic astrology method used to assess the compatibility of two individuals. This ancient technique involves matching the birth charts of the couple to determine their potential for a successful and harmonious relationship.</p>         <h2>Understanding Ashtakoota</h2>         <p>Ashtakoota is a comprehensive system that evaluates eight different aspects of the couple's birth charts, including <strong>Varna</strong>, <strong>Vashya</strong>, <strong>Tara</strong>, <strong>Yoni</strong>, <strong>Graha Maitri</strong>, <strong>Gana</strong>, <strong>Bhakoot</strong>, and <strong>Nadi</strong>. Each of these aspects carries a specific weightage, and the total score determines the overall compatibility of the couple.</p>         <h3>Calculating the Ashtakoota Score</h3>         <ol>           <li>Varna: Caste and social status (1 point)</li>           <li>Vashya: Nature and temperament (2 points)</li>           <li>Tara: Destiny and luck (3 points)</li>           <li>Yoni: Sexual compatibility (4 points)</li>           <li>Graha Maitri: Planetary friendship (5 points)</li>           <li>Gana: Nature and behavior (6 points)</li>           <li>Bhakoot: Emotional compatibility (7 points)</li>           <li>Nadi: Health and well-being (8 points)</li>         </ol>         <h2>Interpreting the Results</h2>         <p>The Ashtakoota score ranges from 0 to 36, with higher scores indicating greater compatibility. A score of 28 or above is considered excellent, while a score below 18 may indicate potential challenges in the relationship.</p>         <h2>Conclusion and Call to Action</h2>         <p>Unlock the secrets of Kundali Milan and discover the key to a harmonious relationship. Visit <em>cosmicjyoti.com</em> to get your personalized Kundali Milan report and expert guidance on match making and relationship compatibility. Try our compatibility tool today and find your perfect match!</p>       ",
+      "readingTime": "6 min",
+      "topic": "Compatibility / Match Making",
+      "serviceMode": "compatibility",
+      "articleId": "2026-03-19-kundali-milan-for-harmonious-relationship",
+      "date": "2026-03-19",
+      "timeSlot": "6am",
+      "serviceLabel": "Compatibility / Match Making"
+    },
     {
       "id": "2026-03-18-daily-horoscope-march-18-2026",
       "title": "Daily Horoscope Insights for March 18, 2026",
@@ -2977,8 +3005,5 @@
         "2026-03-03-kundali-birth-chart-analysis"
       ]
     }
-  ],
-  "embeddingModel": "gemini-embedding-001",
-  "embeddingDimensions": 768,
-  "relatedGeneratedAt": "2026-03-18T03:24:16.268Z"
+  ]
 }

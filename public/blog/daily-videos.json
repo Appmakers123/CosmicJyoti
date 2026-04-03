@@ -1,6 +1,19 @@
 {
-  "lastUpdated": "2026-04-02",
+  "lastUpdated": "2026-04-03",
   "videos": [
+    {
+      "id": "2026-04-03-2am",
+      "date": "2026-04-03",
+      "slot": "2am",
+      "title": "Jyotish: Aakash aur jeevan ka sambandh",
+      "titleHi": "ज्योतिष: आकाश और जीवन का संबंध",
+      "titleHinglish": "Jyotish: Aakash aur jeevan ka sambandh",
+      "descriptionHi": "वैदिक ज्योतिष में ग्रह, राशि और भाव। कैसे तारे आपके जीवन को प्रभावित करते हैं। ज्योतिष की मूल बातें।",
+      "descriptionHinglish": "Vedic jyotish mein grah, rashi aur bhav. Kaise taare aapke jeevan ko prabhavit karte hain. Jyotish ki mool baatein.",
+      "appMode": "kundali-basics",
+      "videoUrl": "/blog/videos/2026-04-03-2am.mp4",
+      "generatedAt": "2026-04-03T04:28:53.270Z"
+    },
     {
       "id": "2026-04-02-2am",
       "date": "2026-04-02",

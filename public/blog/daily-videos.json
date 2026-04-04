@@ -1,6 +1,19 @@
 {
-  "lastUpdated": "2026-04-03",
+  "lastUpdated": "2026-04-04",
   "videos": [
+    {
+      "id": "2026-04-04-2am",
+      "date": "2026-04-04",
+      "slot": "2am",
+      "title": "Navgrah: Jyotish mein nau grahon ki kahani",
+      "titleHi": "नवग्रह: ज्योतिष में नौ ग्रहों की कहानी",
+      "titleHinglish": "Navgrah: Jyotish mein nau grahon ki kahani",
+      "descriptionHi": "वैदिक ज्योतिष में सूर्य, चंद्र, मंगल, बुध, गुरु, शुक्र, शनि, राहु और केतु की महत्ता। इन ग्रहों का जीवन पर प्रभाव।",
+      "descriptionHinglish": "Vedic jyotish mein Surya, Chandra, Mangal, Budh, Guru, Shukra, Shani, Rahu aur Ketu ki mahatta. In grahon ka jeevan par prabhav.",
+      "appMode": "planets-houses",
+      "videoUrl": "/blog/videos/2026-04-04-2am.mp4",
+      "generatedAt": "2026-04-04T04:14:54.199Z"
+    },
     {
       "id": "2026-04-03-2am",
       "date": "2026-04-03",

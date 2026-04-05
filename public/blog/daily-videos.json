@@ -1,6 +1,19 @@
 {
-  "lastUpdated": "2026-04-04",
+  "lastUpdated": "2026-04-05",
   "videos": [
+    {
+      "id": "2026-04-05-2am",
+      "date": "2026-04-05",
+      "slot": "2am",
+      "title": "27 Nakshatra: Chandra ki rashiyon ki kahani",
+      "titleHi": "27 नक्षत्र: चंद्र की राशियों की कहानी",
+      "titleHinglish": "27 Nakshatra: Chandra ki rashiyon ki kahani",
+      "descriptionHi": "ज्योतिष में 27 नक्षत्रों का महत्व। चंद्रमा एक राशि से दूसरी में गति करता है। जन्म नक्षत्र से व्यक्तित्व और भाग्य का संबंध।",
+      "descriptionHinglish": "Jyotish mein 27 nakshatron ka mahatva. Janam nakshatra se vyaktitva aur bhagya ka sambandh.",
+      "appMode": "nakshatra-library",
+      "videoUrl": "/blog/videos/2026-04-05-2am.mp4",
+      "generatedAt": "2026-04-05T04:35:48.222Z"
+    },
     {
       "id": "2026-04-04-2am",
       "date": "2026-04-04",

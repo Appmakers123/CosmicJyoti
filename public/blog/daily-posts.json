@@ -1,8 +1,36 @@
 {
-  "lastGenerated": "2026-04-06",
-  "generatedAt": "2026-04-06T03:44:58.636Z",
-  "totalPosts": 186,
+  "lastGenerated": "2026-04-07",
+  "generatedAt": "2026-04-07T03:35:37.473Z",
+  "totalPosts": 188,
   "posts": [
+    {
+      "id": "2026-04-07-daily-horoscope-april-7-2026",
+      "title": "Daily Horoscope Insights for April 7, 2026",
+      "slug": "daily-horoscope-april-7-2026",
+      "excerpt": "Get your daily horoscope insights for April 7, 2026, and discover what the stars have in store for you. Read your zodiac-wise predictions and make the most of the day. From career and finance to love and relationships, find out what each rashi can expect.",
+      "content": "         <h2>Daily Horoscope Overview</h2>         <p>Welcome to your daily horoscope for April 7, 2026. The stars are aligned in a unique pattern, bringing a mix of opportunities and challenges for each zodiac sign. In this article, we will delve into the daily predictions for each rashi, helping you navigate the day with confidence.</p>         <h2>Zodiac-Wise Predictions</h2>         <h3>Aries to Gemini</h3>         <p>Aries, you can expect a busy day at work, with multiple tasks and projects demanding your attention. Taurus, be cautious with your finances, as unnecessary expenses may arise. Gemini, you may receive an unexpected call or message from an old friend, bringing back fond memories.</p>         <h3>Cancer to Scorpio</h3>         <p>Cancer, your emotional side may be more pronounced today, making you more sensitive to the needs of others. Leo, you may feel a surge of creativity, making it an ideal day for artistic pursuits. Virgo, your attention to detail will serve you well, helping you complete tasks efficiently. Libra, you may need to balance your personal and professional life, making sure to prioritize self-care. Scorpio, your intuition will be strong, guiding you in making important decisions.</p>         <h2>Love and Relationships</h2>         <p>For those in relationships, today may bring a deeper understanding and connection with your partner. Singles, you may meet someone special, sparking a new romance. However, be cautious of misunderstandings and communication gaps, which can arise due to the planetary positions.</p>         <h2>Conclusion and Call to Action</h2>         <p>Stay ahead of the game with our daily horoscope insights, helping you make informed decisions and navigate life's challenges. Try our <strong>Daily Horoscope</strong> tool at cosmicjyoti.com to get personalized predictions and guidance. With our expert Vedic astrologers, you can unlock the secrets of the universe and achieve your goals.</p>       ",
+      "readingTime": "6 min",
+      "topic": "Horoscope / Daily Predictions",
+      "serviceMode": "daily",
+      "articleId": "2026-04-07-daily-horoscope-april-7-2026",
+      "date": "2026-04-07",
+      "timeSlot": "6am",
+      "serviceLabel": "Horoscope / Daily Predictions"
+    },
+    {
+      "id": "2026-04-07-kundali-milan-for-harmonious-relationship",
+      "title": "Unlocking the Secrets of Kundali Milan for a Harmonious Relationship",
+      "slug": "kundali-milan-for-harmonious-relationship",
+      "excerpt": "Kundali Milan, also known as Ashtakoota, is an ancient Vedic astrology technique used to determine the compatibility of two individuals. Learn how to use Kundali Milan to strengthen your relationship and build a harmonious partnership. Discover the importance of matching your birth charts and the benefits of compatibility testing.",
+      "content": "         <h2>Introduction to Kundali Milan</h2>         <p>Kundali Milan, or Ashtakoota, is a traditional Vedic astrology method used to assess the compatibility of two individuals. By matching the birth charts of the couple, Kundali Milan helps determine the potential success and harmony of their relationship. In this article, we will explore the concept of Kundali Milan and its significance in building a strong and lasting partnership.</p>         <h2>Understanding Ashtakoota</h2>         <h3>The Eight Gunas</h3>         <p>Ashtakoota is based on the eight gunas, or qualities, that are matched between the two individuals. These gunas include Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi. Each guna carries a specific weightage, and the total score determines the compatibility of the couple.</p>         <h3>Calculating the Compatibility Score</h3>         <p>The compatibility score is calculated by matching the gunas of the two individuals. A higher score indicates a stronger and more harmonious relationship. Our expert Vedic astrologers use this ancient technique to provide personalized compatibility reports, helping couples understand their strengths and weaknesses.</p>         <h2>Benefits of Kundali Milan</h2>         <p>Kundali Milan offers numerous benefits, including <strong>improved communication</strong>, <strong>deeper understanding</strong>, and <strong>enhanced compatibility</strong>. By identifying potential areas of conflict, couples can work together to overcome challenges and build a stronger relationship.</p>         <h2>Conclusion and Call to Action</h2>         <p>Experience the power of Kundali Milan and unlock the secrets of a harmonious relationship. Try our <strong>Compatibility Test</strong> tool at cosmicjyoti.com, and discover the potential of your partnership. With our expert guidance, you can navigate the complexities of relationships and build a lasting bond with your loved one.</p>       ",
+      "readingTime": "6 min",
+      "topic": "Compatibility / Match Making",
+      "serviceMode": "compatibility",
+      "articleId": "2026-04-07-kundali-milan-for-harmonious-relationship",
+      "date": "2026-04-07",
+      "timeSlot": "6am",
+      "serviceLabel": "Compatibility / Match Making"
+    },
     {
       "id": "2026-04-06-daily-horoscope-insights-april-6-2026",
       "title": "Daily Horoscope Insights for April 6, 2026",
@@ -3747,8 +3775,5 @@
         "2026-03-03-kundali-birth-chart-analysis"
       ]
     }
-  ],
-  "embeddingModel": "gemini-embedding-001",
-  "embeddingDimensions": 768,
-  "relatedGeneratedAt": "2026-04-06T03:45:07.910Z"
+  ]
 }

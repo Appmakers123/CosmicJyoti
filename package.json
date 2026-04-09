@@ -59,7 +59,7 @@
     "@capacitor/android": "^6.0.0",
     "@capacitor/app": "^6.0.0",
     "@capacitor/core": "^6.0.0",
-    "@google/genai": "^1.31.0",
+    "@google/genai": "^1.44.0",
     "dompurify": "^3.0.9",
     "lucide-react": "^0.344.0",
     "react": "^19.0.0",

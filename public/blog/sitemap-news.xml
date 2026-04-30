@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-04-30-daily-horoscope-insights-april-30-2026/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-04-30T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope Insights: Zodiac-Wise Predictions for April 30, 2026</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-04-30-kundali-milan-guide/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-04-30T06:00:00+05:30</news:publication_date>
+      <news:title>Unlocking the Secrets of Kundali Milan: A Guide to Compatibility and Match Making</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-04-29-daily-horoscope-april-29-2026/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>
@@ -43,28 +65,6 @@
       </news:publication>
       <news:publication_date>2026-04-28T06:00:00+05:30</news:publication_date>
       <news:title>Unlocking the Secrets of Kundali Milan: A Guide to Compatibility and Match Making</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-04-27-daily-horoscope-insights-april-27-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-04-27T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope Insights for April 27, 2026</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-04-27-kundali-milan-for-happy-marriage/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-04-27T06:00:00+05:30</news:publication_date>
-      <news:title>Unlocking the Secrets of Kundali Milan for a Happy Marriage</news:title>
     </news:news>
   </url>
 </urlset>

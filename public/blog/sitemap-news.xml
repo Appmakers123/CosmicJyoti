@@ -2,6 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-08-21-daily-horoscope-august-21-2026/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-08-21T06:00:00+05:30</news:publication_date>
+      <news:title>Daily Horoscope: Navigating the Depths of Scorpio Moon on August 21, 2026</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://www.cosmicjyoti.com/blog/2026-08-21-kundali-milan-compatibility-guide/</loc>
+    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+      <news:publication>
+        <news:name>CosmicJyoti</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-08-21T06:00:00+05:30</news:publication_date>
+      <news:title>The Science of Kundali Milan: Why Compatibility Goes Beyond the 36 Gunas</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://www.cosmicjyoti.com/blog/2026-08-20-daily-horoscope-august-20-2026/</loc>
     <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
       <news:publication>
@@ -42,28 +64,6 @@
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>2026-08-19T06:00:00+05:30</news:publication_date>
-      <news:title>The Science of Ashtakoota: Decoding the 36 Gunas in Vedic Matchmaking</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-08-18-daily-horoscope-august-18-2026/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-08-18T06:00:00+05:30</news:publication_date>
-      <news:title>Daily Horoscope for August 18, 2026: Navigating the Lunar Shift in Libra</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://www.cosmicjyoti.com/blog/2026-08-18-ashtakoota-36-gunas-vedic-matchmaking/</loc>
-    <news:news xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-      <news:publication>
-        <news:name>CosmicJyoti</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-08-18T06:00:00+05:30</news:publication_date>
       <news:title>The Science of Ashtakoota: Decoding the 36 Gunas in Vedic Matchmaking</news:title>
     </news:news>
   </url>

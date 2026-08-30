@@ -25,6 +25,14 @@ export default defineConfig(({ mode }) => {
   }
   return {
     plugins: [react(), capacitorPluginsPlugin()],
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 3000,
+    },
     optimizeDeps: {
       exclude: ['@capacitor/app', '@capacitor/browser'], // Exclude from pre-bundling in dev mode
     },

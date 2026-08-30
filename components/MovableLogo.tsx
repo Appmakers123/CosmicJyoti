@@ -63,22 +63,24 @@ const MovableLogo: React.FC = () => {
 
   return (
     <div
+      id="movable-cosmic-logo"
       onMouseDown={(e) => handleStart(e.clientX, e.clientY)}
       onTouchStart={(e) => {
-          // Prevent scrolling while dragging logic could be handled here if needed, 
-          // but touch-action: none in style usually suffices.
           handleStart(e.touches[0].clientX, e.touches[0].clientY);
       }}
       style={{
         position: 'fixed',
         left: position.x,
         top: position.y,
-        zIndex: 100, // Very high z-index
+        zIndex: 100,
         cursor: isDragging ? 'grabbing' : 'grab',
-        touchAction: 'none' // Critical for mobile dragging
+        touchAction: 'none',
+        backgroundColor: '#090d16',
+        borderColor: 'rgba(245, 158, 11, 0.55)',
+        boxShadow: '0 0 24px rgba(245, 158, 11, 0.35), inset 0 0 12px rgba(15, 23, 42, 0.8)',
       }}
-      className="p-2 bg-slate-900/90 rounded-full border border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)] backdrop-blur-sm transition-shadow hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] active:scale-95 duration-200"
-      title="Drag me!"
+      className="p-2.5 rounded-full border backdrop-blur-md transition-shadow hover:shadow-[0_0_35px_rgba(245,158,11,0.65)] active:scale-95 duration-200 cosmic-brand-logo"
+      title="CosmicJyoti - Drag me!"
     >
       <Logo className="w-12 h-12" />
     </div>

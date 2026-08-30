@@ -12,7 +12,28 @@
     <!-- To verify site ownership (e.g. Google Publisher Center / Search Console), add when provided: <meta name="google-site-verification" content="YOUR_CODE" /> -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, minimum-scale=1, maximum-scale=5" />
-    <meta name="theme-color" content="#020617" />
+    <meta name="theme-color" content="#020617" id="theme-color-meta" />
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('cosmicjyoti_theme');
+          var isDark = saved === 'dark' || (!saved || saved === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'light' || (!isDark && (saved === 'system' || !saved))) {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.style.colorScheme = 'light';
+            var meta = document.getElementById('theme-color-meta');
+            if (meta) meta.setAttribute('content', '#f8fafc');
+          } else {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+            document.documentElement.setAttribute('data-theme', 'dark');
+            document.documentElement.style.colorScheme = 'dark';
+          }
+        } catch (e) {}
+      })();
+    </script>
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="description" content="Free Kundali, daily horoscope, Guna Milan, Panchang, Muhurat, Sade Sati, Lal Kitab, Prashna Kundali, Numerology, Tarot, Palm reading, Face reading, Vastu, Upay remedies &amp; AI astrology. All modules in English &amp; Hindi. No sign-up." />
     <meta name="keywords" content="vedic astrology, kundali, free kundali, horoscope, daily horoscope, numerology, tarot, panchang, muhurat, birth chart, janam kundali, marriage match, compatibility, nakshatra, palmistry, rashifal, AI astrology, cosmicjyoti, kundli, lal kitab, sade sati calculator, sade sati by moon sign, shani sade sati, check sade sati, lal kitab totkas, prashna kundali, horary astrology, mobile number numerology, phone number luck, guna milan, ashtakoot, today panchang, free kundli, vedic birth chart, rashifal today" />

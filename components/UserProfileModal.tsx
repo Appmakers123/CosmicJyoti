@@ -7,6 +7,7 @@ import { getGlobalProfile, saveGlobalProfile } from '../utils/profileStorageServ
 import { submitProfileWithConsent } from '../services/profileSubmissionService';
 import { saveUserData, getSyncApiUrl } from '../services/userSyncService';
 import GoogleLoginButton from './GoogleLoginButton';
+import ThemeToggle from './ThemeToggle';
 
 const emptySelf: KundaliFormData = {
   name: '',
@@ -224,6 +225,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ user, onSave, onClo
               </button>
             </div>
           )}
+          <div>
+            <h3 className="text-sm font-bold text-amber-400/90 uppercase tracking-wider mb-2">
+              {language === 'hi' ? 'थीम पसंद' : 'Appearance / Theme'}
+            </h3>
+            <ThemeToggle variant="segmented" language={language} />
+          </div>
+
           <div>
             <h3 className="text-sm font-bold text-amber-400/90 uppercase tracking-wider mb-3">
               {language === 'hi' ? 'खाता (वैकल्पिक)' : 'Account (Optional)'}

@@ -43,6 +43,7 @@ import BookAppointment from './components/BookAppointment';
 import MuhuratLab from './components/MuhuratLab';
 import MatchMaking from './components/MatchMaking';
 import NotificationToggle from './components/NotificationToggle';
+import ThemeToggle from './components/ThemeToggle';
 import UserProfileModal from './components/UserProfileModal';
 import Logo from './components/Logo';
 import ThoughtOfTheDay from './components/ThoughtOfTheDay';
@@ -1263,7 +1264,8 @@ const App: React.FC = () => {
         </div>
       )}
       <header 
-        className="fixed top-0 left-0 right-0 w-full z-[60] py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-slate-900/95 border-b border-white/5 backdrop-blur-md"
+        id="app-header"
+        className="fixed top-0 left-0 right-0 w-full z-[60] py-2 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 bg-slate-900/95 border-b border-white/5 backdrop-blur-md constant-dark-chrome"
         style={{ 
           paddingTop: 'max(1rem, calc(env(safe-area-inset-top) + 0.75rem))',
           paddingLeft: 'max(1rem, calc(env(safe-area-inset-left) + 0.75rem))',
@@ -1280,7 +1282,7 @@ const App: React.FC = () => {
             onClick={() => { setMode('hub'); setKundaliData(null); setSelectedSign(null); setHamburgerOpen(false); }}
           >
             <Logo className="w-8 h-8 sm:w-10 sm:h-10 animate-spin-slow shrink-0" />
-            <span className="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-100 hidden sm:block tracking-widest uppercase whitespace-nowrap">CosmicJyoti</span>
+            <span className="text-base sm:text-lg md:text-xl font-serif font-bold text-amber-100 hidden sm:block tracking-widest uppercase whitespace-nowrap brand-title-text">CosmicJyoti</span>
           </div>
           {/* Language dropdown + Translating indicator + Hamburger + Notif - always visible on mobile */}
           <div className="flex items-center gap-2 sm:hidden shrink-0">
@@ -1304,6 +1306,7 @@ const App: React.FC = () => {
                 <span>{streakCount}</span>
               </div>
             )}
+            <ThemeToggle language={language} variant="icon" />
             <NotificationToggle language={language} />
             <button
               onClick={() => setHamburgerOpen(true)}
@@ -1364,6 +1367,7 @@ const App: React.FC = () => {
             </select>
             <TranslationLoadingIndicator />
           </div>
+          <ThemeToggle language={language} variant="icon" />
           <a 
             href="/landing.html"
             className="hidden md:flex items-center gap-2 px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-full hover:border-amber-500/50 transition-all text-[10px] font-bold uppercase tracking-widest text-amber-200 min-h-[44px] touch-manipulation"
@@ -1903,7 +1907,10 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="relative z-10 bg-gradient-to-b from-slate-900/95 to-slate-950/95 border-t border-amber-500/20 backdrop-blur-xl py-12 sm:py-16 px-4 sm:px-6 mb-24 md:mb-32">
+      <footer 
+        id="app-footer"
+        className="relative z-10 bg-gradient-to-b from-slate-900/95 to-slate-950/95 border-t border-amber-500/20 backdrop-blur-xl py-12 sm:py-16 px-4 sm:px-6 mb-24 md:mb-32 constant-dark-chrome"
+      >
         <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 pointer-events-none"></div>
         <div className="max-w-6xl mx-auto relative z-10">
           {/* Main Footer Content */}

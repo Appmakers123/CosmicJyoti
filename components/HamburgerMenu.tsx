@@ -4,6 +4,7 @@ import { PLAY_STORE_URL } from '../constants';
 import { getExternalLinkProps, isCapacitor } from '../utils/linkHandler';
 import MySavedReports from './MySavedReports';
 import GoogleLoginButton from './GoogleLoginButton';
+import ThemeToggle from './ThemeToggle';
 
 interface HamburgerMenuProps {
   isOpen: boolean;
@@ -165,6 +166,11 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 {language === 'hi' ? 'लॉगआउट' : 'Logout'}
               </button>
             )}
+          </div>
+
+          {/* Theme Selector */}
+          <div className="pt-1 pb-1">
+            <ThemeToggle variant="menu-item" language={language} />
           </div>
 
           {/* My saved reports – after Profile */}

@@ -54,8 +54,9 @@ import PremiumFeatureCard from './components/PremiumFeatureCard';
 import AdBanner from './components/AdBanner';
 import HamburgerMenu from './components/HamburgerMenu';
 import KarmaStore from './components/KarmaStore';
+import DonateModal from './components/DonateModal';
 import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, ViewMode, AppViewMode, User } from './types';
-import { ZODIAC_SIGNS, PLAY_STORE_URL } from './constants';
+import { ZODIAC_SIGNS, PLAY_STORE_URL, PAYPAL_DONATION_EMAIL, getPayPalDonateUrl, PAYPAL_DONATE_URL, PAYPAL_ME_HANDLE, PAYPAL_ME_URL } from './constants';
 import { generateHoroscope, generateKundali, generateDailyPanchang, type HoroscopePeriod } from './services/geminiService';
 import { generatePersonalizedDailyForecast } from './services/perplexityService';
 import { useTranslation, UI_LANGUAGES } from './utils/translations';
@@ -252,6 +253,7 @@ const App: React.FC = () => {
   // Monetization: subscription + ads for free tier
   const [chatRefreshKey, setChatRefreshKey] = useState(0);
   const [showKarmaStore, setShowKarmaStore] = useState(false);
+  const [showDonateModal, setShowDonateModal] = useState(false);
   const [karmaBalance, setKarmaBalance] = useState(0);
   const [showAdWatchModal, setShowAdWatchModal] = useState(false);
   const [adWatchPurpose, setAdWatchPurpose] = useState<'karma' | 'chat' | 'premium' | 'chart-ad' | null>(null);
@@ -1171,6 +1173,7 @@ const App: React.FC = () => {
         onOpenReport={openSavedReport}
         language={language}
         onOpenProfile={() => { setShowProfile(true); setHamburgerOpen(false); }}
+        onOpenDonate={() => setShowDonateModal(true)}
         user={user}
         onGoogleSignIn={async (googleUser) => {
           setUser(googleUser);
@@ -1184,6 +1187,11 @@ const App: React.FC = () => {
           localStorage.removeItem('cosmicjyoti_user');
           localStorage.removeItem('cosmicjyoti_auth_token');
         }}
+      />
+      <DonateModal
+        isOpen={showDonateModal}
+        onClose={() => setShowDonateModal(false)}
+        language={language}
       />
       {showKarmaStore && (
         <KarmaStore
@@ -1309,6 +1317,18 @@ const App: React.FC = () => {
             <ThemeToggle language={language} variant="icon" />
             <NotificationToggle language={language} />
             <button
+              type="button"
+              onClick={() => setShowDonateModal(true)}
+              className="flex items-center gap-1 min-h-[40px] px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 text-amber-300 hover:text-amber-100 text-xs font-bold transition-all active:scale-95 touch-manipulation"
+              aria-label={language === 'hi' ? 'दान करें' : 'Donate'}
+              title={language === 'hi' ? 'वेबसाइट के विकास के लिए दान दें' : 'Donate to support website growth'}
+            >
+              <span>💖</span>
+              <span className="hidden xs:inline text-[10px] uppercase font-bold tracking-wide">
+                {language === 'hi' ? 'दान' : 'Donate'}
+              </span>
+            </button>
+            <button
               onClick={() => setHamburgerOpen(true)}
               className="flex items-center justify-center min-h-[44px] min-w-[44px] rounded-xl bg-slate-800/80 border border-slate-700 hover:border-amber-500/50 text-amber-400 transition-colors touch-manipulation active:scale-[0.98]"
               aria-label={language === 'hi' ? 'मेनू खोलें' : 'Open menu'}
@@ -1374,6 +1394,15 @@ const App: React.FC = () => {
           >
             Know More
           </a>
+          <button 
+            type="button"
+            onClick={() => setShowDonateModal(true)}
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 border border-amber-500/50 hover:border-amber-400 rounded-full hover:bg-amber-500/30 transition-all text-[10px] font-bold uppercase tracking-widest text-amber-200 hover:text-amber-100 min-h-[44px] touch-manipulation shadow-[0_0_12px_rgba(245,158,11,0.2)] active:scale-95"
+            title={language === 'hi' ? 'वेबसाइट के विकास के लिए दान दें' : 'Donate to support website growth'}
+          >
+            <span className="text-sm">💖</span>
+            <span>{language === 'hi' ? 'दान करें' : 'Donate'}</span>
+          </button>
           <NotificationToggle language={language} />
           <button
             onClick={() => setHamburgerOpen(true)}
@@ -1946,6 +1975,17 @@ const App: React.FC = () => {
                     </svg>
                   </a>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setShowDonateModal(true)}
+                  className="group inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 font-bold text-xs sm:text-sm uppercase tracking-widest border-b-2 border-amber-500/30 pb-1 hover:border-amber-400 transition-all"
+                >
+                  <span>💖</span>
+                  <span>{language === 'hi' ? 'दान / सहयोग करें' : 'Donate (PayPal)'}</span>
+                  <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -2046,6 +2086,58 @@ const App: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Support Website Growth / Donate Banner */}
+          <section className="border-t border-amber-500/20 pt-6 sm:pt-8 mb-8" aria-labelledby="footer-donate-heading">
+            <div className="bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-amber-950/40 border border-amber-500/30 rounded-2xl p-5 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/40 flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
+                  💖
+                </div>
+                <div>
+                  <h3 id="footer-donate-heading" className="text-amber-200 font-serif font-bold text-base sm:text-lg tracking-wide">
+                    {language === 'hi' ? 'वेबसाइट के विकास में सहयोग दें (PayPal)' : 'Support CosmicJyoti’s Growth (Donate via PayPal)'}
+                  </h3>
+                  <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
+                    {language === 'hi'
+                      ? 'आपका छोटा सा योगदान भी इस वैदिक ज्योतिष मंच को निःशुल्क, सटीक और विज्ञापन-मुक्त रखने में मदद करता है। PayPal के माध्यम से सहयोग करें।'
+                      : 'Help us maintain planetary ephemeris calculation servers, expand AI Vedic tools, and keep accurate astrology accessible for everyone worldwide.'}
+                  </p>
+                  <p className="text-[11px] text-amber-300/90 font-mono mt-1.5 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-1">
+                      <span className="text-slate-400">PayPal.Me:</span>
+                      <a {...getExternalLinkProps(PAYPAL_ME_URL, language)} className="font-bold text-amber-200 hover:text-white underline">paypal.me/{PAYPAL_ME_HANDLE}</a>
+                    </span>
+                    <span className="hidden sm:inline text-slate-600">•</span>
+                    <span className="flex items-center gap-1 text-slate-400">
+                      <span>Email:</span>
+                      <span className="select-all text-slate-300">{PAYPAL_DONATION_EMAIL}</span>
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3 shrink-0 w-full md:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setShowDonateModal(true)}
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="text-base">💖</span>
+                  <span>{language === 'hi' ? 'दान राशि चुनें' : 'Donate via PayPal'}</span>
+                </button>
+                <a
+                  {...getExternalLinkProps(PAYPAL_ME_URL, language)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4 text-[#0079C1] shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.82.875 4.966-.03.153-.067.31-.11.472-.647 3.018-2.679 4.707-6.04 4.707H11.02a.794.794 0 0 0-.785.67l-.872 5.534-.287 1.823a.64.64 0 0 1-.633.541h-1.367zm12.35-14.776c-.035.176-.076.357-.123.543-.807 3.766-3.344 5.875-7.543 5.875h-2.316a.992.992 0 0 0-.98.837l-1.34 8.508-.38 2.41a.534.534 0 0 0 .528.618h3.838a.992.992 0 0 0 .98-.838l.812-5.15.052-.28a.992.992 0 0 1 .98-.837h.615c4.202 0 7.49-1.708 8.45-6.183.4-1.872.2-3.435-.793-4.604a5.01 5.01 0 0 0-2.8-1.554z"/>
+                  </svg>
+                  <span>paypal.me/{PAYPAL_ME_HANDLE}</span>
+                </a>
+              </div>
+            </div>
+          </section>
 
           {/* Important Disclaimer - policy-aligned */}
           <section className="border-t border-slate-800/50 pt-6 sm:pt-8 mb-6 sm:mb-8" aria-labelledby="footer-disclaimer-heading">

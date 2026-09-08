@@ -296,3 +296,19 @@ export const translateSign = (signName: string, lang: Language): string => {
 
 /** Play Store URL for CosmicJyoti app */
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cosmicjyoti.app';
+
+/** PayPal donation handle, email & URL for supporting website growth */
+export const PAYPAL_ME_HANDLE = 'NIKESHMAURYA';
+export const PAYPAL_ME_URL = 'https://paypal.me/NIKESHMAURYA';
+export const PAYPAL_DONATION_EMAIL = 'nikemaurya1996@gmail.com';
+
+export const getPayPalDonateUrl = (amount?: number): string => {
+  if (amount && amount > 0) {
+    // PayPal.Me accepts amounts directly in the path e.g. https://paypal.me/NIKESHMAURYA/10
+    return `https://paypal.me/${PAYPAL_ME_HANDLE}/${amount}`;
+  }
+  return PAYPAL_ME_URL;
+};
+
+export const PAYPAL_DONATE_URL = PAYPAL_ME_URL;
+

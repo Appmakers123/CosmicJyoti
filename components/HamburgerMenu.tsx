@@ -187,17 +187,17 @@ const HamburgerMenu: React.FC<HamburgerMenuProps> = ({
                 }}
                 className="flex items-center gap-3.5 w-full min-h-[52px] px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-amber-600/20 hover:from-amber-500/30 hover:to-orange-500/25 border border-amber-500/40 text-amber-200 font-bold transition-all touch-manipulation active:scale-[0.99] text-left shadow-[0_0_15px_rgba(245,158,11,0.15)]"
               >
-                <span className="text-xl">💖</span>
+                <span className="text-xl">☕</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-amber-100">
-                    {language === 'hi' ? 'सहयोग / दान करें (PayPal)' : 'Donate / Support Website'}
+                    {language === 'hi' ? 'सहयोग करें (Coffee / PayPal)' : 'Buy Coffee & Support'}
                   </p>
                   <p className="text-[11px] text-amber-300/80 truncate">
-                    {language === 'hi' ? 'CosmicJyoti के विकास में मदद करें' : 'Help CosmicJyoti grow via PayPal'}
+                    {language === 'hi' ? 'CosmicJyoti के विकास में मदद करें' : 'Help CosmicJyoti grow'}
                   </p>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-200 border border-amber-500/50 uppercase font-semibold">
-                  PayPal
+                  ☕ / PayPal
                 </span>
               </button>
             </div>

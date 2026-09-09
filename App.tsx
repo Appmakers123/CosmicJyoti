@@ -55,8 +55,19 @@ import AdBanner from './components/AdBanner';
 import HamburgerMenu from './components/HamburgerMenu';
 import KarmaStore from './components/KarmaStore';
 import DonateModal from './components/DonateModal';
+import BuyMeACoffeeButton from './components/BuyMeACoffeeButton';
 import { ZodiacSignData, HoroscopeResponse, KundaliFormData, KundaliResponse, Language, DailyPanchangResponse, ViewMode, AppViewMode, User } from './types';
-import { ZODIAC_SIGNS, PLAY_STORE_URL, PAYPAL_DONATION_EMAIL, getPayPalDonateUrl, PAYPAL_DONATE_URL, PAYPAL_ME_HANDLE, PAYPAL_ME_URL } from './constants';
+import { 
+  ZODIAC_SIGNS, 
+  PLAY_STORE_URL, 
+  PAYPAL_DONATION_EMAIL, 
+  getPayPalDonateUrl, 
+  PAYPAL_DONATE_URL, 
+  PAYPAL_ME_HANDLE, 
+  PAYPAL_ME_URL,
+  BUY_ME_A_COFFEE_URL,
+  BUY_ME_A_COFFEE_SLUG,
+} from './constants';
 import { generateHoroscope, generateKundali, generateDailyPanchang, type HoroscopePeriod } from './services/geminiService';
 import { generatePersonalizedDailyForecast } from './services/perplexityService';
 import { useTranslation, UI_LANGUAGES } from './utils/translations';
@@ -2089,21 +2100,26 @@ const App: React.FC = () => {
 
           {/* Support Website Growth / Donate Banner */}
           <section className="border-t border-amber-500/20 pt-6 sm:pt-8 mb-8" aria-labelledby="footer-donate-heading">
-            <div className="bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-amber-950/40 border border-amber-500/30 rounded-2xl p-5 sm:p-7 flex flex-col md:flex-row items-center justify-between gap-6 backdrop-blur-sm shadow-[0_0_30px_rgba(245,158,11,0.15)]">
+            <div className="bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-amber-950/40 border border-amber-500/30 rounded-2xl p-5 sm:p-7 flex flex-col lg:flex-row items-center justify-between gap-6 backdrop-blur-sm shadow-[0_0_30px_rgba(245,158,11,0.15)]">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/40 flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-[0_0_20px_rgba(245,158,11,0.25)]">
                   💖
                 </div>
                 <div>
                   <h3 id="footer-donate-heading" className="text-amber-200 font-serif font-bold text-base sm:text-lg tracking-wide">
-                    {language === 'hi' ? 'वेबसाइट के विकास में सहयोग दें (PayPal)' : 'Support CosmicJyoti’s Growth (Donate via PayPal)'}
+                    {language === 'hi' ? 'वेबसाइट के विकास में सहयोग दें (Buy Me a Coffee / PayPal)' : 'Support CosmicJyoti’s Growth (Buy Me a Coffee / PayPal)'}
                   </h3>
                   <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-xl leading-relaxed">
                     {language === 'hi'
-                      ? 'आपका छोटा सा योगदान भी इस वैदिक ज्योतिष मंच को निःशुल्क, सटीक और विज्ञापन-मुक्त रखने में मदद करता है। PayPal के माध्यम से सहयोग करें।'
+                      ? 'आपका छोटा सा योगदान भी इस वैदिक ज्योतिष मंच को निःशुल्क, सटीक और विज्ञापन-मुक्त रखने में मदद करता है। Buy Me a Coffee या PayPal के माध्यम से सहयोग करें।'
                       : 'Help us maintain planetary ephemeris calculation servers, expand AI Vedic tools, and keep accurate astrology accessible for everyone worldwide.'}
                   </p>
                   <p className="text-[11px] text-amber-300/90 font-mono mt-1.5 flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-1">
+                      <span className="text-amber-400">☕ Coffee:</span>
+                      <a {...getExternalLinkProps(BUY_ME_A_COFFEE_URL, language)} className="font-bold text-amber-200 hover:text-white underline">buymeacoffee.com/{BUY_ME_A_COFFEE_SLUG}</a>
+                    </span>
+                    <span className="hidden sm:inline text-slate-600">•</span>
                     <span className="flex items-center gap-1">
                       <span className="text-slate-400">PayPal.Me:</span>
                       <a {...getExternalLinkProps(PAYPAL_ME_URL, language)} className="font-bold text-amber-200 hover:text-white underline">paypal.me/{PAYPAL_ME_HANDLE}</a>
@@ -2117,23 +2133,28 @@ const App: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3 shrink-0 w-full md:w-auto">
+              <div className="flex flex-wrap items-center justify-center gap-3 shrink-0 w-full lg:w-auto">
+                <BuyMeACoffeeButton
+                  language={language}
+                  variant="default"
+                  className="w-full sm:w-auto shadow-md"
+                />
                 <button
                   type="button"
                   onClick={() => setShowDonateModal(true)}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_20px_rgba(245,158,11,0.35)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transition-all active:scale-95 flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   <span className="text-base">💖</span>
-                  <span>{language === 'hi' ? 'दान राशि चुनें' : 'Donate via PayPal'}</span>
+                  <span>{language === 'hi' ? 'दान राशि चुनें' : 'All Support Options'}</span>
                 </button>
                 <a
                   {...getExternalLinkProps(PAYPAL_ME_URL, language)}
-                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-amber-500/40 text-amber-200 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 min-h-[44px]"
                 >
                   <svg className="w-4 h-4 text-[#0079C1] shrink-0" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.82.875 4.966-.03.153-.067.31-.11.472-.647 3.018-2.679 4.707-6.04 4.707H11.02a.794.794 0 0 0-.785.67l-.872 5.534-.287 1.823a.64.64 0 0 1-.633.541h-1.367zm12.35-14.776c-.035.176-.076.357-.123.543-.807 3.766-3.344 5.875-7.543 5.875h-2.316a.992.992 0 0 0-.98.837l-1.34 8.508-.38 2.41a.534.534 0 0 0 .528.618h3.838a.992.992 0 0 0 .98-.838l.812-5.15.052-.28a.992.992 0 0 1 .98-.837h.615c4.202 0 7.49-1.708 8.45-6.183.4-1.872.2-3.435-.793-4.604a5.01 5.01 0 0 0-2.8-1.554z"/>
                   </svg>
-                  <span>paypal.me/{PAYPAL_ME_HANDLE}</span>
+                  <span>PayPal.Me</span>
                 </a>
               </div>
             </div>

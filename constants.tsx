@@ -297,6 +297,10 @@ export const translateSign = (signName: string, lang: Language): string => {
 /** Play Store URL for CosmicJyoti app */
 export const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.cosmicjyoti.app';
 
+/** Buy Me a Coffee support URL & slug */
+export const BUY_ME_A_COFFEE_SLUG = 'Astroniks';
+export const BUY_ME_A_COFFEE_URL = 'https://www.buymeacoffee.com/Astroniks';
+
 /** PayPal donation handle, email & URL for supporting website growth */
 export const PAYPAL_ME_HANDLE = 'NIKESHMAURYA';
 export const PAYPAL_ME_URL = 'https://paypal.me/NIKESHMAURYA';
